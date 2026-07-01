@@ -1,0 +1,42 @@
+package com.mwalimubank.mbimsapi.features.approval.entity;
+
+import com.mwalimubank.mbimsapi.core.entity.BaseEntity;
+import com.mwalimubank.mbimsapi.features.approval.enums.StatusEnum;
+import com.mwalimubank.mbimsapi.features.role.RoleEntity;
+import com.mwalimubank.mbimsapi.features.user.UserEntity;
+import jakarta.persistence.*;
+import lombok.Data;
+
+@Data
+@Entity
+@Table(name = "approval_levels")
+public class ApprovalLevel extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column()
+    private String description;
+
+    @Column()
+    private Integer level;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_approval_id")
+    private UserApproval userApproval;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id")
+    private RoleEntity role;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id")
+    private UserEntity user;
+
+    @Enumerated(EnumType.STRING) // Store enum as text in DB (better readability than ORDINAL)
+    @Column(nullable = false)
+    private StatusEnum status = StatusEnum.PENDING; // default value
+}

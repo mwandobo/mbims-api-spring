@@ -1,0 +1,94 @@
+package com.mwalimubank.mbimsapi.features.mail;
+
+import com.mwalimubank.mbimsapi.core.config.RabbitConfig;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+
+@Service
+@RequiredArgsConstructor
+public class EmailService {
+
+    private final JavaMailSender mailSender;
+    private final TemplateEngine templateEngine;
+    private final RabbitTemplate rabbitTemplate;
+
+    @Value("${app.mail.send-via-queue:true}")
+    private boolean sendViaQueue;
+
+
+    public void sendSimpleEmail(String to, String subject, String text) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject(subject);
+        message.setText(text);
+        message.setFrom("Mwalimu Commercial Bank <no-reply@mwalimucommercialbank.co.tz>");
+        mailSender.send(message);
+    }
+
+    public void sendHtmlEmail(          EmailPayload emailPayload) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+
+        String[] recipients = emailPayload.getTo().toArray(new String[0]);
+
+        Context thymeleafContext = new Context();
+        thymeleafContext.setVariables(emailPayload.getContext());
+
+        String htmlContent = templateEngine.process(
+                "email/" + emailPayload.getTemplate(),
+                thymeleafContext
+        );
+
+        helper.setTo(recipients);
+        helper.setSubject(emailPayload.getSubject());
+        helper.setText(htmlContent, true);
+        helper.setFrom("Mwalimu Commercial Bank <no-reply@mwalimucommercialbank.co.tz>");
+
+//        helper.addInline("mwalimuMobile",
+//                new ClassPathResource("static/images/email/mwalimu-mobile.png"),
+//                "image/png");
+//
+//        helper.addInline("faida",
+//                new ClassPathResource("static/images/email/faida.png"),
+//                "image/png");
+        helper.addInline("faidamax",
+                new ClassPathResource("static/images/email/faidamax.png"),
+                "image/png");
+
+        mailSender.send(mimeMessage);
+    }
+
+
+
+    public void queueEmail(EmailPayload emailPayload) {
+        // Push the email payload to the queue
+        rabbitTemplate.convertAndSend(RabbitConfig.QUEUE, emailPayload);
+
+    }
+
+
+    public void sendEmail(EmailPayload emailPayload) {
+        if (sendViaQueue) {
+            queueEmail(emailPayload);
+        } else {
+            try {
+                sendHtmlEmail(emailPayload);
+            } catch (MessagingException e) {
+                throw new RuntimeException("Failed to send email directly", e);
+            }
+        }
+    }
+
+
+
+}

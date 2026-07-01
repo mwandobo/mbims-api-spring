@@ -1,0 +1,11 @@
+package com.mwalimubank.mbimsapi.features.notification;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+public interface NotificationRepository extends JpaRepository<NotificationEntity, Long> , JpaSpecificationExecutor<NotificationEntity> {
+    Page<NotificationEntity> findAll(Specification<NotificationEntity> spec, Pageable pageable);
+}

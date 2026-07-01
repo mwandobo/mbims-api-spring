@@ -1,0 +1,40 @@
+package com.mwalimubank.mbimsapi.features.approval.dto;
+
+import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalLevel;
+import com.mwalimubank.mbimsapi.features.approval.entity.UserApproval;
+import com.mwalimubank.mbimsapi.features.approval.enums.StatusEnum;
+import com.mwalimubank.mbimsapi.features.role.dto.RoleResponseDTO;
+
+import lombok.Data;
+
+@Data
+public class ApprovalLevelResponseDTO {
+    private Long id;
+    private String name;
+    private String description;
+    private String approvalStatus;
+    private String entityName;
+    private Long sysApprovalId;
+    private Long roleId;
+    private Integer level;
+    private UserApprovalResponseDTO userApproval;
+    private String userApprovalName;
+    private RoleResponseDTO role;
+    private String roleName;
+    private StatusEnum status;
+
+    public static ApprovalLevelResponseDTO fromEntity(ApprovalLevel entity) {
+        ApprovalLevelResponseDTO dto = new ApprovalLevelResponseDTO();
+        dto.setName(entity.getName());
+        dto.setId(entity.getId());
+        dto.setLevel(entity.getLevel());
+        dto.setDescription(entity.getDescription());
+        dto.setStatus(entity.getStatus());
+        dto.setUserApproval(entity.getUserApproval() != null ? UserApprovalResponseDTO.fromEntity(entity.getUserApproval()) : null);
+        dto.setRoleId(entity.getRole() != null ? entity.getRole().getId() : null);
+        dto.setUserApprovalName(entity.getUserApproval() != null ? entity.getUserApproval().getName() : null);
+        dto.setRole(entity.getRole() != null ? RoleResponseDTO.fromEntity(entity.getRole()) : null);
+        dto.setRoleName(entity.getRole() != null ? entity.getRole().getName() : null);
+        return dto;
+    }
+}
