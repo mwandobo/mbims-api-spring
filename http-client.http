@@ -442,3 +442,8 @@ Content-Type: application/json
 DELETE {{base_url}}/assets/1
 Authorization: Bearer {{token}}
 
+###
+GET {{base_url}}/performances/customer-stats
+Authorization: Bearer {{token}}
+
+
