@@ -67,9 +67,14 @@ public class PerformanceService {
 
     public CustomerStatsResponseDTO findCustomers() {
         List<CustomerEntity> customers = customerRepository.findAll();
-        Integer totalCustomers = customers.size();
+        long totalCustomers = customers.size();
+        long individualCustomers = customerRepository.countByCustType("1");
+        long cooperateCustomers = totalCustomers - individualCustomers;
+
         CustomerStatsResponseDTO customerStatsDTO = new CustomerStatsResponseDTO();
         customerStatsDTO.setTotalCustomers(totalCustomers);
+        customerStatsDTO.setTotalIndividualCustomers(individualCustomers);
+        customerStatsDTO.setTotalCorporateCustomers(cooperateCustomers);
         return customerStatsDTO;
     }
 

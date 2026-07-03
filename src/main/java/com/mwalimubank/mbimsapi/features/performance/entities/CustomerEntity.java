@@ -11,7 +11,13 @@ public class CustomerEntity  {
     @Id
     private Long cust_id;
 
-    @Column(unique = true, nullable = false)
+    @Column()
     private String first_name;
+
+    @Column()
+    private String last_name;
+
+    @Column(name = "CUST_TYPE")
+    private String custType;
 
 }

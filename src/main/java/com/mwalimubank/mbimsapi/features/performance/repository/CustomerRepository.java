@@ -10,6 +10,5 @@ import java.util.Optional;
 
 public interface CustomerRepository extends JpaRepository<CustomerEntity, Long> {
     Page<CustomerEntity> findAll(Specification<CustomerEntity> spec, Pageable pageable);
-    long countByCustType(Integer custType);
-
+    long countByCustType(String custType);
 }

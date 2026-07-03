@@ -4,5 +4,7 @@ import lombok.Data;
 
 @Data
 public class CustomerStatsResponseDTO {
-    private Integer totalCustomers;
+    private long totalCustomers;
+    private long totalIndividualCustomers;
+    private long totalCorporateCustomers;
 }
