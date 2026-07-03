@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "user_approvals")
+@Table(name = "mbimsapi_user_approvals")
 public class UserApproval extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

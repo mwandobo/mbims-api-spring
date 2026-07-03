@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "users")
+@Table(name = "mbimsapi_users")
 public class UserEntity extends BaseEntity {
 
     @Id

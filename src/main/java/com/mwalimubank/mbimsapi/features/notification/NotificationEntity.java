@@ -10,7 +10,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 @Data
 @Entity
-@Table(name = "notifications")
+@Table(name = "mbimsapi_notifications")
 public class NotificationEntity extends BaseEntity {
 
     @Column(nullable = false)

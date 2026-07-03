@@ -118,6 +118,10 @@ public class DataSeeder {
                     new PermissionDef("dashboard_read", "View dashboards"),
                     new PermissionDef("dashboard_stats_card_read", "View dashboards Stats Cards"),
                     new PermissionDef("dashboard_activities_read", "View system Activities")
+            )),
+            new PermissionGroup("performance", List.of(
+                    new PermissionDef("performance_customer_stats", "Performance Customer  Stats")
+
             ))
 
 
