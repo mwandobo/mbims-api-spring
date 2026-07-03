@@ -57,6 +57,10 @@ fi
 
 echo "📦 Using base package: $BASE_PACKAGE"
 
+TABLE_PREFIX="${BASE_PACKAGE##*.}"
+
+echo "📦 Table prefix: ${TABLE_PREFIX}_"
+
 # ====================== SMART NAMING ======================
 to_pascal_case() {
     echo "$1" | sed -E 's/[_ -]+(.)/\U\1/g' | sed 's/^[a-z]/\U&/'
@@ -158,7 +162,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "${FEATURE_SNAKE}")
+@Table(name = "${TABLE_PREFIX}_${FEATURE_SNAKE}")
 public class ${FEATURE_PASCAL}Entity extends BaseEntity {
 
     @Id

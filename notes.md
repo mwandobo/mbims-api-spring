@@ -5,7 +5,8 @@ Installation
     you can use this to start your own project by running .sh command and giving some parameters
     while in root directory to rename it to your desired project name by just running a command
 
-    .\setup.sh <<package_name eg com.mycompany.myapp>> <<MainClassName ag MyApp>>
+    ./scripts-to-run/setup.sh <<package_name>> <<MainClassName>>
+    ./scripts-to-run/setup.sh  com.mycompany.myapp>  MyApp
 
 to add feature 
 Remember to use camelCase incase of naming eg assetCategory
