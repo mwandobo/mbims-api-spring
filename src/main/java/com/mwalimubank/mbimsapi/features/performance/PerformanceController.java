@@ -50,7 +50,7 @@ public class PerformanceController {
     }
 
     @GetMapping("/customer-stats")
-    public CustomerStatsResponseDTO findCustomers(
+    public  CustomerStatsResponseDTO findCustomers(
             PaginationRequest pagination,
             @RequestParam(required = false) String search) {
         return service.findCustomers();

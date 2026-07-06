@@ -3,6 +3,7 @@ package com.mwalimubank.mbimsapi.features.performance;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
 import com.mwalimubank.mbimsapi.features.performance.dto.CreatePerformanceDTO;
 import com.mwalimubank.mbimsapi.features.performance.dto.CustomerStatsResponseDTO;
+import com.mwalimubank.mbimsapi.features.performance.dto.CustomerStatusDTO;
 import com.mwalimubank.mbimsapi.features.performance.dto.PerformanceResponseDTO;
 import com.mwalimubank.mbimsapi.features.performance.entities.CustomerEntity;
 import com.mwalimubank.mbimsapi.features.performance.entities.PerformanceEntity;
@@ -67,15 +68,25 @@ public class PerformanceService {
 
     public CustomerStatsResponseDTO findCustomers() {
         List<CustomerEntity> customers = customerRepository.findAll();
-        long totalCustomers = customers.size();
-        long individualCustomers = customerRepository.countByCustType("1");
-        long cooperateCustomers = totalCustomers - individualCustomers;
+        long totalAllCustomers = customers.size();
+        long totalIndividualCustomers = customerRepository.countByCustType("1");
+        long totalCorporateCustomers = totalAllCustomers - totalIndividualCustomers;
 
-        CustomerStatsResponseDTO customerStatsDTO = new CustomerStatsResponseDTO();
-        customerStatsDTO.setTotalCustomers(totalCustomers);
-        customerStatsDTO.setTotalIndividualCustomers(individualCustomers);
-        customerStatsDTO.setTotalCorporateCustomers(cooperateCustomers);
-        return customerStatsDTO;
+        CustomerStatsResponseDTO customerStatsResponse = new CustomerStatsResponseDTO();
+        customerStatsResponse.setTotalAllCustomers(totalAllCustomers);
+        customerStatsResponse.setTotalIndividualCustomers(totalIndividualCustomers);
+        customerStatsResponse.setTotalCorporateCustomers(totalCorporateCustomers);
+
+        CustomerStatusDTO allCustomersByStatus = new  CustomerStatusDTO();
+        allCustomersByStatus.setActive(12);
+        allCustomersByStatus.setDormant(35);
+        allCustomersByStatus.setClosed(50);
+        customerStatsResponse.setAllCustomersAttrs(allCustomersByStatus);
+        customerStatsResponse.setIndividualCustomersAttrs(allCustomersByStatus);
+        customerStatsResponse.setCorporateCustomersAttrs(allCustomersByStatus);
+
+
+        return customerStatsResponse;
     }
 
 
