@@ -20,4 +20,7 @@ public class CustomerEntity  {
     @Column(name = "CUST_TYPE")
     private String custType;
 
+    @Column(name = "CUST_STATUS")
+    private String custStatus;
+
 }

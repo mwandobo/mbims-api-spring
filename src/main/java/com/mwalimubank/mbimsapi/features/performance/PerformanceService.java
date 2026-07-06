@@ -67,24 +67,27 @@ public class PerformanceService {
     }
 
     public CustomerStatsResponseDTO findCustomers() {
-        List<CustomerEntity> customers = customerRepository.findAll();
-        long totalAllCustomers = customers.size();
-        long totalIndividualCustomers = customerRepository.countByCustType("1");
-        long totalCorporateCustomers = totalAllCustomers - totalIndividualCustomers;
+        List<CustomerEntity> allCustomers = customerRepository.findAll();
+        List<CustomerEntity> individualCustomers = customerRepository.findByCustType("1");
+        List<CustomerEntity> corporateCustomers = customerRepository.findByCustType("2");
+        List<CustomerEntity> corporateCustomersV1 = customerRepository.findByCustType("3");
+
+        // Combine corporate lists
+        List<CustomerEntity> allCorporateCustomers = new ArrayList<>(corporateCustomers);
+        allCorporateCustomers.addAll(corporateCustomersV1);
+
+        long totalAllCustomers = allCustomers.size();
+        long totalIndividualCustomers =  individualCustomers.size();
+        long totalCorporateCustomers = allCorporateCustomers.size();;
 
         CustomerStatsResponseDTO customerStatsResponse = new CustomerStatsResponseDTO();
         customerStatsResponse.setTotalAllCustomers(totalAllCustomers);
         customerStatsResponse.setTotalIndividualCustomers(totalIndividualCustomers);
         customerStatsResponse.setTotalCorporateCustomers(totalCorporateCustomers);
 
-        CustomerStatusDTO allCustomersByStatus = new  CustomerStatusDTO();
-        allCustomersByStatus.setActive(12);
-        allCustomersByStatus.setDormant(35);
-        allCustomersByStatus.setClosed(50);
-        customerStatsResponse.setAllCustomersAttrs(allCustomersByStatus);
-        customerStatsResponse.setIndividualCustomersAttrs(allCustomersByStatus);
-        customerStatsResponse.setCorporateCustomersAttrs(allCustomersByStatus);
-
+        customerStatsResponse.setAllCustomersAttrs(fetchCustomerStatus(allCustomers));
+        customerStatsResponse.setIndividualCustomersAttrs(fetchCustomerStatus(individualCustomers));
+        customerStatsResponse.setCorporateCustomersAttrs(fetchCustomerStatus(allCorporateCustomers));
 
         return customerStatsResponse;
     }
@@ -112,5 +115,24 @@ public class PerformanceService {
         } else {
             repository.delete(entity);
         }
+    }
+
+    private CustomerStatusDTO fetchCustomerStatus(List<CustomerEntity> customers) {
+
+        long activeCustomers = customers.stream()
+                .filter(customer -> Objects.equals(customer.getCustStatus(), "2"))
+                .count();
+
+        long dormantCustomers = customers.stream()
+                .filter(customer -> Objects.equals(customer.getCustStatus(), "1"))
+                .count();
+
+        long closedCustomers = customers.size() - (activeCustomers + dormantCustomers) ;
+        CustomerStatusDTO dto = new CustomerStatusDTO();
+        dto.setActive(activeCustomers);
+        dto.setDormant(dormantCustomers);
+        dto.setClosed(closedCustomers);
+
+        return dto;
     }
 }
