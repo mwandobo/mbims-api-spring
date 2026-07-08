@@ -1,13 +1,13 @@
 package com.mwalimubank.mbimsapi.features.performance;
 
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
+import com.mwalimubank.mbimsapi.features.customer.CustomerEntity;
 import com.mwalimubank.mbimsapi.features.performance.dto.CreatePerformanceDTO;
 import com.mwalimubank.mbimsapi.features.performance.dto.CustomerStatsResponseDTO;
 import com.mwalimubank.mbimsapi.features.performance.dto.CustomerStatusDTO;
 import com.mwalimubank.mbimsapi.features.performance.dto.PerformanceResponseDTO;
-import com.mwalimubank.mbimsapi.features.performance.entities.CustomerEntity;
 import com.mwalimubank.mbimsapi.features.performance.entities.PerformanceEntity;
-import com.mwalimubank.mbimsapi.features.performance.repository.CustomerRepository;
+import com.mwalimubank.mbimsapi.features.performance.repository.PerformanceCustomerRepository;
 import com.mwalimubank.mbimsapi.features.performance.repository.PerformanceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,7 +25,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class PerformanceService {
     private final PerformanceRepository repository;
-    private final CustomerRepository customerRepository;
+    private final PerformanceCustomerRepository customerRepository;
     private final ApprovalStatusUtil approvalStatusUtil;
     private final CurrentUserService currentUserService;
 

@@ -121,7 +121,13 @@ public class DataSeeder {
             )),
             new PermissionGroup("performance", List.of(
                     new PermissionDef("performance_customer_stats", "Performance Customer  Stats")
+            )),
 
+            new PermissionGroup("customer", List.of(
+                    new PermissionDef("customer_create", "Create Customer"),
+                    new PermissionDef("customer_read", "View Customer"),
+                    new PermissionDef("customer_update", "Edit Customer"),
+                    new PermissionDef("customer_delete", "Delete Customer")
             ))
 
 

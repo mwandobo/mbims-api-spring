@@ -23,8 +23,8 @@ while [[ "$#" -gt 0 ]]; do
       shift 2
       ;;
     --help|-h)
-      echo "Usage: ./generate-feature.sh --name <FeatureName> [--plural s|es|ies] [--parent <parent>]"
-      echo "Example: ./generate-feature.sh --name \"new user\" --parent newManagement"
+      echo "Usage: ./add-feature.sh --name <FeatureName> [--plural s|es|ies] [--parent <parent>]"
+      echo "Example: ./add-feature.sh --name \"new user\" --parent newManagement"
       exit 0
       ;;
     *)

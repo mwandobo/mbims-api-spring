@@ -1,43 +1,40 @@
-package com.mwalimubank.mbimsapi.features.performance;
+package com.mwalimubank.mbimsapi.features.customer;
 
 import com.mwalimubank.mbimsapi.core.dto.ApiResponse;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
-import com.mwalimubank.mbimsapi.features.performance.dto.CreatePerformanceDTO;
-import com.mwalimubank.mbimsapi.features.performance.dto.CustomerStatsResponseDTO;
-import com.mwalimubank.mbimsapi.features.performance.dto.PerformanceResponseDTO;
+import com.mwalimubank.mbimsapi.features.customer.dto.CreateCustomerDTO;
+import com.mwalimubank.mbimsapi.features.customer.dto.CustomerResponseDTO;
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/api/v1/performances")
+@RequestMapping("/api/v1/customers")
 @RequiredArgsConstructor
-public class PerformanceController {
+public class CustomerController {
 
-    private final PerformanceService service;
+    private final CustomerService service;
 
     @GetMapping
-    public PagedResponse<PerformanceResponseDTO> findAll(
+    public PagedResponse<CustomerResponseDTO> findAll(
             PaginationRequest pagination,
             @RequestParam(required = false) String search) {
         return service.findAll(pagination, search);
     }
 
     @PostMapping
-    public PerformanceResponseDTO create(@RequestBody CreatePerformanceDTO request) {
+    public CustomerResponseDTO create(@RequestBody CreateCustomerDTO request) {
         return service.create(request);
     }
 
     @GetMapping("/{id}")
-    public ApprovalAwareDTO<PerformanceResponseDTO> findOne(@PathVariable Long id) {
+    public ApprovalAwareDTO<CustomerResponseDTO> findOne(@PathVariable Long id) {
         return service.findOne(id);
     }
 
     @PatchMapping("/{id}")
-    public PerformanceResponseDTO update(@PathVariable Long id, @RequestBody CreatePerformanceDTO request) {
+    public CustomerResponseDTO update(@PathVariable Long id, @RequestBody CreateCustomerDTO request) {
         return service.update(id, request);
     }
 
@@ -47,12 +44,4 @@ public class PerformanceController {
         service.delete(id, soft);
         return ApiResponse.success(null);
     }
-
-    @GetMapping("/customer-stats")
-    public  CustomerStatsResponseDTO findCustomers(
-            PaginationRequest pagination,
-            @RequestParam(required = false) String search) {
-        return service.findCustomers();
-    }
-
 }
