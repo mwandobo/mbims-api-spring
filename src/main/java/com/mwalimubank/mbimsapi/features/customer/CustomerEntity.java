@@ -3,6 +3,7 @@ package com.mwalimubank.mbimsapi.features.customer;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;   // better than String for dates
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -32,7 +33,7 @@ public class CustomerEntity {
     private String dateOfBirth;        // Use proper type
 
     @Column(name = "tmstamp", columnDefinition = "TIMESTAMP(6)")
-    private String createdAt;             // Consider changing to OffsetDateTime / Timestamp
+    private LocalDateTime createdAt;             // Consider changing to OffsetDateTime / Timestamp
 
     @Column(name = "cust_type", columnDefinition = "CHAR(1)")
     private String custType;

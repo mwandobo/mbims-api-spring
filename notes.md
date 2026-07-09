@@ -96,6 +96,8 @@ to log just import @Slf4j
     ./gradlew bootRun
 
 
+to reset the table CALL SYSPROC.ADMIN_CMD('REORG TABLE PROFITS.CUSTOMER');
+
 
 
 
