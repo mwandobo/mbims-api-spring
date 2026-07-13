@@ -12,9 +12,27 @@ import java.util.Objects;
 public class CustomerResponseDTO {
     private Long id;
     private String name;
+    private String phoneNumber;
+    private String email;
     private String dateOfBirth;
     private String customerType;
     private String sex;
+    private String maritalStatus;
+    private String region;
+    private String district;
+    private String ward;
+
+    private String nationality;
+    private String citizenship;
+    private String residency;
+    private String profession;
+    private String employmentStatus;
+    private String numberDependants;
+    private String educationLevel;
+    private String birthRegion;
+    private String identificationType;
+    private String identificationNumber;
+    private String location;
     private String createdAt;
     private String updatedAt;
 
@@ -25,7 +43,21 @@ public class CustomerResponseDTO {
         CustomerResponseDTO dto = new CustomerResponseDTO();
         dto.setId(entity.getId());
         dto.setName(entity.getFirstName() + " " + entity.getMiddleName() + " " + entity.getLastName());
-        dto.setDateOfBirth(entity.getDateOfBirth());
+        dto.setPhoneNumber(entity.getPhoneNumber());
+        dto.setEmail(entity.getEmail());
+        dto.setBirthRegion(entity.getBirthRegion());
+
+//        dto.setCitizenship("Tanzania");
+//        dto.setResidency("Tanzania");
+//        dto.setProfession("Tanzania");
+//        dto.setEmploymentStatus("Tanzania");
+//        dto.setNumberDependants("Tanzania");
+//        dto.setEducationLevel("Tanzania");
+//        dto.setIdentificationType("Tanzania");
+//        dto.setIdentificationNumber("Tanzania");
+//        dto.setNationality("Tanzania");
+
+
         dto.setSex(
                 switch (entity.getSex()) {
                     case "M" -> "Male";
@@ -33,11 +65,12 @@ public class CustomerResponseDTO {
                     default -> "Not Applicable";
                 }
         );
-        dto.setSex(
+        dto.setMaritalStatus(
                 switch (entity.getSex()) {
-                    case "M" -> "Male";
-                    case "F" -> "Female";
-                    default -> "Not Applicable";
+                    case "MARRIED" -> "'Married'";
+                    case "'DIVORCED'" -> "''Divorced''";
+                    case "'WIDOWED'" -> "''Widowed''";
+                    default -> "Single";
                 }
         );
         dto.setCreatedAt(
@@ -45,8 +78,17 @@ public class CustomerResponseDTO {
                         ? entity.getCreatedAt().format(FORMATTER)
                         : null
         );
+        dto.setDateOfBirth(
+                entity.getDateOfBirth() != null
+                        ? entity.getDateOfBirth().format(FORMATTER)
+                        : null
+        );
         dto.setCustomerType(Objects.equals(entity.getCustType(), "1") ? "Individual": "Corporate");
-//        dto.setUpdatedAt(entity.getUpdatedAt() != null ? entity.getUpdatedAt().toString() : null);
+        dto.setNumberDependants(
+                entity.getNumberOfChildren() != null
+                        ? entity.getNumberOfChildren().toString()
+                        : null
+        );
         return dto;
     }
 }

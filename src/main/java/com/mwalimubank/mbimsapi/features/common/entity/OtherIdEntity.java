@@ -30,7 +30,7 @@ public class OtherIdEntity {
     @Column(name = "ISSUE_DATE")
     private LocalDate issueDate;
 
-    @Column(name = "MAIN_FLAG")
+    @Column(name = "MAIN_FLAG", columnDefinition = " CHAR(1)")
     private String mainFlag;
 
     @Column(name = "FKGH_HAS_BEEN_ISSU")
@@ -42,9 +42,9 @@ public class OtherIdEntity {
     @Column(name = "ID_NO")
     private String idNo;
 
-    @Column(name = "ISSUE_AUTHORITY")
+    @Column(name = "ISSUE_AUTHORITY", columnDefinition = "CHAR(30)")
     private String issueAuthority;
 
-    @Column(name = "INCOMPLETE_U_COMNT")
+    @Column(name = "INCOMPLETE_U_COMNT", columnDefinition = "CHAR(30)")
     private String incompleteUComnt;
 }

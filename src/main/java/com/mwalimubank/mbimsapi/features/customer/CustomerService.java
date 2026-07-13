@@ -1,10 +1,19 @@
 package com.mwalimubank.mbimsapi.features.customer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
+import com.mwalimubank.mbimsapi.features.common.entity.CustomerAddressEntity;
+import com.mwalimubank.mbimsapi.features.common.entity.CustomerCategoryEntity;
+import com.mwalimubank.mbimsapi.features.common.entity.GenericDetailEntity;
+import com.mwalimubank.mbimsapi.features.common.repository.CustomerAddressRepository;
+import com.mwalimubank.mbimsapi.features.common.repository.CustomerCategoryRepository;
+import com.mwalimubank.mbimsapi.features.common.repository.GenericDetailRepository;
 import com.mwalimubank.mbimsapi.features.customer.dto.CreateCustomerDTO;
 import com.mwalimubank.mbimsapi.features.customer.dto.CustomerResponseDTO;
 import com.mwalimubank.mbimsapi.features.customer.CustomerEntity;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -16,12 +25,18 @@ import com.mwalimubank.mbimsapi.core.services.CurrentUserService;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CustomerService {
     private final CustomerRepository repository;
+    private final CustomerAddressRepository customerAddressRepository;
+    private final CustomerCategoryRepository customerCategoryRepository;
+    private final GenericDetailRepository genericDetailRepository;
     private final ApprovalStatusUtil approvalStatusUtil;
     private final CurrentUserService currentUserService;
+    private final ObjectMapper objectMapper;
+
 
     public PagedResponse<CustomerResponseDTO> findAll(PaginationRequest pagination, String search) {
 //        Specification<CustomerEntity> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
@@ -51,8 +66,68 @@ public class CustomerService {
     public ApprovalAwareDTO<CustomerResponseDTO> findOne(Long id) {
         CustomerEntity entity = repository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Customer not found"));
+
+        CustomerResponseDTO dto = CustomerResponseDTO.fromEntity(entity);
+
+
+        CustomerAddressEntity address = customerAddressRepository
+                .findFirstByIdFkCustomerCustIdAndCommunicationAddrAndEntryStatus(
+                        entity.getId().intValue(),
+                        "1",
+                        "1"
+                )
+                .orElse(null);
+
+        if (address != null) {
+            dto.setRegion( address.getCity() );
+            dto.setDistrict(address.getRegion());
+            dto.setWard(address.getAddress1());
+        }
+
+
+        CustomerCategoryEntity category = customerCategoryRepository
+                .findFirstByIdFkCustomerCustIdAndIdCategoryAndGenericDetail(
+                        entity.getId().intValue(),
+                        "NATIONAL",
+                        "NATIO"
+                )
+                .orElse(null);
+
+        if (category != null) {
+//            dto.setCitizenship( address.getCity() );
+//            dto.setDistrict(address.getRegion());
+//            dto.setWard(address.getAddress1());
+            GenericDetailEntity genericDetail = genericDetailRepository
+                    .findFirstByIdAndSerialNumber(
+                            category.getGenericDetail(),
+                            category.getFkGenericDetaSer()
+                    )
+                    .orElse(null);
+
+
+            if (genericDetail != null) {
+                dto.setCitizenship( genericDetail.getDescription() );
+            }
+
+
+
+
+        }
+
+
+
+
+//        try {
+//            log.info("Payload: {}", objectMapper.writeValueAsString(address));
+//        } catch (JsonProcessingException e) {
+//            throw new RuntimeException(e);
+//        }
+
+
+
+
         return approvalStatusUtil.attachApprovalInfo(
-                CustomerResponseDTO.fromEntity(entity),
+                dto,
                 entity.getId(),
                 CustomerEntity.class.getSimpleName(),
                 currentUserService.getCurrentUserRoleId()

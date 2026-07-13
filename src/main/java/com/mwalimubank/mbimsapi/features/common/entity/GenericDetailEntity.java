@@ -23,4 +23,7 @@ public class GenericDetailEntity {
 
     @Column(name = "parameter_type")
     private String parameterType;
+
+    @Column(name = "serial_num")
+    private Integer serialNumber;
 }
