@@ -6,9 +6,11 @@ import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
 import com.mwalimubank.mbimsapi.features.common.entity.CustomerAddressEntity;
 import com.mwalimubank.mbimsapi.features.common.entity.CustomerCategoryEntity;
 import com.mwalimubank.mbimsapi.features.common.entity.GenericDetailEntity;
+import com.mwalimubank.mbimsapi.features.common.entity.OtherIdEntity;
 import com.mwalimubank.mbimsapi.features.common.repository.CustomerAddressRepository;
 import com.mwalimubank.mbimsapi.features.common.repository.CustomerCategoryRepository;
 import com.mwalimubank.mbimsapi.features.common.repository.GenericDetailRepository;
+import com.mwalimubank.mbimsapi.features.common.repository.OtherIdRepository;
 import com.mwalimubank.mbimsapi.features.customer.dto.CreateCustomerDTO;
 import com.mwalimubank.mbimsapi.features.customer.dto.CustomerResponseDTO;
 import com.mwalimubank.mbimsapi.features.customer.CustomerEntity;
@@ -23,6 +25,9 @@ import com.mwalimubank.mbimsapi.core.dto.PaginationDto;
 import com.mwalimubank.mbimsapi.features.approval.util.ApprovalStatusUtil;
 import com.mwalimubank.mbimsapi.core.services.CurrentUserService;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Slf4j
@@ -36,6 +41,7 @@ public class CustomerService {
     private final ApprovalStatusUtil approvalStatusUtil;
     private final CurrentUserService currentUserService;
     private final ObjectMapper objectMapper;
+    private final OtherIdRepository otherIdRepository;
 
 
     public PagedResponse<CustomerResponseDTO> findAll(PaginationRequest pagination, String search) {
@@ -130,6 +136,26 @@ public class CustomerService {
             dto.setEducationLevel(education.getDescription());
         }
 
+        OtherIdEntity otherId = otherIdRepository
+                .findMainIdByCustomerId(entity.getId().intValue())
+                .orElse(null);
+
+        if (otherId != null) {
+            dto.setIdentificationNumber(otherId.getIdNo());
+
+            dto.setIdIssuanceDate(formatDate(otherId.getIssueDate()));
+            dto.setIdExpirationDate(formatDate(otherId.getExpiryDate()));
+
+
+            GenericDetailEntity identificationTypeDetail = genericDetailRepository.findFirstByIdAndSerialNumber(otherId.getFkGhHasType(), otherId.getFkGdHasType()) .orElse(null);
+
+            if (identificationTypeDetail != null) {
+                dto.setIdentificationType(identificationTypeDetail.getDescription() );
+            }
+        }
+
+
+
         return approvalStatusUtil.attachApprovalInfo(
                 dto,
                 entity.getId(),
@@ -157,6 +183,17 @@ public class CustomerService {
                         )
                 )
                 .orElse(null);
+    }
+
+    private static final DateTimeFormatter FORMATTER =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    private String formatDate(LocalDate date) {
+        if (date == null || date.equals(LocalDate.of(1, 1, 1))) {
+            return "---";
+        }
+
+        return date.format(FORMATTER);
     }
 
 

@@ -30,6 +30,8 @@ public class CustomerResponseDTO {
     private String numberDependants;
     private String educationLevel;
     private String birthRegion;
+    private String idIssuanceDate;
+    private String idExpirationDate;
     private String identificationType;
     private String identificationNumber;
     private String location;
