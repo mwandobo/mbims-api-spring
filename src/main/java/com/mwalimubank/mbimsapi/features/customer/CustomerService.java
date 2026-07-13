@@ -84,47 +84,51 @@ public class CustomerService {
             dto.setWard(address.getAddress1());
         }
 
+        GenericDetailEntity nationality = getGenericDetail(
+                entity.getId().intValue(),
+                "NATIONAL",
+                "NATIO"
+        );
 
-        CustomerCategoryEntity category = customerCategoryRepository
-                .findFirstByIdFkCustomerCustIdAndIdCategoryAndGenericDetail(
-                        entity.getId().intValue(),
-                        "NATIONAL",
-                        "NATIO"
-                )
-                .orElse(null);
+        if (nationality != null) {
+            dto.setNationality(nationality.getDescription());
+            dto.setCitizenship(nationality.getDescription());
+        }
+        GenericDetailEntity profession = getGenericDetail(
+                entity.getId().intValue(),
+                "PROFES",
+                "PROFF"
+        );
 
-        if (category != null) {
-//            dto.setCitizenship( address.getCity() );
-//            dto.setDistrict(address.getRegion());
-//            dto.setWard(address.getAddress1());
-            GenericDetailEntity genericDetail = genericDetailRepository
-                    .findFirstByIdAndSerialNumber(
-                            category.getGenericDetail(),
-                            category.getFkGenericDetaSer()
-                    )
-                    .orElse(null);
-
-
-            if (genericDetail != null) {
-                dto.setCitizenship( genericDetail.getDescription() );
-            }
-
-
-
-
+        if (profession != null) {
+            dto.setProfession(profession.getDescription());
         }
 
+        GenericDetailEntity employment = getGenericDetail(
+                entity.getId().intValue(),
+                "PROFLEVL",
+                "PRFST"
+        );
 
+        if (employment != null) {
+            dto.setEmploymentStatus(
+                    switch (employment.getDescription()) {
+                        case "EMPLOYED", "SALARIED" -> "Employed";
+                        case "CUSTOMER SERVICE" -> "Self - Employed";
+                        default -> "Unemployed";
+                    }
+            );
+        }
 
+        GenericDetailEntity education = getGenericDetail(
+                entity.getId().intValue(),
+                "PROFES",
+                "PROFF"
+        );
 
-//        try {
-//            log.info("Payload: {}", objectMapper.writeValueAsString(address));
-//        } catch (JsonProcessingException e) {
-//            throw new RuntimeException(e);
-//        }
-
-
-
+        if (education != null) {
+            dto.setEducationLevel(education.getDescription());
+        }
 
         return approvalStatusUtil.attachApprovalInfo(
                 dto,
@@ -133,6 +137,30 @@ public class CustomerService {
                 currentUserService.getCurrentUserRoleId()
         );
     }
+
+
+    private GenericDetailEntity getGenericDetail(
+            Integer customerId,
+            String category,
+            String genericDetailCode
+    ) {
+        return customerCategoryRepository
+                .findFirstByIdFkCustomerCustIdAndIdCategoryAndGenericDetail(
+                        customerId,
+                        category,
+                        genericDetailCode
+                )
+                .flatMap(customerCategory ->
+                        genericDetailRepository.findFirstByIdAndSerialNumber(
+                                customerCategory.getGenericDetail(),
+                                customerCategory.getFkGenericDetaSer()
+                        )
+                )
+                .orElse(null);
+    }
+
+
+
 
     @Transactional
     public CustomerResponseDTO update(Long id, CreateCustomerDTO request) {

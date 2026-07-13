@@ -78,6 +78,12 @@ public class CustomerResponseDTO {
                         ? entity.getCreatedAt().format(FORMATTER)
                         : null
         );
+
+        dto.setResidency(
+                Objects.equals(entity.getNonResident(), "0")
+                        ? "Resident"
+                        : "Non-Resident"
+        );
         dto.setDateOfBirth(
                 entity.getDateOfBirth() != null
                         ? entity.getDateOfBirth().format(FORMATTER)
