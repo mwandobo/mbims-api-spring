@@ -128,6 +128,13 @@ public class DataSeeder {
                     new PermissionDef("customer_read", "View Customer"),
                     new PermissionDef("customer_update", "Edit Customer"),
                     new PermissionDef("customer_delete", "Delete Customer")
+            )),
+
+            new PermissionGroup("transaction", List.of(
+                    new PermissionDef("transaction_create", "Create Transaction"),
+                    new PermissionDef("transaction_read", "View Transaction"),
+                    new PermissionDef("transaction_update", "Edit Transaction"),
+                    new PermissionDef("transaction_delete", "Delete Transaction")
             ))
 
 

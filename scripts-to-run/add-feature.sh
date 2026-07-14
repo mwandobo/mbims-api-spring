@@ -57,9 +57,9 @@ fi
 
 echo "📦 Using base package: $BASE_PACKAGE"
 
-TABLE_PREFIX="${BASE_PACKAGE##*.}"
-
-echo "📦 Table prefix: ${TABLE_PREFIX}_"
+#TABLE_PREFIX="${BASE_PACKAGE##*.}"
+#
+#echo "📦 Table prefix: ${TABLE_PREFIX}_"
 
 # ====================== SMART NAMING ======================
 to_pascal_case() {
@@ -140,6 +140,8 @@ echo "=================================================="
 
 BASE_DIR="src/main/java/$(echo "$FULL_PACKAGE" | tr '.' '/')"
 
+#@Table(name = "${TABLE_PREFIX}_${FEATURE_SNAKE}")
+
 mkdir -p "$BASE_DIR/dto"
 
 echo "📁 Creating files in: $BASE_DIR"
@@ -162,7 +164,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "${TABLE_PREFIX}_${FEATURE_SNAKE}")
+@Table(name = "${FEATURE_SNAKE}")
 public class ${FEATURE_PASCAL}Entity extends BaseEntity {
 
     @Id

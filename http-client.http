@@ -446,4 +446,9 @@ Authorization: Bearer {{token}}
 GET {{base_url}}/performances/customer-stats
 Authorization: Bearer {{token}}
 
+###
+GET {{base_url}}/transactions
+Authorization: Bearer {{token}}
+
+
 

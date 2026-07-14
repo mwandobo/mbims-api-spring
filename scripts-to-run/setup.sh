@@ -47,8 +47,8 @@ fi
 
 APP_NAME=$(echo "$MAIN_CLASS" | tr '[:upper:]' '[:lower:]')
 
-OLD_TABLE_PREFIX="${OLD_PACKAGE##*.}"
-NEW_TABLE_PREFIX="${NEW_PACKAGE##*.}"
+#OLD_TABLE_PREFIX="${OLD_PACKAGE##*.}"
+#NEW_TABLE_PREFIX="${NEW_PACKAGE##*.}"
 
 echo "✅ Detected:"
 echo "   Old Package : $OLD_PACKAGE"
@@ -56,8 +56,8 @@ echo "   Old Main Class : $OLD_MAIN_CLASS"
 echo "   New Package : $NEW_PACKAGE"
 echo "   New Main Class : $MAIN_CLASS"
 echo "   App Name : $APP_NAME"
-echo "   Old Table Prefix : $OLD_TABLE_PREFIX"
-echo "   New Table Prefix : $NEW_TABLE_PREFIX"
+#echo "   Old Table Prefix : $OLD_TABLE_PREFIX"
+#echo "   New Table Prefix : $NEW_TABLE_PREFIX"
 echo ""
 
 # Continue with the rest of the script
@@ -107,10 +107,10 @@ find "src/main/java/$PACKAGE_PATH" -name "$OLD_MAIN_CLASS.java" -exec bash -c '
 
 # Extract table prefixes from package names
 
-echo "🔄 Updating table prefixes..."
-
-find src -type f -name "*.java" \
-    -exec sed -i "s/\"${OLD_TABLE_PREFIX}_/\"${NEW_TABLE_PREFIX}_/g" {} +
+#echo "🔄 Updating table prefixes..."
+#
+#find src -type f -name "*.java" \
+#    -exec sed -i "s/\"${OLD_TABLE_PREFIX}_/\"${NEW_TABLE_PREFIX}_/g" {} +
 
 # 6. Update application.properties
 echo "🔄 Updating application name..."
