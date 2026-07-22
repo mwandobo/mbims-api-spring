@@ -447,7 +447,11 @@ GET {{base_url}}/performances/customer-stats
 Authorization: Bearer {{token}}
 
 ###
-GET {{base_url}}/transactions
+GET {{base_url}}/transactions?customerId=168
+Authorization: Bearer {{token}}
+
+###
+GET {{base_url}}/administration/employees
 Authorization: Bearer {{token}}
 
 
