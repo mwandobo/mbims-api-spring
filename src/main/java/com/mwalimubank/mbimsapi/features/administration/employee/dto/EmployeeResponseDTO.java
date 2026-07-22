@@ -12,7 +12,6 @@ public class EmployeeResponseDTO {
     private String id;
     private String name;
     private String createdAt;
-    private String updatedAt;
     private String gender;
 
     private static final DateTimeFormatter FORMATTER =
@@ -41,7 +40,6 @@ public class EmployeeResponseDTO {
                         : null
         );
         dto.setGender(getGender(entity.getSex()));
-
         return dto;
     }
 
