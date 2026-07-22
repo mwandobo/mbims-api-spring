@@ -25,31 +25,68 @@ public class EmployeeService {
     private final CurrentUserService currentUserService;
 
 
-    public PagedResponse<EmployeeResponseDTO> findAll(PaginationRequest pagination, String search) {
-        Page<Object[]> page = repository.findAllActiveEICEmployees(pagination.toPageable());
+//    public PagedResponse<EmployeeResponseDTO> findAll(PaginationRequest pagination, String search) {
+//        Page<Object[]> page = repository.findAllActiveEICEmployees(pagination.toPageable());
+//
+//        List<EmployeeResponseDTO> dtos = page.getContent().stream()
+//                .map(row -> {
+//                    EmployeeResponseDTO dto = new EmployeeResponseDTO();
+////                    dto.setReportingDate((String) row[0]);
+//                    dto.setName((String) row[0]);
+//                    dto.setGender((String) row[1]);
+//                    dto.setCreatedAt((String) row[3]);
+//                    dto.setId((String) row[2]);
+//
+//                    return dto;
+//                })
+//                .toList();
+//
+//        return new PagedResponse<>(dtos,
+//                new PaginationDto(page.getTotalElements(), page.getNumber() + 1, page.getSize(), page.getTotalPages()),
+//                false);
+//    }
 
-        List<EmployeeResponseDTO> dtos = page.getContent().stream()
-                .map(row -> {
-                    EmployeeResponseDTO dto = new EmployeeResponseDTO();
-//                    dto.setReportingDate((String) row[0]);
-                    dto.setName((String) row[0]);
-                    dto.setGender((String) row[1]);
-                    dto.setCreatedAt((String) row[3]);
-                    dto.setId((String) row[2]);
+public PagedResponse<EmployeeResponseDTO> findAll(PaginationRequest pagination, String search) {
 
-                    return dto;
-                })
-                .toList();
+    Page<Object[]> page;
 
-        return new PagedResponse<>(dtos,
-                new PaginationDto(page.getTotalElements(), page.getNumber() + 1, page.getSize(), page.getTotalPages()),
-                false);
+    if (search == null || search.trim().isEmpty()) {
+        page = repository.findAllActiveEICEmployees(pagination.toPageable());
+    } else {
+        page = repository.findAllActiveEICEmployeesWithSearch(search.trim(), pagination.toPageable());
     }
 
-    @Transactional
-    public EmployeeResponseDTO create(CreateEmployeeDTO request) {
-        EmployeeEntity entity = new EmployeeEntity();
-        EmployeeEntity saved = repository.save(entity);
-        return EmployeeResponseDTO.fromEntity(saved);
+    List<EmployeeResponseDTO> dtos = page.getContent().stream()
+            .map(row -> {
+                EmployeeResponseDTO dto = new EmployeeResponseDTO();
+                dto.setName(getAsString(row, 0));
+                dto.setGender(getAsString(row, 1));
+                dto.setId(getAsString(row, 2));
+                dto.setCreatedAt(getAsString(row, 3));
+                // Add more fields as needed
+                return dto;
+            })
+            .toList();
+
+    return new PagedResponse<>(
+            dtos,
+            new PaginationDto(
+                    page.getTotalElements(),
+                    page.getNumber() + 1,
+                    page.getSize(),
+                    page.getTotalPages()
+            ),
+            false
+    );
+}
+
+    // Safe string converter
+    private String getAsString(Object[] row, int index) {
+        if (row == null || index >= row.length || row[index] == null) {
+            return null;
+        }
+        return row[index].toString();
     }
+
+
 }

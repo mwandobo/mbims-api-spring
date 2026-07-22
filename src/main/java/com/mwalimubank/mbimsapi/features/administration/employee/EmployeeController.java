@@ -23,10 +23,10 @@ public class EmployeeController {
         return service.findAll(pagination, search);
     }
 
-    @PostMapping
-    public EmployeeResponseDTO create(@RequestBody CreateEmployeeDTO request) {
-        return service.create(request);
-    }
+//    @PostMapping
+//    public EmployeeResponseDTO create(@RequestBody CreateEmployeeDTO request) {
+//        return service.create(request);
+//    }
 
 //    @GetMapping("/{id}")
 //    public ApprovalAwareDTO<EmployeeResponseDTO> findOne(@PathVariable Long id) {
