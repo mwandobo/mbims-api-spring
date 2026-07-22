@@ -56,13 +56,13 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, String
               AND be.EMPL_STATUS = 1
               AND be.STAFF_NO LIKE 'EIC%'
 AND (
-          UPPER(be.FIRST_NAME) LIKE UPPER('%' || :search || '%')
-          OR UPPER(be.FATHER_NAME) LIKE UPPER('%' || :search || '%')
-          OR UPPER(be.LAST_NAME) LIKE UPPER('%' || :search || '%')
-          OR UPPER(be.STAFF_NO) LIKE UPPER('%' || :search || '%')
+          UPPER(be.FIRST_NAME) LIKE UPPER('%' || :q || '%')
+          OR UPPER(be.FATHER_NAME) LIKE UPPER('%' || :q || '%')
+          OR UPPER(be.LAST_NAME) LIKE UPPER('%' || :q || '%')
+          OR UPPER(be.STAFF_NO) LIKE UPPER('%' || :q || '%')
       )
             """, nativeQuery = true)
-    Page<Object[]> findAllActiveEICEmployeesWithSearch(@Param("search") String search, Pageable pageable);
+    Page<Object[]> findAllActiveEICEmployeesWithSearch(@Param("q") String q, Pageable pageable);
 
 
     }

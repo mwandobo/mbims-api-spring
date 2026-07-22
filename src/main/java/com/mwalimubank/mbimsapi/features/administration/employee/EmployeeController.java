@@ -19,8 +19,8 @@ public class EmployeeController {
     @GetMapping
     public PagedResponse<EmployeeResponseDTO> findAll(
             PaginationRequest pagination,
-            @RequestParam(required = false) String search) {
-        return service.findAll(pagination, search);
+            @RequestParam(required = false) String q) {
+        return service.findAll(pagination, q);
     }
 
 //    @PostMapping
