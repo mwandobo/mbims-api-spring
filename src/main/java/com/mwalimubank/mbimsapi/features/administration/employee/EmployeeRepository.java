@@ -65,4 +65,20 @@ AND (
     Page<Object[]> findAllActiveEICEmployeesWithSearch(@Param("q") String q, Pageable pageable);
 
 
+    @Query(value = """
+    SELECT 
+        TRIM(
+            COALESCE(TRIM(be.FIRST_NAME), '') ||
+            CASE WHEN TRIM(COALESCE(be.FATHER_NAME, '')) <> '' THEN ' ' || TRIM(be.FATHER_NAME) ELSE '' END ||
+            CASE WHEN TRIM(COALESCE(be.LAST_NAME, '')) <> '' THEN ' ' || TRIM(be.LAST_NAME) ELSE '' END
+        ) AS empName,
+        CASE WHEN be.SEX = 'M' THEN 'Male' WHEN be.SEX = 'F' THEN 'Female' ELSE 'Not Applicable' END AS gender,
+        be.STAFF_NO AS staffNo,
+        VARCHAR_FORMAT(be.TMSTAMP, 'DD/MM/YYYY') AS createdDate
+    FROM BANKEMPLOYEE be
+    WHERE be.STAFF_NO = :id
+    """, nativeQuery = true)
+    Optional<Object[]> findEmployeeById(@Param("id") String id);
+
+
     }

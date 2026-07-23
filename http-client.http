@@ -451,7 +451,7 @@ GET {{base_url}}/transactions?customerId=168
 Authorization: Bearer {{token}}
 
 ###
-GET {{base_url}}/administration/employees?page=1&search=mbise
+GET {{base_url}}/administration/employees/EIC648
 Authorization: Bearer {{token}}
 
 

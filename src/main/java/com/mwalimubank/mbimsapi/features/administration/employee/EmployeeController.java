@@ -23,25 +23,8 @@ public class EmployeeController {
         return service.findAll(pagination, q);
     }
 
-//    @PostMapping
-//    public EmployeeResponseDTO create(@RequestBody CreateEmployeeDTO request) {
-//        return service.create(request);
-//    }
-
-//    @GetMapping("/{id}")
-//    public ApprovalAwareDTO<EmployeeResponseDTO> findOne(@PathVariable Long id) {
-//        return service.findOne(id);
-//    }
-//
-//    @PatchMapping("/{id}")
-//    public EmployeeResponseDTO update(@PathVariable Long id, @RequestBody CreateEmployeeDTO request) {
-//        return service.update(id, request);
-//    }
-//
-//    @DeleteMapping("/{id}")
-//    public ApiResponse<Void> delete(@PathVariable Long id,
-//                                    @RequestParam(name = "soft", defaultValue = "false") boolean soft) {
-//        service.delete(id, soft);
-//        return ApiResponse.success(null);
-//    }
+    @GetMapping("/{id}")
+    public EmployeeResponseDTO findOne(@PathVariable String id) {
+        return service.findOne(id);
+    }
 }
