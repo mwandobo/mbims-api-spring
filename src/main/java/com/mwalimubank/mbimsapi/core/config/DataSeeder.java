@@ -135,10 +135,17 @@ public class DataSeeder {
                     new PermissionDef("transaction_read", "View Transaction"),
                     new PermissionDef("transaction_update", "Edit Transaction"),
                     new PermissionDef("transaction_delete", "Delete Transaction")
+            )),
+                  new PermissionGroup("unit", List.of(
+            new PermissionDef("unit_create", "Create Unit"),
+                    new PermissionDef("unit_read", "View Unit"),
+                    new PermissionDef("unit_update", "Edit Unit"),
+                    new PermissionDef("unit_delete", "Delete Unit")
             ))
 
 
-            // 👉 continue copying ALL groups from NestJS
+
+                    // 👉 continue copying ALL groups from NestJS
     );
 
 

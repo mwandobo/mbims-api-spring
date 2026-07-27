@@ -63,65 +63,6 @@ public class EmployeeService {
     }
 
 
-//    public EmployeeResponseDTO findOne(String id) {
-//        Object[] row = repository.findEmployeeById(id)
-//                .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
-//
-//        EmployeeResponseDTO dto = new EmployeeResponseDTO();
-//        dto.setName(getAsString(row, 0));
-//        dto.setGender(getAsString(row, 1));
-//        dto.setId(getAsString(row, 2));
-//        dto.setCreatedAt(getAsString(row, 3));
-//
-//        return dto;
-//    }
-
-
-//    public EmployeeResponseDTO findOne(String id) {
-//        log.info("Finding employee with ID: {}", id);
-//
-//        Object[] row = repository.findEmployeeById(id)
-//                .orElseThrow(() -> {
-//                    log.warn("Employee not found with id: {}", id);
-//                    return new RuntimeException("Employee not found with id: " + id);
-//                });
-//
-//        EmployeeResponseDTO dto = new EmployeeResponseDTO();
-//
-//        dto.setName(getAsString(row, 0));
-//        dto.setGender(getAsString(row, 1));
-//        dto.setId(getAsString(row, 2));
-//        dto.setCreatedAt(getAsString(row, 3));
-//
-//        log.info("Employee found: ID={}, Name={}", dto.getId(), dto.getName());
-//
-//        return dto;
-//    }
-
-//
-//    public EmployeeResponseDTO findOne(String id) {
-//        log.info("Finding employee with ID: {}", id);
-//
-//        Object[] row = repository.findEmployeeById(id)
-//                .orElseThrow(() -> {
-//                    log.warn("Employee not found with id: {}", id);
-//                    return new RuntimeException("Employee not found with id: " + id);
-//                });
-//
-//        EmployeeResponseDTO dto = new EmployeeResponseDTO();
-//
-//        // Correct indices based on your SELECT order
-//        dto.setName(getAsString(row, 0));      // empName
-//        dto.setGender(getAsString(row, 1));    // gender
-//        dto.setId(getAsString(row, 2));        // staffNo
-//        dto.setCreatedAt(getAsString(row, 3)); // createdDate
-//
-//        log.info("Employee found successfully: ID={}, Name={}", dto.getId(), dto.getName());
-//
-//        return dto;
-//    }
-
-
     public EmployeeResponseDTO findOne(String id) {
         log.info("=== findOne START ===");
         log.info("Searching for ID: {}", id);

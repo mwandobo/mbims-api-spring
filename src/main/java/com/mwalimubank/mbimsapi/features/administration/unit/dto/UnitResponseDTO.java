@@ -14,11 +14,13 @@ public class UnitResponseDTO {
     private String createdAt;
     private String updatedAt;
 
+
     public static UnitResponseDTO fromEntity(UnitEntity entity) {
         UnitResponseDTO dto = new UnitResponseDTO();
         dto.setId(entity.getId());
         dto.setName(entity.getName());
-        dto.setDescription(entity.getDescription());
+        dto.setCode(entity.getCode());
+        dto.setManager(   entity.getDescription());
         dto.setCreatedAt(entity.getCreatedAt() != null ? entity.getCreatedAt().toString() : null);
         dto.setUpdatedAt(entity.getUpdatedAt() != null ? entity.getUpdatedAt().toString() : null);
         return dto;

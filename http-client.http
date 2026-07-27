@@ -321,7 +321,7 @@ DELETE {{base_url}}/asset-categories/1
 Authorization: Bearer {{token}}
 
 ###
-GET {{base_url}}/fetch-data/departments
+GET {{base_url}}/fetch-data/employees
 Authorization: Bearer {{token}}
 
 ### FEATURE: positions
@@ -453,6 +453,25 @@ Authorization: Bearer {{token}}
 ###
 GET {{base_url}}/administration/employees/EIC648
 Authorization: Bearer {{token}}
+
+
+###
+GET {{base_url}}/administration/units
+Authorization: Bearer {{token}}
+
+
+
+
+###
+POST {{base_url}}/administration/units
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Sample Name Edited",
+  "manager": "EIC91",
+  "code": "EIC91"
+}
 
 
 
