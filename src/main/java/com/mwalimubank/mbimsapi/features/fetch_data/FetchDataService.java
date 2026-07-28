@@ -3,7 +3,8 @@ package com.mwalimubank.mbimsapi.features.fetch_data;
 import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
 import com.mwalimubank.mbimsapi.features.administration.department.DepartmentRepository;
 import com.mwalimubank.mbimsapi.features.administration.department.dto.DepartmentResponseDTO;
-import com.mwalimubank.mbimsapi.features.administration.employee.EmployeeRepository;
+import com.mwalimubank.mbimsapi.features.administration.employee.entity.EmployeeEntity;
+import com.mwalimubank.mbimsapi.features.administration.employee.repository.EmployeeRepository;
 import com.mwalimubank.mbimsapi.features.administration.employee.dto.EmployeeResponseDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.SysApprovalResponseDTO;
 import com.mwalimubank.mbimsapi.features.approval.entity.SysApproval;
@@ -118,23 +119,13 @@ public class FetchDataService {
 
     public List<EmployeeResponseDTO> fetchEmployees() {
 
-        List<Object[]> employees = employeeRepository.findAllActiveManagers();
-
-
-        List<EmployeeResponseDTO> dtos = employees.stream()
-                .map(row -> {
-                    EmployeeResponseDTO dto = new EmployeeResponseDTO();
-                    dto.setName(getAsString(row, 0));
-                    dto.setGender(getAsString(row, 1));
-//                    dto.setId(getAsString(row, 2));
-                    dto.setCreatedAt(getAsString(row, 3));
-                    // Add more fields as needed
-                    return dto;
-                })
-                .toList();
-
-        return dtos;
-
+        return fetchData(
+                employeeRepository.findAll(),
+                EmployeeEntity.class.getSimpleName(),
+                EmployeeEntity::getId,
+                EmployeeResponseDTO::fromEntity,
+                EmployeeResponseDTO::setApprovalStatus
+        );
     }
 
 
@@ -144,13 +135,4 @@ public class FetchDataService {
         }
         return row[index].toString();
     }
-
-
-
-
-
-
-
-
-
 }

@@ -1,4 +1,4 @@
-package com.mwalimubank.mbimsapi.features.administration.employee;
+package com.mwalimubank.mbimsapi.features.administration.employee.repository;
 
 import com.mwalimubank.mbimsapi.features.administration.employee.entity.EmployeeEntity;
 import org.springframework.data.domain.Page;
@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface EmployeeRepository extends JpaRepository<EmployeeEntity, String> {
+public interface EmployeeFromBankRepository extends JpaRepository<EmployeeEntity, String> {
 
 
 
@@ -104,6 +104,5 @@ AND (
     WHERE be.STAFF_NO = :id
     """, nativeQuery = true)
     Optional<Object[]> findEmployeeById(@Param("id") String id);
-
 
     }

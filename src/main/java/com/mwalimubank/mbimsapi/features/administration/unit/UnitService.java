@@ -1,10 +1,9 @@
 package com.mwalimubank.mbimsapi.features.administration.unit;
 
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
-import com.mwalimubank.mbimsapi.features.administration.employee.EmployeeRepository;
+import com.mwalimubank.mbimsapi.features.administration.employee.repository.EmployeeRepository;
 import com.mwalimubank.mbimsapi.features.administration.unit.dto.CreateUnitDTO;
 import com.mwalimubank.mbimsapi.features.administration.unit.dto.UnitResponseDTO;
-import com.mwalimubank.mbimsapi.features.administration.unit.UnitEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
@@ -88,24 +87,24 @@ public class UnitService {
 //                        System.out.println("=====================");
 //                    }
 
-                    if (entity.getManager() != null && !entity.getManager().isBlank()) {
-                        Object[] emp = employeeRepository.findEmployeeById(entity.getManager())
-                                .orElse(null);
-
-                        if (emp != null && emp.length > 0) {
-                            Object first = emp[0];
-
-                            if (first instanceof Object[]) {
-                                Object[] realRow = (Object[]) first;
-                                dto.setManager(realRow.length > 0 && realRow[0] != null
-                                        ? realRow[0].toString().trim()
-                                        : null);
-                            } else {
-                                // fallback if it's not nested
-                                dto.setManager(first != null ? first.toString().trim() : null);
-                            }
-                        }
-                    }
+//                    if (entity.getManager() != null && !entity.getManager().isBlank()) {
+//                        Object[] emp = employeeRepository.findEmployeeById(entity.getManager())
+//                                .orElse(null);
+//
+//                        if (emp != null && emp.length > 0) {
+//                            Object first = emp[0];
+//
+//                            if (first instanceof Object[]) {
+//                                Object[] realRow = (Object[]) first;
+//                                dto.setManager(realRow.length > 0 && realRow[0] != null
+//                                        ? realRow[0].toString().trim()
+//                                        : null);
+//                            } else {
+//                                // fallback if it's not nested
+//                                dto.setManager(first != null ? first.toString().trim() : null);
+//                            }
+//                        }
+//                    }
 
                     return dto;
                 })

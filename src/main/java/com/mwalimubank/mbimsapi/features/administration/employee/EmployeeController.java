@@ -2,6 +2,7 @@ package com.mwalimubank.mbimsapi.features.administration.employee;
 
 import com.mwalimubank.mbimsapi.core.dto.ApiResponse;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
+import com.mwalimubank.mbimsapi.features.administration.department.dto.DepartmentResponseDTO;
 import com.mwalimubank.mbimsapi.features.administration.employee.dto.CreateEmployeeDTO;
 import com.mwalimubank.mbimsapi.features.administration.employee.dto.EmployeeResponseDTO;
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
@@ -27,8 +28,16 @@ public class EmployeeController {
         return service.findAll(pagination, q);
     }
 
+//    @GetMapping("/{id}")
+//    public EmployeeResponseDTO findOne(@PathVariable Long id) {
+//        return service.findOne(id);
+//    }
+
+
     @GetMapping("/{id}")
-    public EmployeeResponseDTO findOne(@PathVariable String id) {
+    public ApprovalAwareDTO<EmployeeResponseDTO> findOne(
+            @PathVariable Long id
+    ) {
         return service.findOne(id);
     }
 

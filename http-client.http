@@ -479,5 +479,10 @@ POST {{base_url}}/administration/employees/sync
 Authorization: Bearer {{token}}
 
 
+###
+GET {{base_url}}/administration/employees
+Authorization: Bearer {{token}}
+
+
 
 
