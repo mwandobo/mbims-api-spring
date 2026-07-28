@@ -1,6 +1,9 @@
-package com.mwalimubank.mbimsapi.features.administration.employee;
+package com.mwalimubank.mbimsapi.features.administration.employee.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -8,17 +11,17 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(schema = "profits", name = "bankemployee")
-public class EmployeeEntity   {
+public class EmployeeFromBankEntity {
 
     @Id
     @Column(name = "ID", columnDefinition = "CHAR(8)")
     private String id;
 
     @Column(name = "FIRST_NAME", columnDefinition = "CHAR(40)")
-    private String fatherName;
+    private String firstName ;
 
     @Column(name = "FATHER_NAME", columnDefinition = "VARCHAR(20)")
-    private String firstName;
+    private String fatherName;
 
     @Column(name = "LAST_NAME", columnDefinition = "VARCHAR(20)")
     private String lastName;

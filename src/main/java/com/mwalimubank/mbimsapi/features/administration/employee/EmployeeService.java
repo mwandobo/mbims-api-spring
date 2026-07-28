@@ -1,21 +1,15 @@
 package com.mwalimubank.mbimsapi.features.administration.employee;
 
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
-import com.mwalimubank.mbimsapi.features.administration.employee.dto.CreateEmployeeDTO;
 import com.mwalimubank.mbimsapi.features.administration.employee.dto.EmployeeResponseDTO;
-import com.mwalimubank.mbimsapi.features.administration.employee.EmployeeEntity;
-import com.mwalimubank.mbimsapi.features.customer.dto.CustomerResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
 import com.mwalimubank.mbimsapi.core.dto.PaginationDto;
 import com.mwalimubank.mbimsapi.features.approval.util.ApprovalStatusUtil;
 import com.mwalimubank.mbimsapi.core.services.CurrentUserService;
-import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
 
 import java.util.*;
 
@@ -43,7 +37,7 @@ public class EmployeeService {
                     EmployeeResponseDTO dto = new EmployeeResponseDTO();
                     dto.setName(getAsString(row, 0));
                     dto.setGender(getAsString(row, 1));
-                    dto.setId(getAsString(row, 2));
+//                    dto.setId(getAsString(row, 2));
                     dto.setCreatedAt(getAsString(row, 3));
                     // Add more fields as needed
                     return dto;
@@ -85,7 +79,7 @@ public class EmployeeService {
 
         dto.setName(getAsString(row, 0));
         dto.setGender(getAsString(row, 1));
-        dto.setId(getAsString(row, 2));
+//        dto.setId(getAsString(row, 2));
         dto.setCreatedAt(getAsString(row, 3));
 
         log.info("Final DTO - Name: {}, Gender: {}, ID: {}", dto.getName(), dto.getGender(), dto.getId());

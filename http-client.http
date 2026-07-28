@@ -474,4 +474,10 @@ Content-Type: application/json
 }
 
 
+###
+POST {{base_url}}/administration/employees/sync
+Authorization: Bearer {{token}}
+
+
+
 

@@ -1,6 +1,6 @@
 package com.mwalimubank.mbimsapi.features.administration.employee.dto;
 
-import com.mwalimubank.mbimsapi.features.administration.employee.EmployeeEntity;
+import com.mwalimubank.mbimsapi.features.administration.employee.entity.EmployeeEntity;
 import lombok.Data;
 
 import java.time.format.DateTimeFormatter;
@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 @Data
 public class EmployeeResponseDTO {
-    private String id;
+    private Long id;
     private String name;
     private String createdAt;
     private String gender;
@@ -21,25 +21,9 @@ public class EmployeeResponseDTO {
         EmployeeResponseDTO dto = new EmployeeResponseDTO();
         dto.setId(entity.getId());
 
-        dto.setName(
-                String.join(" ",
-                        Stream.of(
-                                        entity.getFirstName(),
-                                        entity.getFatherName(),
-                                        entity.getLastName()
-                                )
-                                .filter(Objects::nonNull)
-                                .map(String::trim)
-                                .filter(s -> !s.isEmpty())
-                                .toArray(String[]::new)
-                )
-        );
-        dto.setCreatedAt(
-                entity.getCreatedAt() != null
-                        ? entity.getCreatedAt().format(FORMATTER)
-                        : null
-        );
-        dto.setGender(getGender(entity.getSex()));
+        dto.setName(entity.getName());
+        dto.setCreatedAt( entity.getCreatedAt().toString() );
+        dto.setGender(getGender(entity.getGender()));
         return dto;
     }
 

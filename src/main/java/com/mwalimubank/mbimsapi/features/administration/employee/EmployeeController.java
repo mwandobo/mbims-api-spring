@@ -7,7 +7,10 @@ import com.mwalimubank.mbimsapi.features.administration.employee.dto.EmployeeRes
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/administration/employees")
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class EmployeeController {
 
     private final EmployeeService service;
+    private final EmployeeSyncService employeeSyncService;
 
     @GetMapping
     public PagedResponse<EmployeeResponseDTO> findAll(
@@ -26,5 +30,14 @@ public class EmployeeController {
     @GetMapping("/{id}")
     public EmployeeResponseDTO findOne(@PathVariable String id) {
         return service.findOne(id);
+    }
+
+    @PostMapping("/sync")
+    public ResponseEntity<?> syncEmployees() {
+        int affected = employeeSyncService.syncEmployees();
+        return ResponseEntity.ok(Map.of(
+                "message", "Employee sync completed successfully",
+                "affectedRows", affected
+        ));
     }
 }

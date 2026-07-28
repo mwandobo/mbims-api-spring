@@ -1,5 +1,6 @@
 package com.mwalimubank.mbimsapi.features.administration.employee;
 
+import com.mwalimubank.mbimsapi.features.administration.employee.entity.EmployeeEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

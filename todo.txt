@@ -12,3 +12,11 @@ in generate property
  getEntitySpecification should be reusable
  role assign recheck
 
+
+ 27/07/2026
+
+ create a employee unit table and store employee id and unit code
+ one employee belongs to one unit until otherwise
+
+
+
