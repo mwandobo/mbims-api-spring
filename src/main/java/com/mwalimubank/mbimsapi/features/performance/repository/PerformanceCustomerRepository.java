@@ -1,6 +1,6 @@
 package com.mwalimubank.mbimsapi.features.performance.repository;
 
-import com.mwalimubank.mbimsapi.features.customer.CustomerEntity;
+import com.mwalimubank.mbimsapi.features.customer.entity.CustomerEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;

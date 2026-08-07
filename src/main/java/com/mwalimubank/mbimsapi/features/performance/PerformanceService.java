@@ -1,7 +1,7 @@
 package com.mwalimubank.mbimsapi.features.performance;
 
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
-import com.mwalimubank.mbimsapi.features.customer.CustomerEntity;
+import com.mwalimubank.mbimsapi.features.customer.entity.CustomerEntity;
 import com.mwalimubank.mbimsapi.features.performance.dto.CreatePerformanceDTO;
 import com.mwalimubank.mbimsapi.features.performance.dto.CustomerStatsResponseDTO;
 import com.mwalimubank.mbimsapi.features.performance.dto.CustomerStatusDTO;

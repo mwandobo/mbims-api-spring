@@ -1,14 +1,17 @@
-package com.mwalimubank.mbimsapi.features.customer;
+package com.mwalimubank.mbimsapi.features.customer.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Data;
-import java.time.LocalDate;   // better than String for dates
+
 import java.time.LocalDateTime;
 
 @Data
 @Entity
 @Table(schema = "profits", name = "customer")
-public class CustomerEntity {
+public class CustomerFromBankEntity {
 
     @Id
     @Column(name = "cust_id")

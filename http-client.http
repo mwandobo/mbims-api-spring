@@ -484,5 +484,21 @@ GET {{base_url}}/administration/employees
 Authorization: Bearer {{token}}
 
 
+###
+GET {{base_url}}/administration/employees
+Authorization: Bearer {{token}}
+
+
+
+###
+POST {{base_url}}/customers/sync
+Authorization: Bearer {{token}}
+
+###
+POST {{base_url}}/customers/sync
+Authorization: Bearer {{token}}
+
+
+
 
 
