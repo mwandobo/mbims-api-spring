@@ -1,10 +1,10 @@
 package com.mwalimubank.mbimsapi.features.transaction.dto;
 
-import com.mwalimubank.mbimsapi.features.transaction.entity.TransactionEntity;
+import com.mwalimubank.mbimsapi.features.transaction.entity.TransactionFromBankEntity;
 import lombok.Data;
 
 @Data
-public class TransactionResponseDTO {
+public class TransactionFromBankResponseDTO {
     private long id;
     private String customerName;
     private String channel;
@@ -15,8 +15,8 @@ public class TransactionResponseDTO {
     private String createdAt;
     private String updatedAt;
 
-    public static TransactionResponseDTO fromEntity(TransactionEntity entity) {
-        TransactionResponseDTO dto = new TransactionResponseDTO();
+    public static TransactionFromBankResponseDTO fromEntity(TransactionFromBankEntity entity) {
+        TransactionFromBankResponseDTO dto = new TransactionFromBankResponseDTO();
 //        dto.setName(entity.getId());
 //        dto.setId(entity.getId());
 //        dto.setName(entity.getName());
