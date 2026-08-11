@@ -26,6 +26,7 @@ public class TransactionService {
 
     public PagedResponse<TransactionResponseDTO> findAll(PaginationRequest pagination, String search) {
         Specification<TransactionEntity> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
+
         // Add search logic here if needed
 
         Page<TransactionEntity> page = repository.findAll(spec, pagination.toPageable());

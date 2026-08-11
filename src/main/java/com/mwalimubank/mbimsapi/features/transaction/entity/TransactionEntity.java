@@ -1,6 +1,8 @@
 package com.mwalimubank.mbimsapi.features.transaction.entity;
 
 import com.mwalimubank.mbimsapi.core.entity.BaseEntity;
+import com.mwalimubank.mbimsapi.features.approval.entity.SysApproval;
+import com.mwalimubank.mbimsapi.features.customer.entity.CustomerEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -26,8 +28,8 @@ public class TransactionEntity extends BaseEntity {
     @Column(name = "line_num")
     private Short lineNum;          // add this
 
-    @Column(name = "customer_id")
-    private String customerId;
+//    @Column(name = "customer_id")
+//    private String customerId;
 
     @Column(name = "trx_date")
     private LocalDate trxDate;      // prefer LocalDate over java.util.Date
@@ -73,4 +75,8 @@ public class TransactionEntity extends BaseEntity {
 
     @Column(name = "sub_system")
     private String subSystem;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "customer_id")
+    private CustomerEntity customer;
 }
