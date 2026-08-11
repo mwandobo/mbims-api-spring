@@ -4,6 +4,8 @@ import com.mwalimubank.mbimsapi.core.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 
 @Data
@@ -15,57 +17,60 @@ public class TransactionEntity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column()
+    @Column(name = "unit_id")
     private Integer unitId;
 
-    @Column()
+    @Column(name = "user_code")
     private String userCode;
 
-    @Column()
+    @Column(name = "line_num")
+    private Short lineNum;          // add this
+
+    @Column(name = "customer_id")
     private String customerId;
 
-    @Column()
-    private Date trxDate;
+    @Column(name = "trx_date")
+    private LocalDate trxDate;      // prefer LocalDate over java.util.Date
 
-    @Column()
-    private Integer trxSNum;
+    @Column(name = "trx_snum")
+    private Long trxSNum;
 
-    @Column()
+    @Column(name = "trx_sn")
     private Integer trxSN;
 
-    @Column()
+    @Column(name = "trx_code")
     private Integer trxCode;
 
-    @Column()
+    @Column(name = "product_id")
     private Integer productId;
 
-    @Column()
-    private Integer accountNumber;
+    @Column(name = "account_number")
+    private Long accountNumber;     // or BigDecimal if you want precision
 
-    @Column()
-    private Integer dcAmount;
+    @Column(name = "dc_amount")
+    private BigDecimal dcAmount;    // better than Integer
 
-    @Column()
+    @Column(name = "fc_amount")
     private Integer fcAmount;
 
-    @Column()
+    @Column(name = "availability_date")
     private Date availabilityDate;
 
-    @Column()
-    private Date tmstamp;
+    @Column(name = "tmstamp")
+    private LocalDate tmstamp;
 
-    @Column()
+    @Column(name = "currency")
     private String currency;
 
-    @Column()
+    @Column(name = "trx_user_code")
     private String trxUserCode;
 
-    @Column()
+    @Column(name = "gl_account_code")
     private String glAccountCode;
 
-    @Column()
+    @Column(name = "justification")
     private String justification;
 
-    @Column()
-    private String subsystem;
+    @Column(name = "sub_system")
+    private String subSystem;
 }

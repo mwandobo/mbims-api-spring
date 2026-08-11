@@ -9,7 +9,9 @@ import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
 import com.mwalimubank.mbimsapi.features.transaction.entity.TransactionFromBankEntity;
 import com.mwalimubank.mbimsapi.features.transaction.service.TransactionFromBankService;
 import com.mwalimubank.mbimsapi.features.transaction.service.TransactionService;
+import com.mwalimubank.mbimsapi.features.transaction.service.TransactionSyncService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +22,7 @@ import java.util.List;
 public class TransactionController {
 
     private final TransactionService service;
+    private final TransactionSyncService transactionSyncService;
     private final TransactionFromBankService fromBankService;
 
     @GetMapping
@@ -49,6 +52,12 @@ public class TransactionController {
                                     @RequestParam(name = "soft", defaultValue = "false") boolean soft) {
         service.delete(id, soft);
         return ApiResponse.success(null);
+    }
+
+    @PostMapping("/sync")
+    public ResponseEntity<?> syncTransactions() {
+        transactionSyncService.syncTransactionsAsync();
+        return ResponseEntity.accepted().body("Transaction sync started");
     }
 
     @GetMapping("/by-customer/{id}")

@@ -503,6 +503,10 @@ Authorization: Bearer {{token}}
 GET {{base_url}}/transactions
 Authorization: Bearer {{token}}
 
+###
+POST {{base_url}}/transactions/sync
+Authorization: Bearer {{token}}
+
 
 
 
