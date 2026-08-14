@@ -81,3 +81,40 @@ context.put("year", Year.now().getValue());
         <br/>
     </div>
 </div>
+
+
+
+
+
+
+
+@Table(
+    name = "customer_address",
+    schema = "MBIMS",
+    uniqueConstraints = @UniqueConstraint(
+        name = "uk_customer_address_natural_key",
+        columnNames = {"customer_id", "serial_num"}
+    )
+)
+
+
+@Table(
+    name = "customer_category",
+    schema = "MBIMS",
+    uniqueConstraints = @UniqueConstraint(
+        name = "uk_customer_category_natural_key",
+        columnNames = {"customer_id", "category"}
+    )
+)
+
+
+@Table(
+    name = "generic_parameter",
+    schema = "MBIMS",
+    uniqueConstraints = @UniqueConstraint(
+        name = "uk_generic_parameter_code",
+        columnNames = {"parameter_code"}
+    )
+)
+
+

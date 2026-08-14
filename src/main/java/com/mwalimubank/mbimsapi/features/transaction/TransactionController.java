@@ -6,8 +6,6 @@ import com.mwalimubank.mbimsapi.features.transaction.dto.CreateTransactionDTO;
 import com.mwalimubank.mbimsapi.features.transaction.dto.TransactionResponseDTO;
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
-import com.mwalimubank.mbimsapi.features.transaction.entity.TransactionFromBankEntity;
-import com.mwalimubank.mbimsapi.features.transaction.service.TransactionFromBankService;
 import com.mwalimubank.mbimsapi.features.transaction.service.TransactionService;
 import com.mwalimubank.mbimsapi.features.transaction.service.TransactionSyncService;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +21,6 @@ public class TransactionController {
 
     private final TransactionService service;
     private final TransactionSyncService transactionSyncService;
-    private final TransactionFromBankService fromBankService;
 
     @GetMapping
     public PagedResponse<TransactionResponseDTO> findAll(
@@ -59,11 +56,4 @@ public class TransactionController {
         transactionSyncService.syncTransactionsAsync();
         return ResponseEntity.accepted().body("Transaction sync started");
     }
-
-    @GetMapping("/by-customer/{id}")
-    public List<TransactionFromBankEntity> findByCustomerId(
-            @RequestParam long customerId) {
-        return fromBankService.findUserTransaction(customerId);
-    }
-
 }
