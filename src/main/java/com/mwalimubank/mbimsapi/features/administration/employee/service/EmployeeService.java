@@ -1,6 +1,8 @@
 package com.mwalimubank.mbimsapi.features.administration.employee.service;
 
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
+import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
+import com.mwalimubank.mbimsapi.features.administration.department.DepartmentRepository;
 import com.mwalimubank.mbimsapi.features.administration.employee.dto.CreateEmployeeDTO;
 import com.mwalimubank.mbimsapi.features.administration.employee.dto.EmployeeResponseDTO;
 import com.mwalimubank.mbimsapi.features.administration.employee.entity.EmployeeEntity;
@@ -30,6 +32,7 @@ public class EmployeeService {
     private final UnitRepository unitRepository;
     private final ApprovalStatusUtil approvalStatusUtil;
     private final CurrentUserService currentUserService;
+    private final DepartmentRepository departmentRepository;
 
     public PagedResponse<EmployeeResponseDTO> findAll(
             PaginationRequest pagination,
@@ -142,11 +145,16 @@ public class EmployeeService {
                     });
         }
 
-        Optional<UnitEntity> unitEntity = unitRepository.findById(entity.getId());
+        Optional<UnitEntity> unitEntity = unitRepository.findById(request.getUnitId());
         unitEntity.ifPresent(entity::setUnit);
 
-        entity.setEmail(request.getName());
+        Optional<DepartmentEntity> department = departmentRepository.findById(entity.getId());
+        unitEntity.ifPresent(entity::setUnit);
 
+        entity.setEmail(request.getEmail());
+        entity.setFirstName(request.getFirstName());
+        entity.setLastName(request.getLastName());
+        entity.setMiddleName(request.getMiddleName());
         EmployeeEntity updatedEntity = repository.save(entity);
 
         return  EmployeeResponseDTO.fromEntity(updatedEntity);

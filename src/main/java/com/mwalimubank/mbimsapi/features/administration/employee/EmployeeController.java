@@ -1,6 +1,9 @@
 package com.mwalimubank.mbimsapi.features.administration.employee;
 
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
+import com.mwalimubank.mbimsapi.features.administration.department.dto.CreateDepartmentDTO;
+import com.mwalimubank.mbimsapi.features.administration.department.dto.DepartmentResponseDTO;
+import com.mwalimubank.mbimsapi.features.administration.employee.dto.CreateEmployeeDTO;
 import com.mwalimubank.mbimsapi.features.administration.employee.dto.EmployeeResponseDTO;
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
 import com.mwalimubank.mbimsapi.features.administration.employee.service.EmployeeService;
@@ -31,6 +34,14 @@ public class EmployeeController {
 //    public EmployeeResponseDTO findOne(@PathVariable Long id) {
 //        return service.findOne(id);
 //    }
+
+    @PatchMapping("/{id}")
+    public EmployeeResponseDTO update(
+            @PathVariable Long id,
+            @RequestBody CreateEmployeeDTO request
+    ) {
+        return service.update(id, request);
+    }
 
 
     @GetMapping("/{id}")

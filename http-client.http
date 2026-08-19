@@ -507,6 +507,10 @@ Authorization: Bearer {{token}}
 POST {{base_url}}/transactions/sync
 Authorization: Bearer {{token}}
 
+###
+POST {{base_url}}/administration/employees/sync
+Authorization: Bearer {{token}}
+
 
 
 

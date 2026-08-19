@@ -16,6 +16,9 @@ import java.util.Optional;
 public class EmployeeResponseDTO {
     private Long id;
     private String name;
+    private String firstName;
+    private String middleName;
+    private String LastName;
     private String staffNo;
     private String unit;
     private String department;
@@ -32,6 +35,9 @@ public class EmployeeResponseDTO {
         EmployeeResponseDTO dto = new EmployeeResponseDTO();
         dto.setId(entity.getId());
         dto.setName(entity.getName());
+        dto.setFirstName(entity.getFirstName());
+        dto.setMiddleName(entity.getMiddleName());
+        dto.setLastName(entity.getLastName());
         dto.setStaffNo(entity.getStaffNo());
         dto.setEmail(entity.getEmail());
         dto.setUnit(
@@ -65,5 +71,4 @@ public class EmployeeResponseDTO {
                 .toLocalDate()
                 .format(FORMATTER);
     }
-
 }

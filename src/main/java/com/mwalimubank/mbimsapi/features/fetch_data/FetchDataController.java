@@ -2,6 +2,7 @@ package com.mwalimubank.mbimsapi.features.fetch_data;
 
 import com.mwalimubank.mbimsapi.features.administration.department.dto.DepartmentResponseDTO;
 import com.mwalimubank.mbimsapi.features.administration.employee.dto.EmployeeResponseDTO;
+import com.mwalimubank.mbimsapi.features.administration.unit.dto.UnitResponseDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.SysApprovalResponseDTO;
 import com.mwalimubank.mbimsapi.features.asset_management.assetcategory.dto.AssetCategoryResponseDTO;
 import com.mwalimubank.mbimsapi.features.role.dto.RoleResponseDTO;
@@ -43,5 +44,10 @@ public class FetchDataController {
     @GetMapping("employees")
     public List<EmployeeResponseDTO> fetchEmployees(   ) {
         return service.fetchEmployees();
+    }
+
+    @GetMapping("units")
+    public List<UnitResponseDTO> fetchUnits(   ) {
+        return service.fetchUnits();
     }
 }

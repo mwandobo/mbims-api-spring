@@ -6,6 +6,9 @@ import com.mwalimubank.mbimsapi.features.administration.department.dto.Departmen
 import com.mwalimubank.mbimsapi.features.administration.employee.entity.EmployeeEntity;
 import com.mwalimubank.mbimsapi.features.administration.employee.repository.EmployeeRepository;
 import com.mwalimubank.mbimsapi.features.administration.employee.dto.EmployeeResponseDTO;
+import com.mwalimubank.mbimsapi.features.administration.unit.UnitEntity;
+import com.mwalimubank.mbimsapi.features.administration.unit.UnitRepository;
+import com.mwalimubank.mbimsapi.features.administration.unit.dto.UnitResponseDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.SysApprovalResponseDTO;
 import com.mwalimubank.mbimsapi.features.approval.entity.SysApproval;
 import com.mwalimubank.mbimsapi.features.approval.repository.SysApprovalRepository;
@@ -36,6 +39,7 @@ public class FetchDataService {
     private final SysApprovalRepository sysApprovalRepository;
     private final AssetCategoryRepository assetCategoryRepository;
     private final EmployeeRepository employeeRepository;
+    private final UnitRepository unitRepository;
 
 
     private <E, D> List<D> fetchData(
@@ -128,6 +132,15 @@ public class FetchDataService {
         );
     }
 
+    public List<UnitResponseDTO> fetchUnits() {
+        return fetchData(
+                unitRepository.findAll(),
+                UnitEntity.class.getSimpleName(),
+                UnitEntity::getId,
+                UnitResponseDTO::fromEntity,
+                UnitResponseDTO::setApprovalStatus
+        );
+    }
 
     private String getAsString(Object[] row, int index) {
         if (row == null || index >= row.length || row[index] == null) {
