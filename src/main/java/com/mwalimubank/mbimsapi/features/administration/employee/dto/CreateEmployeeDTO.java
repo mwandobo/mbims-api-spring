@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class CreateEmployeeDTO {
     private String name;
-    private String description;
+    private String email;
 }

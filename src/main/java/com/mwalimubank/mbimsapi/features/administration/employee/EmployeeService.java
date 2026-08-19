@@ -1,9 +1,12 @@
 package com.mwalimubank.mbimsapi.features.administration.employee;
 
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
+import com.mwalimubank.mbimsapi.features.administration.employee.dto.CreateEmployeeDTO;
 import com.mwalimubank.mbimsapi.features.administration.employee.dto.EmployeeResponseDTO;
 import com.mwalimubank.mbimsapi.features.administration.employee.entity.EmployeeEntity;
 import com.mwalimubank.mbimsapi.features.administration.employee.repository.EmployeeRepository;
+import com.mwalimubank.mbimsapi.features.administration.unit.UnitEntity;
+import com.mwalimubank.mbimsapi.features.administration.unit.UnitRepository;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +27,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class EmployeeService {
     private final EmployeeRepository repository;
+    private final UnitRepository unitRepository;
     private final ApprovalStatusUtil approvalStatusUtil;
     private final CurrentUserService currentUserService;
 
@@ -119,30 +123,34 @@ public class EmployeeService {
         );
     }
 
-//    @Transactional
-//    public EmployeeResponseDTO update(Long id, CreateEmployeeDTO request) {
-//        EmployeeEntity entity = repository.findById(id)
-//                .orElseThrow(() ->
-//                        new IllegalStateException(
-//                                "Employee not found with id: " + id
-//                        )
-//                );
-//
-//        repository.findByName(request.getName())
-//                .filter(existing -> !existing.getId().equals(id))
-//                .ifPresent(existing -> {
-//                    throw new IllegalStateException(
-//                            "Employee with name '" + request.getName() + "' already exists"
-//                    );
-//                });
-//
-//        entity.setName(request.getName());
-//        entity.setDescription(request.getDescription());
-//
-//        EmployeeEntity updatedEntity = repository.save(entity);
-//
-//        return  EmployeeResponseDTO.fromEntity(updatedEntity);
-//    }
+    @Transactional
+    public EmployeeResponseDTO update(Long id, CreateEmployeeDTO request) {
+        EmployeeEntity entity = repository.findById(id)
+                .orElseThrow(() ->
+                        new IllegalStateException(
+                                "Employee not found with id: " + id
+                        )
+                );
+
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            repository.findByEmail(request.getEmail())
+                    .filter(existing -> !existing.getId().equals(id))
+                    .ifPresent(existing -> {
+                        throw new IllegalStateException(
+                                "Employee with email '" + request.getEmail() + "' already exists"
+                        );
+                    });
+        }
+
+        Optional<UnitEntity> unitEntity = unitRepository.findById(entity.getId());
+        unitEntity.ifPresent(entity::setUnit);
+
+        entity.setEmail(request.getName());
+
+        EmployeeEntity updatedEntity = repository.save(entity);
+
+        return  EmployeeResponseDTO.fromEntity(updatedEntity);
+    }
 
     @Transactional
     public void delete(Long id, boolean soft) {

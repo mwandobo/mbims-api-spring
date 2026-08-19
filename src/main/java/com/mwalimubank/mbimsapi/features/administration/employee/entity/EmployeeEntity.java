@@ -1,6 +1,8 @@
 package com.mwalimubank.mbimsapi.features.administration.employee.entity;
 
 import com.mwalimubank.mbimsapi.core.entity.BaseEntity;
+import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
+import com.mwalimubank.mbimsapi.features.administration.position.PositionEntity;
 import com.mwalimubank.mbimsapi.features.administration.unit.UnitEntity;
 import com.mwalimubank.mbimsapi.features.user.UserEntity;
 import jakarta.persistence.*;
@@ -19,6 +21,15 @@ public class EmployeeEntity extends BaseEntity {
 
     @Column()
     private String name;
+
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "middle_name")
+    private String middleName;
+
+    @Column(name = "last_name")
+    private String lastName;
 
     @Column()
     private String gender;
@@ -39,4 +50,11 @@ public class EmployeeEntity extends BaseEntity {
     @JoinColumn(name = "unit_id")
     private UnitEntity unit;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "department_id")
+    private DepartmentEntity department;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "position_id")
+    private PositionEntity position;
 }

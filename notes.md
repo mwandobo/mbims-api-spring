@@ -53,7 +53,7 @@ to add property (normal)
 
 to add property (foreign key)
 
-    ./scripts-to-run/add-foreign-property.sh --feature position --name department_id --type Long --mandatory true --reference department --parent administration
+    ./scripts-to-run/add-foreign-property.sh --feature position --name department_id--mandatory true --reference department --parent administration
 
 to remove a feature
 
