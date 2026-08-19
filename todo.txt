@@ -18,5 +18,7 @@ in generate property
  create a employee unit table and store employee id and unit code
  one employee belongs to one unit until otherwise
 
+ check add foreign property as the package name failed to take from the store (path-to-package)
+
 
 

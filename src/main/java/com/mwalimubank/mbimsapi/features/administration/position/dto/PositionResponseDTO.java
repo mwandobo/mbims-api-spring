@@ -1,8 +1,8 @@
 package com.mwalimubank.mbimsapi.features.administration.position.dto;
 
+import com.mwalimubank.mbimsapi.features.administration.department.dto.DepartmentResponseDTO;
 import com.mwalimubank.mbimsapi.features.administration.position.PositionEntity;
 import lombok.Data;
-import com.mwalimubank.mbimsapi.features.department.dto.DepartmentResponseDTO;
 
 @Data
 public class PositionResponseDTO {
