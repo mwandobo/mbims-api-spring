@@ -15,8 +15,6 @@ public class GenericDetailResponseDTO {
     public static GenericDetailResponseDTO fromEntity(GenericDetailEntity entity) {
         GenericDetailResponseDTO dto = new GenericDetailResponseDTO();
         dto.setId(entity.getId());
-        dto.setName(entity.getName());
-        dto.setDescription(entity.getDescription());
         dto.setCreatedAt(entity.getCreatedAt() != null ? entity.getCreatedAt().toString() : null);
         dto.setUpdatedAt(entity.getUpdatedAt() != null ? entity.getUpdatedAt().toString() : null);
         return dto;

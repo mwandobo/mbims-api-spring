@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.Optional;
 
 public interface OtherIdRepository extends JpaRepository<OtherIdEntity, Long> {
-    Optional<OtherIdEntity> findByName(String name);
 
     Page<OtherIdEntity> findAll(Specification<OtherIdEntity> spec, Pageable pageable);
 

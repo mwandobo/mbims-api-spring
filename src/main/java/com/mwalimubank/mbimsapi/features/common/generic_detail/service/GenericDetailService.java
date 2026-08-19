@@ -44,8 +44,7 @@ public class GenericDetailService {
     @Transactional
     public GenericDetailResponseDTO create(CreateGenericDetailDTO request) {
         GenericDetailEntity entity = new GenericDetailEntity();
-        entity.setName(request.getName());
-        entity.setDescription(request.getDescription());
+
         GenericDetailEntity saved = repository.save(entity);
         return GenericDetailResponseDTO.fromEntity(saved);
     }
@@ -65,9 +64,6 @@ public class GenericDetailService {
     public GenericDetailResponseDTO update(Long id, CreateGenericDetailDTO request) {
         GenericDetailEntity entity = repository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("GenericDetail not found"));
-
-        entity.setName(request.getName());
-        entity.setDescription(request.getDescription());
 
         GenericDetailEntity updated = repository.save(entity);
         return GenericDetailResponseDTO.fromEntity(updated);

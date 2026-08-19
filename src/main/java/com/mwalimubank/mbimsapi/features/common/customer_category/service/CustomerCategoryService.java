@@ -44,8 +44,7 @@ public class CustomerCategoryService {
     @Transactional
     public CustomerCategoryResponseDTO create(CreateCustomerCategoryDTO request) {
         CustomerCategoryEntity entity = new CustomerCategoryEntity();
-        entity.setName(request.getName());
-        entity.setDescription(request.getDescription());
+
         CustomerCategoryEntity saved = repository.save(entity);
         return CustomerCategoryResponseDTO.fromEntity(saved);
     }
@@ -65,9 +64,6 @@ public class CustomerCategoryService {
     public CustomerCategoryResponseDTO update(Long id, CreateCustomerCategoryDTO request) {
         CustomerCategoryEntity entity = repository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("CustomerCategory not found"));
-
-        entity.setName(request.getName());
-        entity.setDescription(request.getDescription());
 
         CustomerCategoryEntity updated = repository.save(entity);
         return CustomerCategoryResponseDTO.fromEntity(updated);

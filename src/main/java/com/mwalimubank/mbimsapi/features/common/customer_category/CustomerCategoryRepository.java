@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.Optional;
 
 public interface CustomerCategoryRepository extends JpaRepository<CustomerCategoryEntity, Long> {
-    Optional<CustomerCategoryEntity> findByName(String name);
 
     Page<CustomerCategoryEntity> findAll(Specification<CustomerCategoryEntity> spec, Pageable pageable);
 

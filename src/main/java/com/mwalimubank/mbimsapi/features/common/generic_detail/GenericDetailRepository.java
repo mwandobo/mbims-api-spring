@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.Optional;
 
 public interface GenericDetailRepository extends JpaRepository<GenericDetailEntity, Long> {
-    Optional<GenericDetailEntity> findByName(String name);
 
     Page<GenericDetailEntity> findAll(Specification<GenericDetailEntity> spec, Pageable pageable);
 

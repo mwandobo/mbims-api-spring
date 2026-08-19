@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.Optional;
 
 public interface CustomerAddressRepository extends JpaRepository<CustomerAddressEntity, Long> {
-    Optional<CustomerAddressEntity> findByName(String name);
 
     Page<CustomerAddressEntity> findAll(Specification<CustomerAddressEntity> spec, Pageable pageable);
     @Modifying(clearAutomatically = true, flushAutomatically = true)

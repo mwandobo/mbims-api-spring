@@ -7,7 +7,7 @@ import com.mwalimubank.mbimsapi.features.common.other_id.dto.OtherIdResponseDTO;
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
 import com.mwalimubank.mbimsapi.features.common.other_id.service.OtherIdService;
-import com.mwalimubank.mbimsapi.features.customer.services.OtherIdSyncService;
+import com.mwalimubank.mbimsapi.features.common.other_id.service.OtherIdSyncService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

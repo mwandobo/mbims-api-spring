@@ -44,8 +44,6 @@ public class CustomerAddressService {
     @Transactional
     public CustomerAddressResponseDTO create(CreateCustomerAddressDTO request) {
         CustomerAddressEntity entity = new CustomerAddressEntity();
-        entity.setName(request.getName());
-        entity.setDescription(request.getDescription());
         CustomerAddressEntity saved = repository.save(entity);
         return CustomerAddressResponseDTO.fromEntity(saved);
     }
@@ -65,9 +63,6 @@ public class CustomerAddressService {
     public CustomerAddressResponseDTO update(Long id, CreateCustomerAddressDTO request) {
         CustomerAddressEntity entity = repository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("CustomerAddress not found"));
-
-        entity.setName(request.getName());
-        entity.setDescription(request.getDescription());
 
         CustomerAddressEntity updated = repository.save(entity);
         return CustomerAddressResponseDTO.fromEntity(updated);

@@ -15,8 +15,6 @@ public class CustomerCategoryResponseDTO {
     public static CustomerCategoryResponseDTO fromEntity(CustomerCategoryEntity entity) {
         CustomerCategoryResponseDTO dto = new CustomerCategoryResponseDTO();
         dto.setId(entity.getId());
-        dto.setName(entity.getName());
-        dto.setDescription(entity.getDescription());
         dto.setCreatedAt(entity.getCreatedAt() != null ? entity.getCreatedAt().toString() : null);
         dto.setUpdatedAt(entity.getUpdatedAt() != null ? entity.getUpdatedAt().toString() : null);
         return dto;

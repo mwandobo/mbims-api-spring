@@ -26,28 +26,6 @@ public class PerformanceController {
         return service.findAll(pagination, search);
     }
 
-    @PostMapping
-    public PerformanceResponseDTO create(@RequestBody CreatePerformanceDTO request) {
-        return service.create(request);
-    }
-
-    @GetMapping("/{id}")
-    public ApprovalAwareDTO<PerformanceResponseDTO> findOne(@PathVariable Long id) {
-        return service.findOne(id);
-    }
-
-    @PatchMapping("/{id}")
-    public PerformanceResponseDTO update(@PathVariable Long id, @RequestBody CreatePerformanceDTO request) {
-        return service.update(id, request);
-    }
-
-    @DeleteMapping("/{id}")
-    public ApiResponse<Void> delete(@PathVariable Long id,
-                                    @RequestParam(name = "soft", defaultValue = "false") boolean soft) {
-        service.delete(id, soft);
-        return ApiResponse.success(null);
-    }
-
     @GetMapping("/customer-stats")
     public  CustomerStatsResponseDTO findCustomers(
             PaginationRequest pagination,

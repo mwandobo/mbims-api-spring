@@ -46,76 +46,89 @@ public class PerformanceService {
         );
     }
 
-    @Transactional
-    public PerformanceResponseDTO create(CreatePerformanceDTO request) {
-        PerformanceEntity entity = new PerformanceEntity();
-        entity.setName(request.getName());
-        entity.setDescription(request.getDescription());
-        PerformanceEntity saved = repository.save(entity);
-        return PerformanceResponseDTO.fromEntity(saved);
-    }
 
-    public ApprovalAwareDTO<PerformanceResponseDTO> findOne(Long id) {
-        PerformanceEntity entity = repository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("Performance not found"));
-        return approvalStatusUtil.attachApprovalInfo(
-                PerformanceResponseDTO.fromEntity(entity),
-                entity.getId(),
-                PerformanceEntity.class.getSimpleName(),
-                currentUserService.getCurrentUserRoleId()
-        );
-    }
+
+
+
+//    public CustomerStatsResponseDTO findCustomers() {
+//        List<CustomerEntity> allCustomers = customerRepository.findAll();
+//        List<CustomerEntity> individualCustomers = customerRepository.findByCustType("1");
+//        List<CustomerEntity> corporateCustomers = customerRepository.findByCustType("2");
+//        List<CustomerEntity> corporateCustomersV1 = customerRepository.findByCustType("3");
+//
+//        // Combine corporate lists
+//        List<CustomerEntity> allCorporateCustomers = new ArrayList<>(corporateCustomers);
+//        allCorporateCustomers.addAll(corporateCustomersV1);
+//
+//        long totalAllCustomers = allCustomers.size();
+//        long totalIndividualCustomers =  individualCustomers.size();
+//        long totalCorporateCustomers = allCorporateCustomers.size();;
+//
+//        CustomerStatsResponseDTO customerStatsResponse = new CustomerStatsResponseDTO();
+//        customerStatsResponse.setTotalAllCustomers(totalAllCustomers);
+//        customerStatsResponse.setTotalIndividualCustomers(totalIndividualCustomers);
+//        customerStatsResponse.setTotalCorporateCustomers(totalCorporateCustomers);
+//
+//        customerStatsResponse.setAllCustomersAttrs(fetchCustomerStatus(allCustomers));
+//        customerStatsResponse.setIndividualCustomersAttrs(fetchCustomerStatus(individualCustomers));
+//        customerStatsResponse.setCorporateCustomersAttrs(fetchCustomerStatus(allCorporateCustomers));
+//
+//        return customerStatsResponse;
+//    }
+
 
     public CustomerStatsResponseDTO findCustomers() {
-        List<CustomerEntity> allCustomers = customerRepository.findAll();
-        List<CustomerEntity> individualCustomers = customerRepository.findByCustType("1");
-        List<CustomerEntity> corporateCustomers = customerRepository.findByCustType("2");
-        List<CustomerEntity> corporateCustomersV1 = customerRepository.findByCustType("3");
+        CustomerStatsResponseDTO dto = new CustomerStatsResponseDTO();
 
-        // Combine corporate lists
-        List<CustomerEntity> allCorporateCustomers = new ArrayList<>(corporateCustomers);
-        allCorporateCustomers.addAll(corporateCustomersV1);
+        long totalAll = customerRepository.count();
+        long totalIndividual = customerRepository.countByCustType("1");
+        long totalCorporate = customerRepository.countByCustType("2")
+                + customerRepository.countByCustType("3");
 
-        long totalAllCustomers = allCustomers.size();
-        long totalIndividualCustomers =  individualCustomers.size();
-        long totalCorporateCustomers = allCorporateCustomers.size();;
+        dto.setTotalAllCustomers(totalAll);
+        dto.setTotalIndividualCustomers(totalIndividual);
+        dto.setTotalCorporateCustomers(totalCorporate);
 
-        CustomerStatsResponseDTO customerStatsResponse = new CustomerStatsResponseDTO();
-        customerStatsResponse.setTotalAllCustomers(totalAllCustomers);
-        customerStatsResponse.setTotalIndividualCustomers(totalIndividualCustomers);
-        customerStatsResponse.setTotalCorporateCustomers(totalCorporateCustomers);
+//        dto.setAllCustomersAttrs(toStatusMap(customerRepository.countByStatus()));
+//        dto.setIndividualCustomersAttrs(toStatusMap(customerRepository.countByStatusAndCustType("1")));
+//        dto.setCorporateCustomersAttrs(toStatusMap(customerRepository.countByStatusCorporate()));
 
-        customerStatsResponse.setAllCustomersAttrs(fetchCustomerStatus(allCustomers));
-        customerStatsResponse.setIndividualCustomersAttrs(fetchCustomerStatus(individualCustomers));
-        customerStatsResponse.setCorporateCustomersAttrs(fetchCustomerStatus(allCorporateCustomers));
+        dto.setAllCustomersAttrs(toStatusDto(customerRepository.countByStatus()));
+        dto.setIndividualCustomersAttrs(toStatusDto(customerRepository.countByStatusAndCustType("1")));
+        dto.setCorporateCustomersAttrs(toStatusDto(customerRepository.countByStatusCorporate()));
 
-        return customerStatsResponse;
+        return dto;
     }
 
+//    private Map<String, Long> toStatusMap(List<Object[]> rows) {
+//        Map<String, Long> map = new HashMap<>();
+//        for (Object[] row : rows) {
+//            String status = row[0] != null ? row[0].toString() : "UNKNOWN";
+//            map.put(status, (Long) row[1]);
+//        }
+//        return map;
+//    }
 
-    @Transactional
-    public PerformanceResponseDTO update(Long id, CreatePerformanceDTO request) {
-        PerformanceEntity entity = repository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("Performance not found"));
+    private CustomerStatusDTO toStatusDto(List<Object[]> rows) {
+        CustomerStatusDTO dto = new CustomerStatusDTO();
 
-        entity.setName(request.getName());
-        entity.setDescription(request.getDescription());
+        for (Object[] row : rows) {
+            String status = row[0] != null ? row[0].toString().trim() : "";
+            long count = (Long) row[1];
 
-        PerformanceEntity updated = repository.save(entity);
-        return PerformanceResponseDTO.fromEntity(updated);
-    }
-
-    @Transactional
-    public void delete(Long id, boolean soft) {
-        PerformanceEntity entity = repository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("Performance not found"));
-        if (soft) {
-            entity.setDeleted(true);
-            repository.save(entity);
-        } else {
-            repository.delete(entity);
+            switch (status) {
+                case "2" -> dto.setActive(count);
+                case "1" -> dto.setDormant(count);
+                case "S", "SUSPENDED" -> dto.setClosed(count);     // add other statuses you use
+                default -> dto.setClosed(count); // or accumulate into "other"
+            }
         }
+        return dto;
     }
+
+
+
+
 
     private CustomerStatusDTO fetchCustomerStatus(List<CustomerEntity> customers) {
 

@@ -44,8 +44,6 @@ public class OtherIdService {
     @Transactional
     public OtherIdResponseDTO create(CreateOtherIdDTO request) {
         OtherIdEntity entity = new OtherIdEntity();
-        entity.setName(request.getName());
-        entity.setDescription(request.getDescription());
         OtherIdEntity saved = repository.save(entity);
         return OtherIdResponseDTO.fromEntity(saved);
     }
@@ -65,9 +63,6 @@ public class OtherIdService {
     public OtherIdResponseDTO update(Long id, CreateOtherIdDTO request) {
         OtherIdEntity entity = repository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("OtherId not found"));
-
-        entity.setName(request.getName());
-        entity.setDescription(request.getDescription());
 
         OtherIdEntity updated = repository.save(entity);
         return OtherIdResponseDTO.fromEntity(updated);
