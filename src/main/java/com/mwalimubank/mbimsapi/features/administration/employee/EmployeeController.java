@@ -1,11 +1,10 @@
 package com.mwalimubank.mbimsapi.features.administration.employee;
 
-import com.mwalimubank.mbimsapi.core.dto.ApiResponse;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
-import com.mwalimubank.mbimsapi.features.administration.department.dto.DepartmentResponseDTO;
-import com.mwalimubank.mbimsapi.features.administration.employee.dto.CreateEmployeeDTO;
 import com.mwalimubank.mbimsapi.features.administration.employee.dto.EmployeeResponseDTO;
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
+import com.mwalimubank.mbimsapi.features.administration.employee.service.EmployeeService;
+import com.mwalimubank.mbimsapi.features.administration.employee.service.EmployeeSyncService;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

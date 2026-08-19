@@ -1,4 +1,4 @@
-package com.mwalimubank.mbimsapi.features.administration.employee;
+package com.mwalimubank.mbimsapi.features.administration.employee.service;
 
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
 import com.mwalimubank.mbimsapi.features.administration.employee.dto.CreateEmployeeDTO;

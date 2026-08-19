@@ -116,6 +116,13 @@ db2 "CREATE INDEX PROFITS.IDX_GLI_TRX_EXTERNAL_GL ON PROFITS.GLI_TRX_EXTRACT (EX
 
 
 
+To format date 
+
+            private static final DateTimeFormatter FORMATTER =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+
+
 
 
 

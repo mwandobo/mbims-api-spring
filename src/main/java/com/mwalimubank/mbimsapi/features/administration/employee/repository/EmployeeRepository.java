@@ -33,11 +33,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
                     CASE WHEN TRIM(COALESCE(FATHER_NAME, '')) <> '' THEN ' ' || TRIM(FATHER_NAME) ELSE '' END ||
                     CASE WHEN TRIM(COALESCE(LAST_NAME, '')) <> '' THEN ' ' || TRIM(LAST_NAME) ELSE '' END
                 ) AS name,
-                CASE 
-                    WHEN SEX = 'M' THEN 'Male'
-                    WHEN SEX = 'F' THEN 'Female'
-                    ELSE 'Not Applicable'
-                END AS gender,
+                SEX AS gender,
                 TMSTAMP AS created_at
             FROM PROFITS.BANKEMPLOYEE
             WHERE STAFF_NO IS NOT NULL
