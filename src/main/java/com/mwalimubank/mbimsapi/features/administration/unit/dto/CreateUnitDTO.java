@@ -6,6 +6,6 @@ import lombok.Data;
 public class CreateUnitDTO {
     private String name;
     private String description;
-    private String manager;
+    private Long managerId;
     private String code;
 }

@@ -6,6 +6,9 @@ import com.mwalimubank.mbimsapi.features.administration.department.dto.Departmen
 import com.mwalimubank.mbimsapi.features.administration.employee.entity.EmployeeEntity;
 import com.mwalimubank.mbimsapi.features.administration.employee.repository.EmployeeRepository;
 import com.mwalimubank.mbimsapi.features.administration.employee.dto.EmployeeResponseDTO;
+import com.mwalimubank.mbimsapi.features.administration.position.PositionEntity;
+import com.mwalimubank.mbimsapi.features.administration.position.PositionRepository;
+import com.mwalimubank.mbimsapi.features.administration.position.dto.PositionResponseDTO;
 import com.mwalimubank.mbimsapi.features.administration.unit.UnitEntity;
 import com.mwalimubank.mbimsapi.features.administration.unit.UnitRepository;
 import com.mwalimubank.mbimsapi.features.administration.unit.dto.UnitResponseDTO;
@@ -40,6 +43,7 @@ public class FetchDataService {
     private final AssetCategoryRepository assetCategoryRepository;
     private final EmployeeRepository employeeRepository;
     private final UnitRepository unitRepository;
+    private final PositionRepository positionRepository;
 
 
     private <E, D> List<D> fetchData(
@@ -139,6 +143,16 @@ public class FetchDataService {
                 UnitEntity::getId,
                 UnitResponseDTO::fromEntity,
                 UnitResponseDTO::setApprovalStatus
+        );
+    }
+
+    public List<PositionResponseDTO> fetchPositions() {
+        return fetchData(
+                positionRepository.findAll(),
+                PositionEntity.class.getSimpleName(),
+                PositionEntity::getId,
+                PositionResponseDTO::fromEntity,
+                PositionResponseDTO::setApprovalStatus
         );
     }
 

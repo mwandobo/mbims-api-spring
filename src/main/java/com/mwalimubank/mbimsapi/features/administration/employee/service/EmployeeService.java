@@ -7,6 +7,8 @@ import com.mwalimubank.mbimsapi.features.administration.employee.dto.CreateEmplo
 import com.mwalimubank.mbimsapi.features.administration.employee.dto.EmployeeResponseDTO;
 import com.mwalimubank.mbimsapi.features.administration.employee.entity.EmployeeEntity;
 import com.mwalimubank.mbimsapi.features.administration.employee.repository.EmployeeRepository;
+import com.mwalimubank.mbimsapi.features.administration.position.PositionEntity;
+import com.mwalimubank.mbimsapi.features.administration.position.PositionRepository;
 import com.mwalimubank.mbimsapi.features.administration.unit.UnitEntity;
 import com.mwalimubank.mbimsapi.features.administration.unit.UnitRepository;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
@@ -33,6 +35,7 @@ public class EmployeeService {
     private final ApprovalStatusUtil approvalStatusUtil;
     private final CurrentUserService currentUserService;
     private final DepartmentRepository departmentRepository;
+    private final PositionRepository positionRepository;
 
     public PagedResponse<EmployeeResponseDTO> findAll(
             PaginationRequest pagination,
@@ -95,22 +98,6 @@ public class EmployeeService {
         return spec;
     }
 
-//    @Transactional
-//    public EmployeeResponseDTO create(CreateEmployeeDTO request) {
-//        repository.findByName(request.getName())
-//                .ifPresent(existing -> {
-//                    throw new IllegalStateException(
-//                            "Employee with name '" + request.getName() + "' already exists"
-//                    );
-//                });
-//
-//        EmployeeEntity entity = new EmployeeEntity();
-//        entity.setName(request.getName());
-//        entity.setDescription(request.getDescription());
-//        EmployeeEntity savedEntity = repository.save(entity);
-//
-//        return  EmployeeResponseDTO.fromEntity(savedEntity);
-//    }
 
     public ApprovalAwareDTO<EmployeeResponseDTO> findOne  (Long  departmentId) {
         EmployeeEntity   department = repository.findById( departmentId)
@@ -126,15 +113,15 @@ public class EmployeeService {
         );
     }
 
+
     @Transactional
     public EmployeeResponseDTO update(Long id, CreateEmployeeDTO request) {
         EmployeeEntity entity = repository.findById(id)
                 .orElseThrow(() ->
-                        new IllegalStateException(
-                                "Employee not found with id: " + id
-                        )
+                        new IllegalStateException("Employee not found with id: " + id)
                 );
 
+        // Email uniqueness check (excluding current employee)
         if (request.getEmail() != null && !request.getEmail().isBlank()) {
             repository.findByEmail(request.getEmail())
                     .filter(existing -> !existing.getId().equals(id))
@@ -145,19 +132,43 @@ public class EmployeeService {
                     });
         }
 
-        Optional<UnitEntity> unitEntity = unitRepository.findById(request.getUnitId());
-        unitEntity.ifPresent(entity::setUnit);
+        // Unit (optional)
+        if (request.getUnitId() != null) {
+            UnitEntity unit = unitRepository.findById(request.getUnitId())
+                    .orElseThrow(() -> new IllegalStateException("Unit not found with id: " + request.getUnitId()));
+            entity.setUnit(unit);
+        } else {
+            entity.setUnit(null);          // allow clearing the unit
+        }
 
-        Optional<DepartmentEntity> department = departmentRepository.findById(entity.getId());
-        unitEntity.ifPresent(entity::setUnit);
+        // Department (optional)
+        if (request.getDepartmentId() != null) {
+            DepartmentEntity department = departmentRepository.findById(request.getDepartmentId())
+                    .orElseThrow(() -> new IllegalStateException("Department not found with id: " + request.getDepartmentId()));
+            entity.setDepartment(department);
+        } else {
+            entity.setDepartment(null);
+        }
 
+        // Position (optional)
+        if (request.getPositionId() != null) {
+            PositionEntity position = positionRepository.findById(request.getPositionId())
+                    .orElseThrow(() -> new IllegalStateException("Position not found with id: " + request.getPositionId()));
+            entity.setPosition(position);
+        } else {
+            entity.setPosition(null);
+        }
+
+        // Simple fields
         entity.setEmail(request.getEmail());
+        entity.setMobilePhone(request.getMobilePhone());
         entity.setFirstName(request.getFirstName());
         entity.setLastName(request.getLastName());
         entity.setMiddleName(request.getMiddleName());
-        EmployeeEntity updatedEntity = repository.save(entity);
+        // add any other fields you need...
 
-        return  EmployeeResponseDTO.fromEntity(updatedEntity);
+        EmployeeEntity updatedEntity = repository.save(entity);
+        return EmployeeResponseDTO.fromEntity(updatedEntity);
     }
 
     @Transactional

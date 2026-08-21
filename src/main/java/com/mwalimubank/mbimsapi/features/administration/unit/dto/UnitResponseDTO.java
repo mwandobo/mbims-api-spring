@@ -8,7 +8,7 @@ public class UnitResponseDTO {
     private Long id;
     private String name;
     private String description;
-    private String manager;
+    private String managerName;
     private String code;
     private String approvalStatus;
     private String createdAt;
@@ -20,7 +20,9 @@ public class UnitResponseDTO {
         dto.setId(entity.getId());
         dto.setName(entity.getName());
         dto.setCode(entity.getCode());
-        dto.setManager(   entity.getDescription());
+        dto.setManagerName(
+                entity.getManager() != null ? entity.getManager().getName() : null
+        );
         dto.setCreatedAt(entity.getCreatedAt() != null ? entity.getCreatedAt().toString() : null);
         dto.setUpdatedAt(entity.getUpdatedAt() != null ? entity.getUpdatedAt().toString() : null);
         return dto;

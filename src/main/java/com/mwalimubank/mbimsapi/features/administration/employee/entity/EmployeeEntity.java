@@ -46,15 +46,15 @@ public class EmployeeEntity extends BaseEntity {
     @Column()
     private String mobilePhone;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "unit_id")
+    @ManyToOne(fetch = FetchType.EAGER, optional = true)
+    @JoinColumn(name = "unit_id", nullable = true)
     private UnitEntity unit;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "department_id")
+    @ManyToOne(fetch = FetchType.EAGER, optional = true)
+    @JoinColumn(name = "department_id", nullable = true)
     private DepartmentEntity department;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "position_id")
+    @ManyToOne(fetch = FetchType.EAGER, optional = true)
+    @JoinColumn(name = "position_id", nullable = true)
     private PositionEntity position;
 }

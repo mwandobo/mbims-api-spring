@@ -1,6 +1,7 @@
 package com.mwalimubank.mbimsapi.features.administration.unit;
 
 import com.mwalimubank.mbimsapi.core.entity.BaseEntity;
+import com.mwalimubank.mbimsapi.features.administration.employee.entity.EmployeeEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -19,8 +20,9 @@ public class UnitEntity extends BaseEntity {
     @Column(columnDefinition = "VARCHAR(1000)")
     private String description;
 
-    @Column(name = "manager", nullable = false)
-    private String manager;
+    @ManyToOne(fetch = FetchType.EAGER, optional = true)
+    @JoinColumn(name = "manager_id", nullable = true)
+    private EmployeeEntity manager;
 
     @Column(name = "code", nullable = false)
     private String code;

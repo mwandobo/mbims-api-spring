@@ -1,6 +1,8 @@
 package com.mwalimubank.mbimsapi.features.administration.unit;
 
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
+import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
+import com.mwalimubank.mbimsapi.features.administration.employee.entity.EmployeeEntity;
 import com.mwalimubank.mbimsapi.features.administration.employee.repository.EmployeeRepository;
 import com.mwalimubank.mbimsapi.features.administration.unit.dto.CreateUnitDTO;
 import com.mwalimubank.mbimsapi.features.administration.unit.dto.UnitResponseDTO;
@@ -133,7 +135,17 @@ public class UnitService {
         UnitEntity entity = new UnitEntity();
         entity.setName(request.getName());
         entity.setDescription(request.getDescription());
-        entity.setManager(request.getManager());
+
+
+        // Department (optional)
+        if (request.getManagerId() != null) {
+            EmployeeEntity employee = employeeRepository.findById(request.getManagerId())
+                    .orElseThrow(() -> new IllegalStateException("Manager not found with id: " + request.getManagerId()));
+            entity.setManager(employee);
+        } else {
+            entity.setManager(null);
+        }
+
         entity.setCode(request.getCode());
         UnitEntity saved = repository.save(entity);
         return UnitResponseDTO.fromEntity(saved);
@@ -157,7 +169,16 @@ public class UnitService {
 
         entity.setName(request.getName());
         entity.setDescription(request.getDescription());
-        entity.setManager(request.getManager());
+
+        // Department (optional)
+        if (request.getManagerId() != null) {
+            EmployeeEntity employee = employeeRepository.findById(request.getManagerId())
+                    .orElseThrow(() -> new IllegalStateException("Manager not found with id: " + request.getManagerId()));
+            entity.setManager(employee);
+        } else {
+            entity.setManager(null);
+        }
+
         entity.setCode(request.getCode());
 
         UnitEntity updated = repository.save(entity);
