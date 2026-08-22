@@ -26,97 +26,18 @@ public class UnitService {
     private final CurrentUserService currentUserService;
     private final EmployeeRepository employeeRepository;
 
-//    public PagedResponse<UnitResponseDTO> findAll(PaginationRequest pagination, String search) {
-//        Specification<UnitEntity> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
-//        // Add search logic here if needed
-//
-//        Page<UnitEntity> page = repository.findAll(spec, pagination.toPageable());
-//
-//        List<UnitResponseDTO> result = page.getContent().stream()
-//                .map(UnitResponseDTO::fromEntity)
-//                .toList();
-//
-//        return new PagedResponse<>(
-//                result,
-//                new PaginationDto(page.getTotalElements(), page.getNumber() + 1, page.getSize(), page.getTotalPages()),
-//                false
-//        );
-//    }
-
     public PagedResponse<UnitResponseDTO> findAll(PaginationRequest pagination, String search) {
         Specification<UnitEntity> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
         // TODO: Add search logic if needed
 
         Page<UnitEntity> page = repository.findAll(spec, pagination.toPageable());
 
-//        List<UnitResponseDTO> result = page.getContent().stream()
-//                .map(entity -> {
-//                    UnitResponseDTO dto = UnitResponseDTO.fromEntity(entity);
-//
-//                    if (entity.getManager() != null && !entity.getManager().isBlank()) {
-//                        Object[] emp = employeeRepository.findEmployeeById(entity.getManager())
-//                                .orElse(null);
-//
-//                        if (emp != null && emp.length > 0) {
-//                            // IMPORTANT: extract the first column (empName)
-//                            dto.setManager(emp[0] != null ? emp[0].toString().trim() : null);
-//                        }
-//                    }
-//
-//                    return dto;
-//                })
-//                .toList();
-
         List<UnitResponseDTO> result = page.getContent().stream()
                 .map(entity -> {
                     UnitResponseDTO dto = UnitResponseDTO.fromEntity(entity);
-
-//                    if (entity.getManager() != null && !entity.getManager().isBlank()) {
-//                        Object[] emp = employeeRepository.findEmployeeById(entity.getManager())
-//                                .orElse(null);
-//
-//                        System.out.println("=== DEBUG Manager ===");
-//                        System.out.println("Manager ID: " + entity.getManager());
-//                        System.out.println("emp == null? " + (emp == null));
-//
-//                        if (emp != null) {
-//                            System.out.println("emp length: " + emp.length);
-//                            for (int i = 0; i < emp.length; i++) {
-//                                System.out.println("emp[" + i + "] = " + emp[i] + " (" +
-//                                        (emp[i] != null ? emp[i].getClass().getName() : "null") + ")");
-//                            }
-//                        }
-//                        System.out.println("=====================");
-//                    }
-
-//                    if (entity.getManager() != null && !entity.getManager().isBlank()) {
-//                        Object[] emp = employeeRepository.findEmployeeById(entity.getManager())
-//                                .orElse(null);
-//
-//                        if (emp != null && emp.length > 0) {
-//                            Object first = emp[0];
-//
-//                            if (first instanceof Object[]) {
-//                                Object[] realRow = (Object[]) first;
-//                                dto.setManager(realRow.length > 0 && realRow[0] != null
-//                                        ? realRow[0].toString().trim()
-//                                        : null);
-//                            } else {
-//                                // fallback if it's not nested
-//                                dto.setManager(first != null ? first.toString().trim() : null);
-//                            }
-//                        }
-//                    }
-
                     return dto;
                 })
                 .toList();
-
-
-
-
-
-
 
         return new PagedResponse<>(
                 result,
