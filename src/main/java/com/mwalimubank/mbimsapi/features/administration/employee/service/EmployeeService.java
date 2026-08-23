@@ -15,10 +15,11 @@ import com.mwalimubank.mbimsapi.features.administration.position.PositionReposit
 import com.mwalimubank.mbimsapi.features.administration.unit.UnitEntity;
 import com.mwalimubank.mbimsapi.features.administration.unit.UnitRepository;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
-import com.mwalimubank.mbimsapi.features.auth.services.OtpService;
 import com.mwalimubank.mbimsapi.features.notification.NotificationService;
 import com.mwalimubank.mbimsapi.features.notification.dto.SendNotificationDto;
 import com.mwalimubank.mbimsapi.features.notification.enums.NotificationChannelsEnum;
+import com.mwalimubank.mbimsapi.features.role.RoleEntity;
+import com.mwalimubank.mbimsapi.features.role.RoleRepository;
 import com.mwalimubank.mbimsapi.features.user.UserEntity;
 import com.mwalimubank.mbimsapi.features.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,10 +35,7 @@ import com.mwalimubank.mbimsapi.features.approval.util.ApprovalStatusUtil;
 import com.mwalimubank.mbimsapi.core.services.CurrentUserService;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.time.Year;
 import java.util.*;
-
 
 @Slf4j
 @Service
@@ -53,10 +51,7 @@ public class EmployeeService {
     private final Random random = new Random();
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
-
-
-
+    private final RoleRepository roleRepository;
 
     @Value("${spring.front.end.url}")
     private String frontEndUrl;
@@ -123,7 +118,6 @@ public class EmployeeService {
         return spec;
     }
 
-
     public ApprovalAwareDTO<EmployeeResponseDTO> findOne  (Long  departmentId) {
         EmployeeEntity   department = repository.findById( departmentId)
                 .orElseThrow(() -> new IllegalStateException(" Employee not found"));
@@ -137,7 +131,6 @@ public class EmployeeService {
                 currentUserService.getCurrentUserRoleId()
         );
     }
-
 
     @Transactional
     public EmployeeResponseDTO update(Long id, CreateEmployeeDTO request) {
@@ -196,27 +189,6 @@ public class EmployeeService {
         return EmployeeResponseDTO.fromEntity(updatedEntity);
     }
 
-//    // --------- PASSWORD RECOVERY REQUEST ---------
-//    public String receiveCredentials(Long id) {
-//        EmployeeEntity employee = repository.findById(id)
-//                .orElseThrow(() -> new IllegalStateException("Employee not found"));
-//
-//        UserEntity user = userRepository.findById(id)
-//                .orElseThrow(() -> new IllegalStateException("User not found"));
-//
-//
-////        employee.setIsRecoveryRequested(true);
-//
-//        repository.save(employee);
-//
-//        sendAuthNotification(user,"receive-credentials", "Mbims Credentials");
-//
-//        log.info("Credentials sent to user with email: {}", user.getEmail());
-//
-//        return "Credentials Shared Successfully";
-//    }
-
-
 @Transactional
 public String receiveCredentials(Long id) {
     EmployeeEntity employee = repository.findById(id)
@@ -230,7 +202,7 @@ public String receiveCredentials(Long id) {
     UserEntity user = userRepository.findByEmail(employee.getEmail())
             .orElse(null);
 
-    String rawPassword = PasswordGenerator.generate(12); // your password generator
+    String rawPassword = PasswordGenerator.generate(12);
 
     if (user == null) {
         // ===== CREATE NEW USER =====
@@ -238,10 +210,12 @@ public String receiveCredentials(Long id) {
         user.setEmail(employee.getEmail());
         user.setName(employee.getName());
         user.setPhone(employee.getMobilePhone());
-        // set other fields as needed (department, role, etc.)
         user.setPassword(passwordEncoder.encode(rawPassword));
-        user.setIsOtpVerified(true);          // or false, depending on your flow
+        user.setIsOtpVerified(true);
         user.setIsRecoveryRequested(false);
+
+        // Assign role based on position
+        assignRoleFromPosition(user, employee);
 
         user = userRepository.save(user);
         log.info("Created new user for employee id={}", id);
@@ -249,39 +223,61 @@ public String receiveCredentials(Long id) {
         // ===== UPDATE EXISTING USER =====
         user.setName(employee.getName());
         user.setPhone(employee.getMobilePhone());
-        // update any other fields you want to sync
         user.setPassword(passwordEncoder.encode(rawPassword));
         user.setIsRecoveryRequested(false);
+
+        // Also update the role in case the position changed
+        assignRoleFromPosition(user, employee);
 
         user = userRepository.save(user);
         log.info("Updated existing user for employee id={}", id);
     }
 
-    // Optional: link employee ↔ user if you have a relation
-    // employee.setUser(user);
-    // repository.save(employee);
-
-    // Send credentials (email with the raw password)
+    // Send credentials
     sendAuthNotification(user, rawPassword, "receive-credentials", "Mbims Credentials");
+
+    employee.setIsCredentialsShared(true);
+    repository.save(employee);
 
     log.info("Credentials sent to user with email: {}", user.getEmail());
     return "Credentials Shared Successfully";
 }
 
-    public void sendAuthNotification(UserEntity user, String password, String template, String subject) {
+    /**
+     * Finds the role that matches the employee's position name and attaches it to the user.
+     */
+    private void assignRoleFromPosition(UserEntity user, EmployeeEntity employee) {
+        if (employee.getPosition() == null) {
+            log.warn("Employee id={} has no position – role not assigned", employee.getId());
+            return;
+        }
+
+        String positionName = employee.getPosition().getName();
+
+        RoleEntity role = roleRepository.findByName(positionName)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Role not found for position: " + positionName
+                ));
+
+        user.setRole(role);
+    }
+
+        public void sendAuthNotification(UserEntity user, String password, String template, String subject) {
         try {
             log.info("Auth notification for user={}", toJson(user));
 
             String redirectUrl = frontEndUrl + "/"
-                    + FrontEndRouteConstants.CREATE_APPROVAL_LEVEL_REDIRECT_URL;
+                    + FrontEndRouteConstants.LOGIN;
 
             Map<String, Object> context = new HashMap<>();
 
-//            String password = PasswordGenerator.generate(12);
-//
-//            context.put("expiryMinutes", 5);
-            context.put("password", password);
+    //            String password = PasswordGenerator.generate(12);
+    //
+    //            context.put("expiryMinutes", 5);
             context.put("email", user.getEmail());
+            context.put("name", user.getName());           // ← added
+            context.put("password", password);
+            context.put("redirectUrl", redirectUrl);
 
             List<String> recipients = List.of(user.getEmail());
 
@@ -310,8 +306,6 @@ public String receiveCredentials(Long id) {
             return obj.toString();
         }
     }
-
-
 
     @Transactional
     public void delete(Long id, boolean soft) {

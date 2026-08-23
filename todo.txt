@@ -21,6 +21,7 @@ in generate property
  check add foreign property as the package name failed to take from the store (path-to-package)
 
  email added in the queue
+ ability to find compulsory roles for descendants roles
 
 
 

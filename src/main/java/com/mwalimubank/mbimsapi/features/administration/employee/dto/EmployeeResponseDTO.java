@@ -30,6 +30,7 @@ public class EmployeeResponseDTO {
     private String createdAt;
     private String approvalStatus;
     private String gender;
+    private Boolean isCredentialShared;
 
     private static final DateTimeFormatter FORMATTER =
             DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -51,6 +52,7 @@ public class EmployeeResponseDTO {
         dto.setLastName(entity.getLastName());
         dto.setStaffNo(entity.getStaffNo());
         dto.setMobilePhone(entity.getMobilePhone());
+        dto.setIsCredentialShared(entity.getIsCredentialsShared());
         dto.setEmail(entity.getEmail());
         dto.setUnitName(
                 Optional.ofNullable(entity.getUnit())

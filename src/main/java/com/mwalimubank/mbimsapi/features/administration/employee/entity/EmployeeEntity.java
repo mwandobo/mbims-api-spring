@@ -44,6 +44,9 @@ public class EmployeeEntity extends BaseEntity {
     private String workPhone;
 
     @Column()
+    private Boolean isCredentialsShared;
+
+    @Column()
     private String mobilePhone;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = true)

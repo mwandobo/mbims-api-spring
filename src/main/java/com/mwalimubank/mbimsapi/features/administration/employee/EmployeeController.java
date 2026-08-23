@@ -62,7 +62,7 @@ public class EmployeeController {
         ));
     }
 
-    @PostMapping("/{id}/receive-credential")
+    @PostMapping("/{id}/share-credential")
     public  String shareCredential(@PathVariable Long id) {
        return  service.receiveCredentials(id);
     }
