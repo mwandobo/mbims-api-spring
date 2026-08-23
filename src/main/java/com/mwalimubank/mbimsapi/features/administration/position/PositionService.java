@@ -46,22 +46,6 @@ public class PositionService {
         );
     }
 
-//    @Transactional
-//    public PositionResponseDTO create(CreatePositionDTO request) {
-//
-//        DepartmentEntity department = validateDepartmentExists(request.getDepartmentId());
-//        PositionEntity existingPosition = repository.findByName(request.getName()).orElseThrow(() ->
-//                new IllegalStateException("Position with the same name found"));
-//        PositionEntity entity = new PositionEntity();
-//        entity.setName(request.getName());
-//        entity.setDescription(request.getDescription());
-//
-//        entity.setDepartment(department);
-//        PositionEntity saved = repository.save(entity);
-//        return PositionResponseDTO.fromEntity(saved);
-//    }
-
-
     @Transactional
     public PositionResponseDTO create(CreatePositionDTO request) {
 
