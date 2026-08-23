@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface PositionRepository extends JpaRepository<PositionEntity, Long> {
     Optional<PositionEntity> findByName(String name);
+    Optional<PositionEntity> findByNameAndDepartmentId(String name, Long departmentId);
 
     Page<PositionEntity> findAll(Specification<PositionEntity> spec, Pageable pageable);
 }

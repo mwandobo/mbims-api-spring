@@ -6,6 +6,8 @@ import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEnt
 import com.mwalimubank.mbimsapi.features.administration.department.DepartmentRepository;
 import com.mwalimubank.mbimsapi.features.administration.position.dto.CreatePositionDTO;
 import com.mwalimubank.mbimsapi.features.administration.position.dto.PositionResponseDTO;
+import com.mwalimubank.mbimsapi.features.role.RoleEntity;
+import com.mwalimubank.mbimsapi.features.role.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
@@ -23,6 +25,7 @@ import java.util.*;
 public class PositionService {
     private final PositionRepository repository;
     private final DepartmentRepository departmentRepository;
+    private final RoleRepository roleRepository;
     private final ApprovalStatusUtil approvalStatusUtil;
     private final CurrentUserService currentUserService;
 
@@ -43,15 +46,59 @@ public class PositionService {
         );
     }
 
+//    @Transactional
+//    public PositionResponseDTO create(CreatePositionDTO request) {
+//
+//        DepartmentEntity department = validateDepartmentExists(request.getDepartmentId());
+//        PositionEntity existingPosition = repository.findByName(request.getName()).orElseThrow(() ->
+//                new IllegalStateException("Position with the same name found"));
+//        PositionEntity entity = new PositionEntity();
+//        entity.setName(request.getName());
+//        entity.setDescription(request.getDescription());
+//
+//        entity.setDepartment(department);
+//        PositionEntity saved = repository.save(entity);
+//        return PositionResponseDTO.fromEntity(saved);
+//    }
+
+
     @Transactional
     public PositionResponseDTO create(CreatePositionDTO request) {
+
+        DepartmentEntity department = validateDepartmentExists(request.getDepartmentId());
+
+        // Check uniqueness: same name + same department
+        repository.findByNameAndDepartmentId(request.getName(), request.getDepartmentId())
+                .ifPresent(existing -> {
+                    throw new IllegalStateException(
+                            "Position with name '" + request.getName() +
+                                    "' already exists in this department"
+                    );
+                });
+
+        // Create Position
         PositionEntity entity = new PositionEntity();
         entity.setName(request.getName());
         entity.setDescription(request.getDescription());
-        DepartmentEntity department = validateDepartmentExists(request.getDepartmentId());
         entity.setDepartment(department);
+
         PositionEntity saved = repository.save(entity);
+
+        // Create corresponding Role (simple – just use the position name)
+        createRoleForPosition(saved);
+
         return PositionResponseDTO.fromEntity(saved);
+    }
+
+    private void createRoleForPosition(PositionEntity position) {
+        // Only create if a role with this name does not already exist
+        if (roleRepository.findByName(position.getName()).isEmpty()) {
+            RoleEntity role = new RoleEntity();
+            role.setName(position.getName());
+            // set description or other fields if needed
+            // role.setDescription("Role for position: " + position.getName());
+            roleRepository.save(role);
+        }
     }
 
     public ApprovalAwareDTO<PositionResponseDTO> findOne(Long id) {
