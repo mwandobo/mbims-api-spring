@@ -61,6 +61,7 @@ public class DataSeeder {
                     new PermissionDef("employee_create", "Create employees"),
                     new PermissionDef("employee_read", "View employees"),
                     new PermissionDef("employee_update", "Edit employees"),
+                    new PermissionDef("employee_share_credential", "Share Credentials With Employee"),
                     new PermissionDef("employee_delete", "Delete employees")
             )),
             new PermissionGroup("dashboard", List.of(
