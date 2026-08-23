@@ -478,6 +478,11 @@ Content-Type: application/json
 POST {{base_url}}/administration/employees/sync
 Authorization: Bearer {{token}}
 
+###
+POST {{base_url}}/administration/employees/187/receive-credential
+Authorization: Bearer {{token}}
+
+
 
 ###
 GET {{base_url}}/administration/employees

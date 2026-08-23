@@ -40,14 +40,13 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
     private final NotificationService notificationService;
-    private final Logger logger = LoggerFactory.getLogger(AuthService.class);
 
     @Value("${spring.front.end.url}")
     private String frontEndUrl;
 
     public LoginResponse login(LoginRequest loginRequest) {
         try {
-            logger.info("Attempting login for user: {}", loginRequest.getEmail());
+            log.info("Attempting login for user: {}", loginRequest.getEmail());
 
             // Get user from DB
             UserEntity user = userRepository.findByEmail(loginRequest.getEmail())
@@ -83,7 +82,7 @@ public class AuthService {
             );
 
         } catch (Exception ex) {
-            logger.error("Login failed for user: {}", loginRequest.getEmail(), ex);
+            log.error("Login failed for user: {}", loginRequest.getEmail(), ex);
             throw new IllegalStateException(ex.getMessage());
         }
     }
@@ -117,11 +116,11 @@ public class AuthService {
 
         boolean valid = otpService.verifyOtp(user.getId(), otpCode);
         if (valid) {
-            logger.info("OTP verified for user: {}", email);
+            log.info("OTP verified for user: {}", email);
             user.setIsOtpVerified(true);
             userRepository.save(user);
         } else {
-            logger.warn("OTP verification failed for user: {}", email);
+            log.warn("OTP verification failed for user: {}", email);
         }
         return valid;
     }
@@ -139,7 +138,7 @@ public class AuthService {
 
         sendAuthNotification(user,otp,"password-change", "Request For Password Change");
 
-        logger.info("Password recovery OTP sent for user: {}", email);
+        log.info("Password recovery OTP sent for user: {}", email);
     }
 
     // --------- CHANGE PASSWORD ---------
@@ -159,7 +158,7 @@ public class AuthService {
         user.setIsRecoveryRequested(false);
         userRepository.save(user);
 
-        logger.info("Password changed successfully for user: {}", email);
+        log.info("Password changed successfully for user: {}", email);
     }
 
     public void sendAuthNotification(UserEntity user, String otp, String template, String subject) {

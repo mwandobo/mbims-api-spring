@@ -1,6 +1,9 @@
 package com.mwalimubank.mbimsapi.features.administration.employee.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mwalimubank.mbimsapi.core.constants.FrontEndRouteConstants;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
+import com.mwalimubank.mbimsapi.core.utils.PasswordGenerator;
 import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
 import com.mwalimubank.mbimsapi.features.administration.department.DepartmentRepository;
 import com.mwalimubank.mbimsapi.features.administration.employee.dto.CreateEmployeeDTO;
@@ -12,10 +15,18 @@ import com.mwalimubank.mbimsapi.features.administration.position.PositionReposit
 import com.mwalimubank.mbimsapi.features.administration.unit.UnitEntity;
 import com.mwalimubank.mbimsapi.features.administration.unit.UnitRepository;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
+import com.mwalimubank.mbimsapi.features.auth.services.OtpService;
+import com.mwalimubank.mbimsapi.features.notification.NotificationService;
+import com.mwalimubank.mbimsapi.features.notification.dto.SendNotificationDto;
+import com.mwalimubank.mbimsapi.features.notification.enums.NotificationChannelsEnum;
+import com.mwalimubank.mbimsapi.features.user.UserEntity;
+import com.mwalimubank.mbimsapi.features.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
 import com.mwalimubank.mbimsapi.core.dto.PaginationDto;
@@ -23,6 +34,8 @@ import com.mwalimubank.mbimsapi.features.approval.util.ApprovalStatusUtil;
 import com.mwalimubank.mbimsapi.core.services.CurrentUserService;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.Year;
 import java.util.*;
 
 
@@ -36,6 +49,18 @@ public class EmployeeService {
     private final CurrentUserService currentUserService;
     private final DepartmentRepository departmentRepository;
     private final PositionRepository positionRepository;
+    private final NotificationService notificationService;
+    private final Random random = new Random();
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+
+
+
+
+    @Value("${spring.front.end.url}")
+    private String frontEndUrl;
+
 
     public PagedResponse<EmployeeResponseDTO> findAll(
             PaginationRequest pagination,
@@ -170,6 +195,123 @@ public class EmployeeService {
         EmployeeEntity updatedEntity = repository.save(entity);
         return EmployeeResponseDTO.fromEntity(updatedEntity);
     }
+
+//    // --------- PASSWORD RECOVERY REQUEST ---------
+//    public String receiveCredentials(Long id) {
+//        EmployeeEntity employee = repository.findById(id)
+//                .orElseThrow(() -> new IllegalStateException("Employee not found"));
+//
+//        UserEntity user = userRepository.findById(id)
+//                .orElseThrow(() -> new IllegalStateException("User not found"));
+//
+//
+////        employee.setIsRecoveryRequested(true);
+//
+//        repository.save(employee);
+//
+//        sendAuthNotification(user,"receive-credentials", "Mbims Credentials");
+//
+//        log.info("Credentials sent to user with email: {}", user.getEmail());
+//
+//        return "Credentials Shared Successfully";
+//    }
+
+
+@Transactional
+public String receiveCredentials(Long id) {
+    EmployeeEntity employee = repository.findById(id)
+            .orElseThrow(() -> new IllegalStateException("Employee not found"));
+
+    if (employee.getEmail() == null || employee.getEmail().isBlank()) {
+        throw new IllegalStateException("Employee has no email address");
+    }
+
+    // Try to find existing user by email
+    UserEntity user = userRepository.findByEmail(employee.getEmail())
+            .orElse(null);
+
+    String rawPassword = PasswordGenerator.generate(12); // your password generator
+
+    if (user == null) {
+        // ===== CREATE NEW USER =====
+        user = new UserEntity();
+        user.setEmail(employee.getEmail());
+        user.setName(employee.getName());
+        user.setPhone(employee.getMobilePhone());
+        // set other fields as needed (department, role, etc.)
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        user.setIsOtpVerified(true);          // or false, depending on your flow
+        user.setIsRecoveryRequested(false);
+
+        user = userRepository.save(user);
+        log.info("Created new user for employee id={}", id);
+    } else {
+        // ===== UPDATE EXISTING USER =====
+        user.setName(employee.getName());
+        user.setPhone(employee.getMobilePhone());
+        // update any other fields you want to sync
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        user.setIsRecoveryRequested(false);
+
+        user = userRepository.save(user);
+        log.info("Updated existing user for employee id={}", id);
+    }
+
+    // Optional: link employee ↔ user if you have a relation
+    // employee.setUser(user);
+    // repository.save(employee);
+
+    // Send credentials (email with the raw password)
+    sendAuthNotification(user, rawPassword, "receive-credentials", "Mbims Credentials");
+
+    log.info("Credentials sent to user with email: {}", user.getEmail());
+    return "Credentials Shared Successfully";
+}
+
+    public void sendAuthNotification(UserEntity user, String password, String template, String subject) {
+        try {
+            log.info("Auth notification for user={}", toJson(user));
+
+            String redirectUrl = frontEndUrl + "/"
+                    + FrontEndRouteConstants.CREATE_APPROVAL_LEVEL_REDIRECT_URL;
+
+            Map<String, Object> context = new HashMap<>();
+
+//            String password = PasswordGenerator.generate(12);
+//
+//            context.put("expiryMinutes", 5);
+            context.put("password", password);
+            context.put("email", user.getEmail());
+
+            List<String> recipients = List.of(user.getEmail());
+
+            SendNotificationDto dto = new SendNotificationDto();
+            dto.setChannel(NotificationChannelsEnum.EMAIL);
+            dto.setRecipients(recipients);
+            dto.setForName(user.getName());
+            dto.setForId(user.getId());
+            dto.setContext(context);
+            dto.setTemplate(template);
+            dto.setSubject(subject);
+            dto.setDescription(subject);
+            dto.setRedirectUrl(redirectUrl);
+
+            notificationService.sendNotification(dto);
+
+        } catch (Exception e) {
+            log.error("Failed to send auth notification for user={}", user.getEmail(), e);
+        }
+    }
+
+    private String toJson(Object obj) {
+        try {
+            return new ObjectMapper().writeValueAsString(obj);
+        } catch (Exception e) {
+            return obj.toString();
+        }
+    }
+
+
 
     @Transactional
     public void delete(Long id, boolean soft) {

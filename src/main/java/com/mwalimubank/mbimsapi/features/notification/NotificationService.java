@@ -4,7 +4,6 @@ import com.mwalimubank.mbimsapi.core.config.CustomUserDetails;
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
 import com.mwalimubank.mbimsapi.core.dto.PaginationDto;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
-import com.mwalimubank.mbimsapi.core.dto.PaginationResponse;
 import com.mwalimubank.mbimsapi.features.mail.EmailPayload;
 import com.mwalimubank.mbimsapi.features.mail.EmailService;
 import com.mwalimubank.mbimsapi.features.notification.dto.CreateNotificationDto;
