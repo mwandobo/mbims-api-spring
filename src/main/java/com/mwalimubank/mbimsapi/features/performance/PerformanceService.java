@@ -1,24 +1,12 @@
 package com.mwalimubank.mbimsapi.features.performance;
 
-import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
-import com.mwalimubank.mbimsapi.features.customer.entity.CustomerEntity;
-import com.mwalimubank.mbimsapi.features.performance.dto.CreatePerformanceDTO;
+
 import com.mwalimubank.mbimsapi.features.performance.dto.CustomerStatsResponseDTO;
 import com.mwalimubank.mbimsapi.features.performance.dto.CustomerStatusDTO;
-import com.mwalimubank.mbimsapi.features.performance.dto.PerformanceResponseDTO;
-import com.mwalimubank.mbimsapi.features.performance.entities.PerformanceEntity;
+import com.mwalimubank.mbimsapi.features.performance.dto.UnitPerformanceDTO;
 import com.mwalimubank.mbimsapi.features.performance.repository.PerformanceCustomerRepository;
-import com.mwalimubank.mbimsapi.features.performance.repository.PerformanceRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
-import com.mwalimubank.mbimsapi.core.dto.PaginationDto;
-import com.mwalimubank.mbimsapi.features.approval.util.ApprovalStatusUtil;
-import com.mwalimubank.mbimsapi.core.services.CurrentUserService;
-import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
 import java.util.*;
 
 @Service
@@ -43,6 +31,32 @@ public class PerformanceService {
         dto.setCorporateCustomersAttrs(toStatusDto(customerRepository.countByStatusCorporate()));
 
         return dto;
+    }
+
+    public List<UnitPerformanceDTO> findTopUnitStats(int limit) {
+        List<Object[]> rows = customerRepository.findTopUnitsByCustomerCount(limit);
+        return mapToUnitPerformanceDTO(rows);
+    }
+
+    public List<UnitPerformanceDTO> findAllUnitStats() {
+        List<Object[]> rows = customerRepository.findAllUnitsByCustomerCount();
+        return mapToUnitPerformanceDTO(rows);
+    }
+
+    private List<UnitPerformanceDTO> mapToUnitPerformanceDTO(List<Object[]> rows) {
+        List<UnitPerformanceDTO> result = new ArrayList<>();
+
+        for (Object[] row : rows) {
+            UnitPerformanceDTO dto = new UnitPerformanceDTO();
+            dto.setUnitId(row[0] != null ? ((Number) row[0]).longValue() : null);
+            dto.setUnitName(row[1] != null ? row[1].toString() : null);
+            dto.setTotalCustomers(row[2] != null ? ((Number) row[2]).longValue() : 0L);
+            dto.setActive(row[3] != null ? ((Number) row[3]).longValue() : 0L);
+            dto.setDormant(row[4] != null ? ((Number) row[4]).longValue() : 0L);
+            dto.setClosed(row[5] != null ? ((Number) row[5]).longValue() : 0L);
+            result.add(dto);
+        }
+        return result;
     }
 
     private CustomerStatusDTO toStatusDto(List<Object[]> rows) {

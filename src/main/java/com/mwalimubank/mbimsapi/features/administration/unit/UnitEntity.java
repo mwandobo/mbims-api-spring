@@ -14,16 +14,16 @@ public class UnitEntity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column()
     private String name;
 
-    @Column(columnDefinition = "VARCHAR(1000)")
+    @Column()
     private String description;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = true)
     @JoinColumn(name = "manager_id", nullable = true)
     private EmployeeEntity manager;
 
-    @Column(name = "code", nullable = false)
+    @Column()
     private String code;
 }
