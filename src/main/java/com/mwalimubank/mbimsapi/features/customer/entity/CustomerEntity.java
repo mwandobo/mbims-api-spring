@@ -24,65 +24,68 @@ public class CustomerEntity extends BaseEntity {
     @Column(name = "middle_name")
     private String middleName;
 
-    @Column(name = "surname")
+    @Column(name = "last_name")
     private String lastName;
 
-    @Column(name = "name")
+    @Column()
     private String name;
 
-    @Column(name = "sex")
+    @Column()
     private String sex;
 
     @Column(name = "date_of_birth")
     private LocalDateTime dateOfBirth;// Use proper type
 
-    @Column(name = "MOBILE_TEL")
+    @Column(name = "phone_number")
     private String phoneNumber;
 
-    @Column(name = "E_MAIL")
+    @Column()
     private String email;
 
-    @Column(name = "CHILDREN_ABOVE18")
+    @Column(name = "children_above_18")
     private Short childrenAbove18;
 
-    @Column(name = "NUM_OF_CHILDREN")
+    @Column(name = "number_of_children")
     private Short numberOfChildren;
 
-    @Column(name = "FAMILY_MEMBERS")
+    @Column(name = "family_members")
     private Short familyMembers;
 
-    @Column(name = "BIRTHPLACE")
+    @Column(name = "birth_region")
     private String birthRegion;
 
-    @Column(name = "EMPLOYER")
+    @Column()
     private String employer;
 
-    @Column(name = "EMPLOYER_ADDRESS")
+    @Column(name = "employer_address")
     private String employerAddress;
 
-    @Column(name = "DAI_NUMBER")
+    @Column(name = "identification_number")
     private String identificationNumber;
 
-    @Column(name = "FK_BISS_CODE")
+    @Column(name = "identification_type")
     private Integer identificationType;
 
-    @Column(name = "NON_RESIDENT")
+    @Column(name = "non_resident")
     private String nonResident;
 
-    @Column(name = "VIP_IND")
+    @Column(name = "vip_indicator")
     private String vipIndicator;
 
-    @Column(name = "BLACKLISTED_IND")
+    @Column(name = "blacklist_indicator")
     private String blacklisted;
 
-    @Column(name = "CUSTOMER_BEGIN_DAT")
+    @Column(name = "customer_begin_date")
     private String customerBeginDate;
 
-    @Column(name = "CUST_OPEN_DATE")
+    @Column(name = "customer_open_date")
     private String customerOpenDate;
 
-    @Column(name = "title")
+    @Column()
     private String title;
+
+    @Column(name = "employee_code")
+    private String employeeCode;
 
     @Column(name = "cust_type")
     private String custType;

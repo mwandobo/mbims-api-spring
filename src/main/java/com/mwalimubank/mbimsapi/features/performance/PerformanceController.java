@@ -19,12 +19,6 @@ public class PerformanceController {
 
     private final PerformanceService service;
 
-    @GetMapping
-    public PagedResponse<PerformanceResponseDTO> findAll(
-            PaginationRequest pagination,
-            @RequestParam(required = false) String search) {
-        return service.findAll(pagination, search);
-    }
 
     @GetMapping("/customer-stats")
     public  CustomerStatsResponseDTO findCustomers(

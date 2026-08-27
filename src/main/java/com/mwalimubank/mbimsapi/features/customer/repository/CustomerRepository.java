@@ -53,7 +53,8 @@ public interface CustomerRepository extends JpaRepository<CustomerEntity, Long> 
                 s.TITLE,
                 s.TMSTAMP,
                 s.CUST_TYPE,
-                s.CUST_STATUS
+                s.CUST_STATUS,
+                s.FK_BANKEMPLOYEEID
             FROM PROFITS.CUSTOMER s
             WHERE s.CUST_ID IS NOT NULL
         ) AS s
@@ -68,7 +69,7 @@ public interface CustomerRepository extends JpaRepository<CustomerEntity, Long> 
                 date_of_birth         = s.DATE_OF_BIRTH,
                 phone_number          = s.MOBILE_TEL,
                 email                 = s.E_MAIL,
-                children_above18      = s.CHILDREN_ABOVE18,
+                children_above_18      = s.CHILDREN_ABOVE18,
                 number_of_children    = s.NUM_OF_CHILDREN,
                 family_members        = s.FAMILY_MEMBERS,
                 birth_region          = s.BIRTHPLACE,
@@ -78,35 +79,36 @@ public interface CustomerRepository extends JpaRepository<CustomerEntity, Long> 
                 identification_type   = s.FK_BISS_CODE,
                 non_resident          = s.NON_RESIDENT,
                 vip_indicator         = s.VIP_IND,
-                blacklisted           = s.BLACKLISTED_IND,
+                blacklist_indicator           = s.BLACKLISTED_IND,
                 customer_begin_date   = s.CUSTOMER_BEGIN_DAT,
                 customer_open_date    = s.CUST_OPEN_DATE,
                 title                 = s.TITLE,
                 created_at            = s.TMSTAMP,
                 cust_type             = s.CUST_TYPE,
                 cust_status           = s.CUST_STATUS,
+                employee_code         = s.FK_BANKEMPLOYEEID,
                 updated_at            = CURRENT_TIMESTAMP
         WHEN NOT MATCHED THEN
             INSERT (
-                cust_id, first_name, middle_name, last_name, name,
-                sex, date_of_birth, phone_number, email,
-                children_above18, number_of_children, family_members, birth_region,
-                employer, employer_address,
-                identification_number, identification_type,
-                non_resident, vip_indicator, blacklisted,
-                customer_begin_date, customer_open_date, title,
-                created_at, cust_type, cust_status,
-                deleted, created_at, updated_at
+          cust_id, first_name, middle_name, last_name, name,
+          sex, date_of_birth, phone_number, email,
+          children_above_18, number_of_children, family_members, birth_region,
+          employer, employer_address,
+          identification_number, identification_type,
+          non_resident, vip_indicator, blacklist_indicator,
+          customer_begin_date, customer_open_date, title,
+          created_at, cust_type, cust_status,
+          deleted, updated_at, employee_code
             ) VALUES (
-                s.CUST_ID, s.FIRST_NAME, s.MIDDLE_NAME, s.SURNAME, s.full_name,
-                s.SEX, s.DATE_OF_BIRTH, s.MOBILE_TEL, s.E_MAIL,
-                s.CHILDREN_ABOVE18, s.NUM_OF_CHILDREN, s.FAMILY_MEMBERS, s.BIRTHPLACE,
-                s.EMPLOYER, s.EMPLOYER_ADDRESS,
-                s.DAI_NUMBER, s.FK_BISS_CODE,
-                s.NON_RESIDENT, s.VIP_IND, s.BLACKLISTED_IND,
-                s.CUSTOMER_BEGIN_DAT, s.CUST_OPEN_DATE, s.TITLE,
-                s.TMSTAMP, s.CUST_TYPE, s.CUST_STATUS,
-                0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+          s.CUST_ID, s.FIRST_NAME, s.MIDDLE_NAME, s.SURNAME, s.full_name,
+          s.SEX, s.DATE_OF_BIRTH, s.MOBILE_TEL, s.E_MAIL,
+          s.CHILDREN_ABOVE18, s.NUM_OF_CHILDREN, s.FAMILY_MEMBERS, s.BIRTHPLACE,
+          s.EMPLOYER, s.EMPLOYER_ADDRESS,
+          s.DAI_NUMBER, s.FK_BISS_CODE,
+          s.NON_RESIDENT, s.VIP_IND, s.BLACKLISTED_IND,
+          s.CUSTOMER_BEGIN_DAT, s.CUST_OPEN_DATE, s.TITLE,
+          s.TMSTAMP, s.CUST_TYPE, s.CUST_STATUS,
+          0, CURRENT_TIMESTAMP, s.FK_BANKEMPLOYEEID
             )
         """, nativeQuery = true)
     int upsertAllCustomers();
