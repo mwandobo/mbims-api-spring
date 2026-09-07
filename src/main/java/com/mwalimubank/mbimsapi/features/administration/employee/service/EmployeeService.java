@@ -110,8 +110,11 @@ public class EmployeeService {
             String likePattern = "%" + search.trim().toLowerCase() + "%";
             spec = spec.and((root, query, cb) ->
                     cb.or(
-                            cb.like(cb.lower(root.get("title")), likePattern),
-                            cb.like(cb.lower(root.get("description")), likePattern)
+                            cb.like(cb.lower(root.get("firstName")), likePattern),
+                            cb.like(cb.lower(root.get("middleName")), likePattern),
+                            cb.like(cb.lower(root.get("lastName")), likePattern),
+                            cb.like(cb.lower(root.get("email")), likePattern),
+                            cb.like(cb.lower(root.get("mobilePhone")), likePattern)
                     )
             );
         }

@@ -47,7 +47,7 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:4200")); // ← add your frontend origin(s), or List.of("*") for dev
+                    config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:4200", "https://172.10.10.14:3000", "http://172.10.10.14:3000")); // ← add your frontend origin(s), or List.of("*") for dev
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                     config.setAllowedHeaders(List.of("*"));
                     config.setAllowCredentials(true); // if you need cookies/auth headers
