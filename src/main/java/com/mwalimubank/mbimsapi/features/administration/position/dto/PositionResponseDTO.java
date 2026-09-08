@@ -11,6 +11,7 @@ public class PositionResponseDTO {
     private String description;
     private DepartmentResponseDTO department;
     private String departmentName;
+    private Long departmentId;
     private String approvalStatus;
     private String createdAt;
     private String updatedAt;
@@ -22,6 +23,9 @@ public class PositionResponseDTO {
         dto.setDescription(entity.getDescription());
         dto.setDepartmentName(
                 entity.getDepartment() != null ? entity.getDepartment().getName() : null
+        );
+        dto.setDepartmentId(
+                entity.getDepartment() != null ? entity.getDepartment().getId() : null
         );
         dto.setCreatedAt(entity.getCreatedAt() != null ? entity.getCreatedAt().toString() : null);
         dto.setUpdatedAt(entity.getUpdatedAt() != null ? entity.getUpdatedAt().toString() : null);

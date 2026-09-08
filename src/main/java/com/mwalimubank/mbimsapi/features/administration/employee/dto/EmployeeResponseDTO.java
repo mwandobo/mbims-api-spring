@@ -23,8 +23,11 @@ public class EmployeeResponseDTO {
     private String LastName;
     private String staffNo;
     private String unitName;
+    private Long unitId;
     private String departmentName;
+    private Long departmentId;
     private String positionName;
+    private Long positionId;
     private String email;
     private String mobilePhone;
     private String createdAt;
@@ -59,14 +62,29 @@ public class EmployeeResponseDTO {
                         .map(UnitEntity::getName)
                         .orElse(null)
         );
+        dto.setUnitId(
+                Optional.ofNullable(entity.getUnit())
+                        .map(UnitEntity::getId)
+                        .orElse(null)
+        );
         dto.setDepartmentName(
                 Optional.ofNullable(entity.getDepartment())
                         .map(DepartmentEntity::getName)
                         .orElse(null)
         );
+        dto.setDepartmentId(
+                Optional.ofNullable(entity.getDepartment())
+                        .map(DepartmentEntity::getId)
+                        .orElse(null)
+        );
         dto.setPositionName(
                 Optional.ofNullable(entity.getPosition())
                         .map(PositionEntity::getName)
+                        .orElse(null)
+        );
+        dto.setPositionId(
+                Optional.ofNullable(entity.getPosition())
+                        .map(PositionEntity::getId)
                         .orElse(null)
         );
 
