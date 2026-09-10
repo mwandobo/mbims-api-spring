@@ -4,8 +4,11 @@ package com.mwalimubank.mbimsapi.features.administration.position;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
 import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
 import com.mwalimubank.mbimsapi.features.administration.department.DepartmentRepository;
+import com.mwalimubank.mbimsapi.features.administration.department.dto.DepartmentResponseDTO;
 import com.mwalimubank.mbimsapi.features.administration.position.dto.CreatePositionDTO;
 import com.mwalimubank.mbimsapi.features.administration.position.dto.PositionResponseDTO;
+import com.mwalimubank.mbimsapi.features.common.PageSpecs;
+import com.mwalimubank.mbimsapi.features.common.services.PagedQueryService;
 import com.mwalimubank.mbimsapi.features.role.RoleEntity;
 import com.mwalimubank.mbimsapi.features.role.RoleRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,20 +32,27 @@ public class PositionService {
     private final ApprovalStatusUtil approvalStatusUtil;
     private final CurrentUserService currentUserService;
 
+    private final PagedQueryService pagedQueryService;
+
+    private static final Set<String> SORT_FIELDS = Set.of(
+            "id", "name", "description"
+    );
+
     public PagedResponse<PositionResponseDTO> findAll(PaginationRequest pagination, String search) {
-        Specification<PositionEntity> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
-        // Add search logic here if needed
+        Specification<PositionEntity> spec = PageSpecs.and(
+                PageSpecs.notDeleted(),
+                PageSpecs.searchLike(search, "name", "description")
+        );
 
-        Page<PositionEntity> page = repository.findAll(spec, pagination.toPageable());
-
-        List<PositionResponseDTO> result = page.getContent().stream()
-                .map(PositionResponseDTO::fromEntity)
-                .toList();
-
-        return new PagedResponse<>(
-                result,
-                new PaginationDto(page.getTotalElements(), page.getNumber() + 1, page.getSize(), page.getTotalPages()),
-                false
+        return pagedQueryService.findAll(
+                repository,
+                spec,
+                pagination,
+                PositionEntity.class,
+                PositionEntity::getId,
+                PositionResponseDTO::fromEntity,
+                PositionResponseDTO::setApprovalStatus,
+                SORT_FIELDS
         );
     }
 

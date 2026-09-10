@@ -28,74 +28,9 @@ public class DepartmentService {
     private final CurrentUserService currentUserService;
     private final PagedQueryService pagedQueryService;
 
-
-
-//    public PagedResponse<DepartmentResponseDTO> findAll(
-//            PaginationRequest pagination,
-//            String search
-//    ) {
-//        Specification<DepartmentEntity> spec = getEntitySpecification(search);
-//        boolean hasApprovalMode = approvalStatusUtil.hasApprovalMode(DepartmentEntity.class.getSimpleName());
-//
-//        Page<DepartmentEntity> page =
-//                repository.findAll(spec, pagination.toPageable());
-//
-//        List<DepartmentEntity> entities = page.getContent();
-//
-//        List<Long> ids = entities.stream()
-//                        .map(DepartmentEntity::getId)
-//                        .toList();
-//        Map<Long, String> statusMap = hasApprovalMode
-//                        ? approvalStatusUtil.getBulkApprovalStatuses(DepartmentEntity.class.getSimpleName(), ids)
-//                        : Collections.emptyMap();
-//
-//      List<DepartmentResponseDTO> result = entities.stream()
-//                      .map(entity -> {
-//                          DepartmentResponseDTO dto = DepartmentResponseDTO.fromEntity(entity);
-//
-//                          if (hasApprovalMode) {
-//                              dto.setApprovalStatus(
-//                                      statusMap.get(entity.getId())
-//                              );
-//                          }
-//
-//                          return dto;
-//                      })
-//                      .toList();
-//
-//        return new PagedResponse<>(
-//                        result,
-//                        new PaginationDto(
-//                                page.getTotalElements(),
-//                                page.getNumber() + 1,
-//                                page.getSize(),
-//                                page.getTotalPages()
-//                        ),
-//                        hasApprovalMode // or dynamic logic
-//                );
-//    }
-//
-//    private static Specification< DepartmentEntity> getEntitySpecification(String search) {
-//        Specification< DepartmentEntity> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
-//
-//        // Optional search filter (case-insensitive)
-//        if (search != null && !search.trim().isEmpty()) {
-//            String likePattern = "%" + search.trim().toLowerCase() + "%";
-//            spec = spec.and((root, query, cb) ->
-//                    cb.or(
-//                            cb.like(cb.lower(root.get("title")), likePattern),
-//                            cb.like(cb.lower(root.get("description")), likePattern)
-//                    )
-//            );
-//        }
-//        return spec;
-//    }
-
     private static final Set<String> DEPARTMENT_SORT_FIELDS = Set.of(
             "id", "name", "description"
     );
-
-
 
     public PagedResponse<DepartmentResponseDTO > findAll(PaginationRequest pagination, String search) {
         Specification<DepartmentEntity> spec = PageSpecs.and(
@@ -114,7 +49,6 @@ public class DepartmentService {
                 DEPARTMENT_SORT_FIELDS
         );
     }
-
 
     @Transactional
     public DepartmentResponseDTO create(CreateDepartmentDTO request) {
