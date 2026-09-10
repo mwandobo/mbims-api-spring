@@ -456,7 +456,7 @@ GET {{base_url}}/transactions?customerId=168
 Authorization: Bearer {{token}}
 
 ###
-GET {{base_url}}/administration/employees/EIC648
+GET {{base_url}}/administration/employees?page=1&size=10&sortBy=firstName&direction=DESC
 Authorization: Bearer {{token}}
 
 

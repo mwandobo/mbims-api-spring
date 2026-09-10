@@ -121,6 +121,8 @@ To format date
             private static final DateTimeFormatter FORMATTER =
             DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
+to apply sort to a table check employee implementation
+
 
 
 

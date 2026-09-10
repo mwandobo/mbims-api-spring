@@ -26,6 +26,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -64,14 +67,20 @@ public class EmployeeService {
         Specification<EmployeeEntity> spec = getEntitySpecification(search);
         boolean hasApprovalMode = approvalStatusUtil.hasApprovalMode(EmployeeEntity.class.getSimpleName());
 
-        Page<EmployeeEntity> page =
-                repository.findAll(spec, pagination.toPageable());
+        // This already contains sorting + pagination
+        Pageable pageable = pagination.toPageable();
+
+        // Optional: protect against invalid sort fields
+        pageable = sanitizePageable(pageable);
+
+        Page<EmployeeEntity> page = repository.findAll(spec, pageable);
 
         List<EmployeeEntity> entities = page.getContent();
 
         List<Long> ids = entities.stream()
                 .map(EmployeeEntity::getId)
                 .toList();
+
         Map<Long, String> statusMap = hasApprovalMode
                 ? approvalStatusUtil.getBulkApprovalStatuses(EmployeeEntity.class.getSimpleName(), ids)
                 : Collections.emptyMap();
@@ -79,13 +88,9 @@ public class EmployeeService {
         List<EmployeeResponseDTO> result = entities.stream()
                 .map(entity -> {
                     EmployeeResponseDTO dto = EmployeeResponseDTO.fromEntity(entity);
-
                     if (hasApprovalMode) {
-                        dto.setApprovalStatus(
-                                statusMap.get(entity.getId())
-                        );
+                        dto.setApprovalStatus(statusMap.get(entity.getId()));
                     }
-
                     return dto;
                 })
                 .toList();
@@ -98,10 +103,9 @@ public class EmployeeService {
                         page.getSize(),
                         page.getTotalPages()
                 ),
-                hasApprovalMode // or dynamic logic
+                hasApprovalMode
         );
     }
-
     private static Specification< EmployeeEntity> getEntitySpecification(String search) {
         Specification< EmployeeEntity> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
 
@@ -120,6 +124,58 @@ public class EmployeeService {
         }
         return spec;
     }
+
+    private Pageable sanitizePageable(Pageable pageable) {
+        Set<String> allowed = Set.of(
+                "id", "firstName", "middleName", "lastName", "name",
+                "email", "mobilePhone", "staffNo", "gender",
+                "createdAt", "updatedAt"
+        );
+
+        Sort sort = pageable.getSort();
+        if (sort.isSorted()) {
+            Sort.Order order = sort.iterator().next();
+            String property = order.getProperty();
+
+            if (!allowed.contains(property)) {
+                // fallback to safe default
+                return PageRequest.of(
+                        pageable.getPageNumber(),
+                        pageable.getPageSize(),
+                        Sort.by(Sort.Direction.DESC, "id")
+                );
+            }
+        }
+
+        return pageable;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public ApprovalAwareDTO<EmployeeResponseDTO> findOne  (Long  departmentId) {
         EmployeeEntity   department = repository.findById( departmentId)
