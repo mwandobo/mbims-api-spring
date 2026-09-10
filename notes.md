@@ -121,7 +121,30 @@ To format date
             private static final DateTimeFormatter FORMATTER =
             DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-to apply sort to a table check employee implementation
+to apply sort to a table check employee implementation like below
+
+makesure the repository implements
+
+        public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> , JpaSpecificationExecutor<EmployeeEntity> {
+
+
+public PagedResponse<DepartmentResponseDTO> findAll(PaginationRequest pagination, String search) {
+Specification<DepartmentEntity> spec = Specs.and(
+Specs.notDeleted(),
+Specs.searchLike(search, "name", "description")
+);
+
+    return pagedQueryService.findAll(
+            repository,
+            spec,
+            pagination,
+            DepartmentEntity.class,
+            DepartmentEntity::getId,
+            DepartmentResponseDTO::fromEntity,
+            DepartmentResponseDTO::setApprovalStatus,
+            Set.of("id", "name", "createdAt", "updatedAt")
+    );
+}
 
 
 

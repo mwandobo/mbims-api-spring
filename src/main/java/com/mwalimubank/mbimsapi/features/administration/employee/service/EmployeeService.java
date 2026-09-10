@@ -15,6 +15,8 @@ import com.mwalimubank.mbimsapi.features.administration.position.PositionReposit
 import com.mwalimubank.mbimsapi.features.administration.unit.UnitEntity;
 import com.mwalimubank.mbimsapi.features.administration.unit.UnitRepository;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
+import com.mwalimubank.mbimsapi.features.common.PageSpecs;
+import com.mwalimubank.mbimsapi.features.common.services.PagedQueryService;
 import com.mwalimubank.mbimsapi.features.notification.NotificationService;
 import com.mwalimubank.mbimsapi.features.notification.dto.SendNotificationDto;
 import com.mwalimubank.mbimsapi.features.notification.enums.NotificationChannelsEnum;
@@ -55,103 +57,35 @@ public class EmployeeService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
+    private final PagedQueryService pagedQueryService;
+
+    private static final Set<String> EMPLOYEE_SORT_FIELDS = Set.of(
+            "id", "firstName", "middleName", "lastName", "name",
+            "email", "mobilePhone", "staffNo", "gender",
+            "createdAt", "updatedAt"
+    );
 
     @Value("${spring.front.end.url}")
     private String frontEndUrl;
 
 
-    public PagedResponse<EmployeeResponseDTO> findAll(
-            PaginationRequest pagination,
-            String search
-    ) {
-        Specification<EmployeeEntity> spec = getEntitySpecification(search);
-        boolean hasApprovalMode = approvalStatusUtil.hasApprovalMode(EmployeeEntity.class.getSimpleName());
-
-        // This already contains sorting + pagination
-        Pageable pageable = pagination.toPageable();
-
-        // Optional: protect against invalid sort fields
-        pageable = sanitizePageable(pageable);
-
-        Page<EmployeeEntity> page = repository.findAll(spec, pageable);
-
-        List<EmployeeEntity> entities = page.getContent();
-
-        List<Long> ids = entities.stream()
-                .map(EmployeeEntity::getId)
-                .toList();
-
-        Map<Long, String> statusMap = hasApprovalMode
-                ? approvalStatusUtil.getBulkApprovalStatuses(EmployeeEntity.class.getSimpleName(), ids)
-                : Collections.emptyMap();
-
-        List<EmployeeResponseDTO> result = entities.stream()
-                .map(entity -> {
-                    EmployeeResponseDTO dto = EmployeeResponseDTO.fromEntity(entity);
-                    if (hasApprovalMode) {
-                        dto.setApprovalStatus(statusMap.get(entity.getId()));
-                    }
-                    return dto;
-                })
-                .toList();
-
-        return new PagedResponse<>(
-                result,
-                new PaginationDto(
-                        page.getTotalElements(),
-                        page.getNumber() + 1,
-                        page.getSize(),
-                        page.getTotalPages()
-                ),
-                hasApprovalMode
-        );
-    }
-    private static Specification< EmployeeEntity> getEntitySpecification(String search) {
-        Specification< EmployeeEntity> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
-
-        // Optional search filter (case-insensitive)
-        if (search != null && !search.trim().isEmpty()) {
-            String likePattern = "%" + search.trim().toLowerCase() + "%";
-            spec = spec.and((root, query, cb) ->
-                    cb.or(
-                            cb.like(cb.lower(root.get("firstName")), likePattern),
-                            cb.like(cb.lower(root.get("middleName")), likePattern),
-                            cb.like(cb.lower(root.get("lastName")), likePattern),
-                            cb.like(cb.lower(root.get("email")), likePattern),
-                            cb.like(cb.lower(root.get("mobilePhone")), likePattern)
-                    )
-            );
-        }
-        return spec;
-    }
-
-    private Pageable sanitizePageable(Pageable pageable) {
-        Set<String> allowed = Set.of(
-                "id", "firstName", "middleName", "lastName", "name",
-                "email", "mobilePhone", "staffNo", "gender",
-                "createdAt", "updatedAt"
+    public PagedResponse<EmployeeResponseDTO> findAll(PaginationRequest pagination, String search) {
+        Specification<EmployeeEntity> spec = PageSpecs.and(
+                PageSpecs.notDeleted(),
+                PageSpecs.searchLike(search, "firstName", "middleName", "lastName", "email", "mobilePhone")
         );
 
-        Sort sort = pageable.getSort();
-        if (sort.isSorted()) {
-            Sort.Order order = sort.iterator().next();
-            String property = order.getProperty();
-
-            if (!allowed.contains(property)) {
-                // fallback to safe default
-                return PageRequest.of(
-                        pageable.getPageNumber(),
-                        pageable.getPageSize(),
-                        Sort.by(Sort.Direction.DESC, "id")
-                );
-            }
-        }
-
-        return pageable;
+        return pagedQueryService.findAll(
+                repository,
+                spec,
+                pagination,
+                EmployeeEntity.class,
+                EmployeeEntity::getId,
+                EmployeeResponseDTO::fromEntity,
+                EmployeeResponseDTO::setApprovalStatus,
+                EMPLOYEE_SORT_FIELDS
+        );
     }
-
-
-
 
 
 
