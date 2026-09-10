@@ -4,6 +4,10 @@ import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
 import com.mwalimubank.mbimsapi.features.administration.department.dto.CreateDepartmentDTO;
 import com.mwalimubank.mbimsapi.features.administration.department.dto.DepartmentResponseDTO;
 import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
+import com.mwalimubank.mbimsapi.features.administration.employee.dto.EmployeeResponseDTO;
+import com.mwalimubank.mbimsapi.features.administration.employee.entity.EmployeeEntity;
+import com.mwalimubank.mbimsapi.features.common.PageSpecs;
+import com.mwalimubank.mbimsapi.features.common.services.PagedQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
@@ -22,67 +26,95 @@ public class DepartmentService {
     private final DepartmentRepository repository;
     private final ApprovalStatusUtil approvalStatusUtil;
     private final CurrentUserService currentUserService;
+    private final PagedQueryService pagedQueryService;
 
-    public PagedResponse<DepartmentResponseDTO> findAll(
-            PaginationRequest pagination,
-            String search
-    ) {
-        Specification<DepartmentEntity> spec = getEntitySpecification(search);
-        boolean hasApprovalMode = approvalStatusUtil.hasApprovalMode(DepartmentEntity.class.getSimpleName());
 
-        Page<DepartmentEntity> page =
-                repository.findAll(spec, pagination.toPageable());
 
-        List<DepartmentEntity> entities = page.getContent();
+//    public PagedResponse<DepartmentResponseDTO> findAll(
+//            PaginationRequest pagination,
+//            String search
+//    ) {
+//        Specification<DepartmentEntity> spec = getEntitySpecification(search);
+//        boolean hasApprovalMode = approvalStatusUtil.hasApprovalMode(DepartmentEntity.class.getSimpleName());
+//
+//        Page<DepartmentEntity> page =
+//                repository.findAll(spec, pagination.toPageable());
+//
+//        List<DepartmentEntity> entities = page.getContent();
+//
+//        List<Long> ids = entities.stream()
+//                        .map(DepartmentEntity::getId)
+//                        .toList();
+//        Map<Long, String> statusMap = hasApprovalMode
+//                        ? approvalStatusUtil.getBulkApprovalStatuses(DepartmentEntity.class.getSimpleName(), ids)
+//                        : Collections.emptyMap();
+//
+//      List<DepartmentResponseDTO> result = entities.stream()
+//                      .map(entity -> {
+//                          DepartmentResponseDTO dto = DepartmentResponseDTO.fromEntity(entity);
+//
+//                          if (hasApprovalMode) {
+//                              dto.setApprovalStatus(
+//                                      statusMap.get(entity.getId())
+//                              );
+//                          }
+//
+//                          return dto;
+//                      })
+//                      .toList();
+//
+//        return new PagedResponse<>(
+//                        result,
+//                        new PaginationDto(
+//                                page.getTotalElements(),
+//                                page.getNumber() + 1,
+//                                page.getSize(),
+//                                page.getTotalPages()
+//                        ),
+//                        hasApprovalMode // or dynamic logic
+//                );
+//    }
+//
+//    private static Specification< DepartmentEntity> getEntitySpecification(String search) {
+//        Specification< DepartmentEntity> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
+//
+//        // Optional search filter (case-insensitive)
+//        if (search != null && !search.trim().isEmpty()) {
+//            String likePattern = "%" + search.trim().toLowerCase() + "%";
+//            spec = spec.and((root, query, cb) ->
+//                    cb.or(
+//                            cb.like(cb.lower(root.get("title")), likePattern),
+//                            cb.like(cb.lower(root.get("description")), likePattern)
+//                    )
+//            );
+//        }
+//        return spec;
+//    }
 
-        List<Long> ids = entities.stream()
-                        .map(DepartmentEntity::getId)
-                        .toList();
-        Map<Long, String> statusMap = hasApprovalMode
-                        ? approvalStatusUtil.getBulkApprovalStatuses(DepartmentEntity.class.getSimpleName(), ids)
-                        : Collections.emptyMap();
+    private static final Set<String> DEPARTMENT_SORT_FIELDS = Set.of(
+            "id", "name", "description"
+    );
 
-      List<DepartmentResponseDTO> result = entities.stream()
-                      .map(entity -> {
-                          DepartmentResponseDTO dto = DepartmentResponseDTO.fromEntity(entity);
 
-                          if (hasApprovalMode) {
-                              dto.setApprovalStatus(
-                                      statusMap.get(entity.getId())
-                              );
-                          }
 
-                          return dto;
-                      })
-                      .toList();
+    public PagedResponse<DepartmentResponseDTO > findAll(PaginationRequest pagination, String search) {
+        Specification<DepartmentEntity> spec = PageSpecs.and(
+                PageSpecs.notDeleted(),
+                PageSpecs.searchLike(search, "name", "description")
+        );
 
-        return new PagedResponse<>(
-                        result,
-                        new PaginationDto(
-                                page.getTotalElements(),
-                                page.getNumber() + 1,
-                                page.getSize(),
-                                page.getTotalPages()
-                        ),
-                        hasApprovalMode // or dynamic logic
-                );
+        return pagedQueryService.findAll(
+                repository,
+                spec,
+                pagination,
+                DepartmentEntity.class,
+                DepartmentEntity::getId,
+                DepartmentResponseDTO::fromEntity,
+                DepartmentResponseDTO::setApprovalStatus,
+                DEPARTMENT_SORT_FIELDS
+        );
     }
 
-    private static Specification< DepartmentEntity> getEntitySpecification(String search) {
-        Specification< DepartmentEntity> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
-
-        // Optional search filter (case-insensitive)
-        if (search != null && !search.trim().isEmpty()) {
-            String likePattern = "%" + search.trim().toLowerCase() + "%";
-            spec = spec.and((root, query, cb) ->
-                    cb.or(
-                            cb.like(cb.lower(root.get("title")), likePattern),
-                            cb.like(cb.lower(root.get("description")), likePattern)
-                    )
-            );
-        }
-        return spec;
-    }
 
     @Transactional
     public DepartmentResponseDTO create(CreateDepartmentDTO request) {

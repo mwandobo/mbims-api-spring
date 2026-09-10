@@ -22,6 +22,7 @@ in generate property
 
  email added in the queue
  ability to find compulsory roles for descendants roles
+ handle sort by parentId name
 
 
 

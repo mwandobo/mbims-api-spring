@@ -25,24 +25,7 @@ public class EmployeeController {
     private final EmployeeService service;
     private final EmployeeSyncService employeeSyncService;
 
-//    @GetMapping
-//    public PagedResponse<EmployeeResponseDTO> findAll(
-//            PaginationRequest pagination,
-//            @RequestParam(required = false) String q) {
-//        return service
-//
-//                .findAll(pagination, q);
-//    }
 
-//    @GetMapping
-//    public PagedResponse<EmployeeResponseDTO> findAll(
-//            PaginationRequest pagination,
-//            @RequestParam(required = false) String search,
-//            @RequestParam(required = false, defaultValue = "id") String sortBy,
-//            @RequestParam(required = false, defaultValue = "desc") String sortDir
-//    ) {
-//        return service.findAll(pagination, search, sortBy, sortDir);
-//    }
 
 
     @GetMapping
