@@ -1,10 +1,14 @@
 package com.mwalimubank.mbimsapi.features.asset_management.asset;
 
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
+import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
+import com.mwalimubank.mbimsapi.features.administration.department.dto.DepartmentResponseDTO;
 import com.mwalimubank.mbimsapi.features.asset_management.asset.dto.CreateAssetDTO;
 import com.mwalimubank.mbimsapi.features.asset_management.asset.dto.AssetResponseDTO;
 import com.mwalimubank.mbimsapi.features.asset_management.assetcategory.AssetCategoryEntity;
 import com.mwalimubank.mbimsapi.features.asset_management.assetcategory.AssetCategoryRepository;
+import com.mwalimubank.mbimsapi.features.common.PageSpecs;
+import com.mwalimubank.mbimsapi.features.common.services.PagedQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
@@ -24,66 +28,28 @@ public class AssetService {
     private final AssetCategoryRepository assetcategoryRepository;
     private final ApprovalStatusUtil approvalStatusUtil;
     private final CurrentUserService currentUserService;
+    private final PagedQueryService pagedQueryService;
 
-    public PagedResponse<AssetResponseDTO> findAll(
-            PaginationRequest pagination,
-            String search
-    ) {
-        Specification<AssetEntity> spec = getEntitySpecification(search);
-        boolean hasApprovalMode = approvalStatusUtil.hasApprovalMode(AssetEntity.class.getSimpleName());
+    private static final Set<String> DEPARTMENT_SORT_FIELDS = Set.of(
+            "id", "name", "description"
+    );
 
-        Page<AssetEntity> page =
-                repository.findAll(spec, pagination.toPageable());
+    public PagedResponse<AssetResponseDTO> findAll(PaginationRequest pagination, String search) {
+        Specification<AssetEntity> spec = PageSpecs.and(
+                PageSpecs.notDeleted(),
+                PageSpecs.searchLike(search, "name", "description")
+        );
 
-        List<AssetEntity> entities = page.getContent();
-
-        List<Long> ids = entities.stream()
-                        .map(AssetEntity::getId)
-                        .toList();
-        Map<Long, String> statusMap = hasApprovalMode
-                        ? approvalStatusUtil.getBulkApprovalStatuses(AssetEntity.class.getSimpleName(), ids)
-                        : Collections.emptyMap();
-
-      List<AssetResponseDTO> result = entities.stream()
-                      .map(entity -> {
-                          AssetResponseDTO dto = AssetResponseDTO.fromEntity(entity);
-
-                          if (hasApprovalMode) {
-                              dto.setApprovalStatus(
-                                      statusMap.get(entity.getId())
-                              );
-                          }
-
-                          return dto;
-                      })
-                      .toList();
-
-        return new PagedResponse<>(
-                        result,
-                        new PaginationDto(
-                                page.getTotalElements(),
-                                page.getNumber() + 1,
-                                page.getSize(),
-                                page.getTotalPages()
-                        ),
-                        hasApprovalMode // or dynamic logic
-                );
-    }
-
-    private static Specification< AssetEntity> getEntitySpecification(String search) {
-        Specification< AssetEntity> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
-
-        // Optional search filter (case-insensitive)
-        if (search != null && !search.trim().isEmpty()) {
-            String likePattern = "%" + search.trim().toLowerCase() + "%";
-            spec = spec.and((root, query, cb) ->
-                    cb.or(
-                            cb.like(cb.lower(root.get("title")), likePattern),
-                            cb.like(cb.lower(root.get("description")), likePattern)
-                    )
-            );
-        }
-        return spec;
+        return pagedQueryService.findAll(
+                repository,
+                spec,
+                pagination,
+                AssetEntity.class,
+                AssetEntity::getId,
+                AssetResponseDTO::fromEntity,
+                AssetResponseDTO::setApprovalStatus,
+                DEPARTMENT_SORT_FIELDS
+        );
     }
 
     @Transactional

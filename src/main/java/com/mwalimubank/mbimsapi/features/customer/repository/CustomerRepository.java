@@ -1,23 +1,23 @@
 package com.mwalimubank.mbimsapi.features.customer.repository;
 
+import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
 import com.mwalimubank.mbimsapi.features.customer.entity.CustomerEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface CustomerRepository extends JpaRepository<CustomerEntity, Long> {
+public interface CustomerRepository extends JpaRepository<CustomerEntity, Long>, JpaSpecificationExecutor<CustomerEntity> {
 
     List<CustomerEntity> findByCustType(String custType);
 
     Optional<CustomerEntity> findByCustId(Long custId);
-
-    Page<CustomerEntity> findAll(Specification<CustomerEntity> spec, Pageable pageable);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = """

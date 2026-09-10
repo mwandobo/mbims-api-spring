@@ -33,6 +33,7 @@ public class CustomerResponseDTO {
     private String identificationType;
     private String identificationNumber;
     private String location;
+    private String approvalStatus;
     private String createdAt;
     private String updatedAt;
 

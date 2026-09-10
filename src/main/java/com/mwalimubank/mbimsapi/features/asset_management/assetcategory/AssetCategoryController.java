@@ -19,7 +19,7 @@ public class AssetCategoryController {
     @GetMapping
     public PagedResponse<AssetCategoryResponseDTO> findAll(
             PaginationRequest pagination,
-            @RequestParam(required = false) String search
+            @RequestParam(required = false, name = "q") String search
     ) {
                 return service.findAll(pagination, search);
     }

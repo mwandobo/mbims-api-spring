@@ -3,7 +3,11 @@ package com.mwalimubank.mbimsapi.features.role;
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
 import com.mwalimubank.mbimsapi.core.dto.PaginationDto;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
+import com.mwalimubank.mbimsapi.features.administration.position.PositionEntity;
+import com.mwalimubank.mbimsapi.features.administration.position.dto.PositionResponseDTO;
 import com.mwalimubank.mbimsapi.features.approval.util.ApprovalStatusUtil;
+import com.mwalimubank.mbimsapi.features.common.PageSpecs;
+import com.mwalimubank.mbimsapi.features.common.services.PagedQueryService;
 import com.mwalimubank.mbimsapi.features.permission.PermissionEntity;
 import com.mwalimubank.mbimsapi.features.permission.PermissionRepository;
 import com.mwalimubank.mbimsapi.features.role.dto.AssignPermissionsRequestDTO;
@@ -22,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -33,61 +38,33 @@ public class RoleService {
         private final PermissionRepository permissionRepository;
         private final ApprovalStatusUtil approvalStatusUtil;
 
-        public PagedResponse<RoleResponseDTO> findAll(
-                        PaginationRequest pagination,
-                        String search) {
-                Specification<RoleEntity> spec = getEntitySpecification(search);
-                boolean hasApprovalMode = approvalStatusUtil.hasApprovalMode(RoleEntity.class.getSimpleName());
 
-                Page<RoleEntity> page = repository.findAll(spec, pagination.toPageable());
+    private final PagedQueryService pagedQueryService;
 
-                List<RoleEntity> entities = page.getContent();
+    private static final Set<String> SORT_FIELDS = Set.of(
+            "id", "name", "description"
+    );
 
-                List<Long> ids = entities.stream()
-                                .map(RoleEntity::getId)
-                                .toList();
-                Map<Long, String> statusMap = hasApprovalMode
-                                ? approvalStatusUtil.getBulkApprovalStatuses(UserEntity.class.getSimpleName(), ids)
-                                : Collections.emptyMap();
+    public PagedResponse<RoleResponseDTO> findAll(PaginationRequest pagination, String search) {
+        Specification<RoleEntity> spec = PageSpecs.and(
+                PageSpecs.notDeleted(),
+                PageSpecs.searchLike(search, "name", "description")
+        );
 
-                List<RoleResponseDTO> result = entities.stream()
-                                .map(entity -> {
-                                        RoleResponseDTO dto = RoleResponseDTO.fromEntity(entity);
+        return pagedQueryService.findAll(
+                repository,
+                spec,
+                pagination,
+                RoleEntity.class,
+                RoleEntity::getId,
+                RoleResponseDTO::fromEntity,
+                RoleResponseDTO::setApprovalStatus,
+                SORT_FIELDS
+        );
+    }
 
-                                        if (hasApprovalMode) {
-                                                dto.setApprovalStatus(
-                                                                statusMap.get(entity.getId()));
-                                        }
 
-                                        return dto;
-                                })
-                                .toList();
-
-                return new PagedResponse<>(
-                                result,
-                                new PaginationDto(
-                                                page.getTotalElements(),
-                                                page.getNumber() + 1,
-                                                page.getSize(),
-                                                page.getTotalPages()),
-                                hasApprovalMode // or dynamic logic
-                );
-        }
-
-        private static Specification<RoleEntity> getEntitySpecification(String search) {
-                Specification<RoleEntity> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
-
-                // Optional search filter (case-insensitive)
-                if (search != null && !search.trim().isEmpty()) {
-                        String likePattern = "%" + search.trim().toLowerCase() + "%";
-                        spec = spec.and((root, query, cb) -> cb.or(
-                                        cb.like(cb.lower(root.get("title")), likePattern),
-                                        cb.like(cb.lower(root.get("description")), likePattern)));
-                }
-                return spec;
-        }
-
-        @Transactional
+    @Transactional
         public UserEntity assignRolesToUser(AssignRoleRequest request) {
                 UserEntity user = userRepository.findById(request.getUserId())
                                 .orElseThrow(() -> new IllegalStateException("User not found"));

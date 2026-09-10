@@ -5,6 +5,8 @@ import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
 import com.mwalimubank.mbimsapi.core.dto.PaginationDto;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
 import com.mwalimubank.mbimsapi.core.services.CurrentUserService;
+import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
+import com.mwalimubank.mbimsapi.features.administration.department.dto.DepartmentResponseDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalLevelRequestDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalLevelResponseDTO;
@@ -17,6 +19,8 @@ import com.mwalimubank.mbimsapi.features.approval.repository.ApprovalActionRepos
 import com.mwalimubank.mbimsapi.features.approval.repository.ApprovalLevelRepository;
 import com.mwalimubank.mbimsapi.features.approval.repository.UserApprovalRepository;
 import com.mwalimubank.mbimsapi.features.approval.util.ApprovalStatusUtil;
+import com.mwalimubank.mbimsapi.features.common.PageSpecs;
+import com.mwalimubank.mbimsapi.features.common.services.PagedQueryService;
 import com.mwalimubank.mbimsapi.features.notification.NotificationService;
 import com.mwalimubank.mbimsapi.features.notification.dto.SendNotificationDto;
 import com.mwalimubank.mbimsapi.features.notification.enums.NotificationChannelsEnum;
@@ -51,72 +55,33 @@ public class ApprovalLevelService {
     private final NotificationService notificationService;
     private final ApprovalStatusUtil approvalStatusUtil;
     private final CurrentUserService currentUserService;
-
-
+    private final PagedQueryService pagedQueryService;
 
     @Value("${spring.front.end.url}")
     private String frontEndUrl;
 
-    public PagedResponse<ApprovalLevelResponseDTO> findAll(
-            PaginationRequest pagination,
-            String search
-    ) {
-        Specification<ApprovalLevel> spec = getEntitySpecification(search);
-        boolean hasApprovalMode = approvalStatusUtil.hasApprovalMode(ApprovalLevel.class.getSimpleName());
+    private static final Set<String> DEPARTMENT_SORT_FIELDS = Set.of(
+            "id", "name", "description"
+    );
 
-        Page<ApprovalLevel> page =
-                repository.findAll(spec, pagination.toPageable());
+    public PagedResponse<ApprovalLevelResponseDTO> findAll(PaginationRequest pagination, String search) {
+        Specification<ApprovalLevel> spec = PageSpecs.and(
+                PageSpecs.notDeleted(),
+                PageSpecs.searchLike(search, "name", "description")
+        );
 
-        List<ApprovalLevel> entities = page.getContent();
-
-        List<Long> ids = entities.stream()
-                .map(ApprovalLevel::getId)
-                .toList();
-        Map<Long, String> statusMap = hasApprovalMode
-                ? approvalStatusUtil.getBulkApprovalStatuses(UserEntity.class.getSimpleName(), ids)
-                : Collections.emptyMap();
-
-        List<ApprovalLevelResponseDTO> result = entities.stream()
-                .map(entity -> {
-                    ApprovalLevelResponseDTO dto = ApprovalLevelResponseDTO.fromEntity(entity);
-
-                    if (hasApprovalMode) {
-                        dto.setApprovalStatus(
-                                statusMap.get(entity.getId())
-                        );
-                    }
-
-                    return dto;
-                })
-                .toList();
-
-        return new PagedResponse<>(
-                result,
-                new PaginationDto(
-                        page.getTotalElements(),
-                        page.getNumber() + 1,
-                        page.getSize(),
-                        page.getTotalPages()
-                ),
-                hasApprovalMode // or dynamic logic
+        return pagedQueryService.findAll(
+                repository,
+                spec,
+                pagination,
+                ApprovalLevel.class,
+                ApprovalLevel::getId,
+                ApprovalLevelResponseDTO::fromEntity,
+                ApprovalLevelResponseDTO::setApprovalStatus,
+                DEPARTMENT_SORT_FIELDS
         );
     }
 
-    private static Specification< ApprovalLevel> getEntitySpecification(String search) {
-        Specification< ApprovalLevel> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
-
-        // Optional search filter (case-insensitive)
-        if (search != null && !search.trim().isEmpty()) {
-            String likePattern = "%" + search.trim().toLowerCase() + "%";
-            spec = spec.and((root, query, cb) ->
-                    cb.or(
-                            cb.like(cb.lower(root.get("title")), likePattern),
-                            cb.like(cb.lower(root.get("description")), likePattern)
-                    )
-            );
-        }
-        return spec;
-    }
 
 
     @Transactional

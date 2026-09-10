@@ -1,6 +1,10 @@
 package com.mwalimubank.mbimsapi.features.transaction.service;
 
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
+import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
+import com.mwalimubank.mbimsapi.features.administration.department.dto.DepartmentResponseDTO;
+import com.mwalimubank.mbimsapi.features.common.PageSpecs;
+import com.mwalimubank.mbimsapi.features.common.services.PagedQueryService;
 import com.mwalimubank.mbimsapi.features.transaction.dto.CreateTransactionDTO;
 import com.mwalimubank.mbimsapi.features.transaction.dto.TransactionResponseDTO;
 import com.mwalimubank.mbimsapi.features.transaction.entity.TransactionEntity;
@@ -23,22 +27,27 @@ public class TransactionService {
     private final TransactionRepository repository;
     private final ApprovalStatusUtil approvalStatusUtil;
     private final CurrentUserService currentUserService;
+    private final PagedQueryService pagedQueryService;
+
+    private static final Set<String> DEPARTMENT_SORT_FIELDS = Set.of(
+            "id", "name", "description"
+    );
 
     public PagedResponse<TransactionResponseDTO> findAll(PaginationRequest pagination, String search) {
-        Specification<TransactionEntity> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
+        Specification<TransactionEntity> spec = PageSpecs.and(
+                PageSpecs.notDeleted(),
+                PageSpecs.searchLike(search, "name", "description")
+        );
 
-        // Add search logic here if needed
-
-        Page<TransactionEntity> page = repository.findAll(spec, pagination.toPageable());
-
-        List<TransactionResponseDTO> result = page.getContent().stream()
-                .map(TransactionResponseDTO::fromEntity)
-                .toList();
-
-        return new PagedResponse<>(
-                result,
-                new PaginationDto(page.getTotalElements(), page.getNumber() + 1, page.getSize(), page.getTotalPages()),
-                false
+        return pagedQueryService.findAll(
+                repository,
+                spec,
+                pagination,
+                TransactionEntity.class,
+                TransactionEntity::getId,
+                TransactionResponseDTO::fromEntity,
+                TransactionResponseDTO::setApprovalStatus,
+                DEPARTMENT_SORT_FIELDS
         );
     }
 

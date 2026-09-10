@@ -1,17 +1,18 @@
 package com.mwalimubank.mbimsapi.features.transaction.repository;
 
+import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
 import com.mwalimubank.mbimsapi.features.transaction.entity.TransactionEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
-public interface TransactionRepository extends JpaRepository<TransactionEntity, Long> {
-    Page<TransactionEntity> findAll(Specification<TransactionEntity> spec, Pageable pageable);
+public interface TransactionRepository extends JpaRepository<TransactionEntity, Long>, JpaSpecificationExecutor<TransactionEntity> {
 
 
     /**

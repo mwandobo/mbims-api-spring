@@ -4,6 +4,8 @@ import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
 import com.mwalimubank.mbimsapi.core.dto.PaginationDto;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
 import com.mwalimubank.mbimsapi.core.services.CurrentUserService;
+import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
+import com.mwalimubank.mbimsapi.features.administration.department.dto.DepartmentResponseDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.UserApprovalRequestDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.UserApprovalResponseDTO;
@@ -12,6 +14,8 @@ import com.mwalimubank.mbimsapi.features.approval.entity.UserApproval;
 import com.mwalimubank.mbimsapi.features.approval.repository.SysApprovalRepository;
 import com.mwalimubank.mbimsapi.features.approval.repository.UserApprovalRepository;
 import com.mwalimubank.mbimsapi.features.approval.util.ApprovalStatusUtil;
+import com.mwalimubank.mbimsapi.features.common.PageSpecs;
+import com.mwalimubank.mbimsapi.features.common.services.PagedQueryService;
 import com.mwalimubank.mbimsapi.features.user.UserEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -30,49 +35,27 @@ public class UserApprovalService {
     private final UserApprovalRepository repository;
     private final ApprovalStatusUtil approvalStatusUtil;
     private final CurrentUserService currentUserService;
+    private final PagedQueryService pagedQueryService;
 
-    public PagedResponse<UserApprovalResponseDTO> findAll(
-            PaginationRequest pagination,
-            String search
-    ) {
-        Specification<UserApproval> spec = getEntitySpecification(search);
-        boolean hasApprovalMode = approvalStatusUtil.hasApprovalMode(UserApproval.class.getSimpleName());
+    private static final Set<String> DEPARTMENT_SORT_FIELDS = Set.of(
+            "id", "name", "description"
+    );
 
-        Page<UserApproval> page =
-                repository.findAll(spec, pagination.toPageable());
+    public PagedResponse<UserApprovalResponseDTO> findAll(PaginationRequest pagination, String search) {
+        Specification<UserApproval> spec = PageSpecs.and(
+                PageSpecs.notDeleted(),
+                PageSpecs.searchLike(search, "name", "description")
+        );
 
-        List<UserApproval> entities = page.getContent();
-
-        List<Long> ids = entities.stream()
-                .map(UserApproval::getId)
-                .toList();
-        Map<Long, String> statusMap = hasApprovalMode
-                ? approvalStatusUtil.getBulkApprovalStatuses(UserEntity.class.getSimpleName(), ids)
-                : Collections.emptyMap();
-
-        List<UserApprovalResponseDTO> result = entities.stream()
-                .map(entity -> {
-                    UserApprovalResponseDTO dto = UserApprovalResponseDTO.fromEntity(entity);
-
-                    if (hasApprovalMode) {
-                        dto.setApprovalStatus(
-                                statusMap.get(entity.getId())
-                        );
-                    }
-
-                    return dto;
-                })
-                .toList();
-
-        return new PagedResponse<>(
-                result,
-                new PaginationDto(
-                        page.getTotalElements(),
-                        page.getNumber() + 1,
-                        page.getSize(),
-                        page.getTotalPages()
-                ),
-                hasApprovalMode // or dynamic logic
+        return pagedQueryService.findAll(
+                repository,
+                spec,
+                pagination,
+                UserApproval.class,
+                UserApproval::getId,
+                UserApprovalResponseDTO::fromEntity,
+                UserApprovalResponseDTO::setApprovalStatus,
+                DEPARTMENT_SORT_FIELDS
         );
     }
 

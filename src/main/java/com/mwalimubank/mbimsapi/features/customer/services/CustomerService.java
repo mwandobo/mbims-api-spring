@@ -1,6 +1,10 @@
 package com.mwalimubank.mbimsapi.features.customer.services;
 
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
+import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
+import com.mwalimubank.mbimsapi.features.administration.department.dto.DepartmentResponseDTO;
+import com.mwalimubank.mbimsapi.features.common.PageSpecs;
+import com.mwalimubank.mbimsapi.features.common.services.PagedQueryService;
 import com.mwalimubank.mbimsapi.features.customer.dto.CreateCustomerDTO;
 import com.mwalimubank.mbimsapi.features.customer.dto.CustomerResponseDTO;
 import com.mwalimubank.mbimsapi.features.customer.entity.CustomerEntity;
@@ -23,21 +27,27 @@ public class CustomerService {
     private final CustomerRepository repository;
     private final ApprovalStatusUtil approvalStatusUtil;
     private final CurrentUserService currentUserService;
+    private final PagedQueryService pagedQueryService;
+
+    private static final Set<String> DEPARTMENT_SORT_FIELDS = Set.of(
+            "id", "name", "description"
+    );
 
     public PagedResponse<CustomerResponseDTO> findAll(PaginationRequest pagination, String search) {
-        Specification<CustomerEntity> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
-        // Add search logic here if needed
+        Specification<CustomerEntity> spec = PageSpecs.and(
+                PageSpecs.notDeleted(),
+                PageSpecs.searchLike(search, "name", "description")
+        );
 
-        Page<CustomerEntity> page = repository.findAll(spec, pagination.toPageable());
-
-        List<CustomerResponseDTO> result = page.getContent().stream()
-                .map(CustomerResponseDTO::fromEntity)
-                .toList();
-
-        return new PagedResponse<>(
-                result,
-                new PaginationDto(page.getTotalElements(), page.getNumber() + 1, page.getSize(), page.getTotalPages()),
-                false
+        return pagedQueryService.findAll(
+                repository,
+                spec,
+                pagination,
+                CustomerEntity.class,
+                CustomerEntity::getId,
+                CustomerResponseDTO::fromEntity,
+                CustomerResponseDTO::setApprovalStatus,
+                DEPARTMENT_SORT_FIELDS
         );
     }
 

@@ -1,19 +1,19 @@
 package com.mwalimubank.mbimsapi.features.role;
 
+import com.mwalimubank.mbimsapi.features.administration.position.PositionEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface RoleRepository extends JpaRepository<RoleEntity, Long> {
+public interface RoleRepository extends JpaRepository<RoleEntity, Long>, JpaSpecificationExecutor<RoleEntity> {
     Optional<RoleEntity> findByName(String name);
-
-    Page<RoleEntity> findAll(Specification<RoleEntity> spec, Pageable pageable);
 
     @EntityGraph(attributePaths = { "permissions" })
     Optional<RoleEntity> findWithPermissionsById(Long id);

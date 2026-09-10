@@ -22,7 +22,7 @@ public class ApprovalLevelController {
     @GetMapping
     public PagedResponse<ApprovalLevelResponseDTO> getAll(
             PaginationRequest pagination,
-            @RequestParam(required = false) String search
+            @RequestParam(required = false , name = "q") String search
     ) {
         return service.findAll(pagination, search);
     }

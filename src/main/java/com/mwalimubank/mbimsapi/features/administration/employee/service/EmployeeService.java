@@ -59,7 +59,7 @@ public class EmployeeService {
     private final RoleRepository roleRepository;
     private final PagedQueryService pagedQueryService;
 
-    private static final Set<String> EMPLOYEE_SORT_FIELDS = Set.of(
+    private static final Set<String> SORT_FIELDS = Set.of(
             "id", "firstName", "middleName", "lastName", "name",
             "email", "mobilePhone", "staffNo", "gender",
             "createdAt", "updatedAt"
@@ -83,7 +83,7 @@ public class EmployeeService {
                 EmployeeEntity::getId,
                 EmployeeResponseDTO::fromEntity,
                 EmployeeResponseDTO::setApprovalStatus,
-                EMPLOYEE_SORT_FIELDS
+                SORT_FIELDS
         );
     }
 
