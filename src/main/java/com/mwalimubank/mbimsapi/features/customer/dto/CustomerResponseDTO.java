@@ -1,5 +1,6 @@
 package com.mwalimubank.mbimsapi.features.customer.dto;
 
+import com.mwalimubank.mbimsapi.core.utils.DateFormatterUtil;
 import com.mwalimubank.mbimsapi.features.customer.entity.CustomerEntity;
 import lombok.Data;
 
@@ -62,14 +63,15 @@ public class CustomerResponseDTO {
                     default -> "Single";
                 }
         );
-        dto.setCreatedAt(entity.getCreatedAt().toString());
+
+        dto.setCreatedAt(DateFormatterUtil.format(entity.getCreatedAt()));
+        dto.setDateOfBirth(DateFormatterUtil.format(entity.getDateOfBirth()));
 
         dto.setResidency(
                 Objects.equals(entity.getNonResident(), "0")
                         ? "Resident"
                         : "Non-Resident"
         );
-        dto.setDateOfBirth( entity.getDateOfBirth().toString() );
         dto.setCustomerType(Objects.equals(entity.getCustType(), "1") ? "Individual": "Corporate");
         dto.setNumberDependants(
                 entity.getNumberOfChildren() != null

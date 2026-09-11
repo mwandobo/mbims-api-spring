@@ -29,14 +29,14 @@ public class CustomerService {
     private final CurrentUserService currentUserService;
     private final PagedQueryService pagedQueryService;
 
-    private static final Set<String> DEPARTMENT_SORT_FIELDS = Set.of(
-            "id", "name", "description"
+    private static final Set<String> SORT_FIELDS = Set.of(
+            "id", "name", "createdAt"
     );
 
     public PagedResponse<CustomerResponseDTO> findAll(PaginationRequest pagination, String search) {
         Specification<CustomerEntity> spec = PageSpecs.and(
                 PageSpecs.notDeleted(),
-                PageSpecs.searchLike(search, "name", "description")
+                PageSpecs.searchLike(search, "name", "createdAt")
         );
 
         return pagedQueryService.findAll(
@@ -47,7 +47,7 @@ public class CustomerService {
                 CustomerEntity::getId,
                 CustomerResponseDTO::fromEntity,
                 CustomerResponseDTO::setApprovalStatus,
-                DEPARTMENT_SORT_FIELDS
+                SORT_FIELDS
         );
     }
 

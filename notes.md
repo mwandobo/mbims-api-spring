@@ -118,8 +118,8 @@ db2 "CREATE INDEX PROFITS.IDX_GLI_TRX_EXTERNAL_GL ON PROFITS.GLI_TRX_EXTRACT (EX
 
 To format date 
 
-            private static final DateTimeFormatter FORMATTER =
-            DateTimeFormatter.ofPattern("dd/MM/yyyy");
+          dto.setCreatedAt(DateFormatterUtil.format(entity.getCreatedAt()));
+          dto.setDateOfBirth(DateFormatterUtil.format(entity.getDateOfBirth()));
 
 to apply sort to a table check employee implementation like below
 
@@ -146,6 +146,19 @@ Specs.searchLike(search, "name", "description")
     );
 }
 
+
+to handle error during build 
+
+
+    UPDATE MBIMS.employee e
+    SET unit_id = NULL
+    WHERE unit_id IS NOT NULL
+    AND NOT EXISTS (SELECT 1 FROM MBIMS.unit u WHERE u.id = e.unit_id);
+    
+    UPDATE MBIMS.transaction t
+    SET customer_id = NULL
+    WHERE customer_id IS NOT NULL
+    AND NOT EXISTS (SELECT 1 FROM MBIMS.customer c WHERE c.id = t.customer_id);
 
 
 
