@@ -61,13 +61,13 @@ public class ApprovalLevelService {
     private String frontEndUrl;
 
     private static final Set<String> DEPARTMENT_SORT_FIELDS = Set.of(
-            "id", "name", "description"
+            "id", "name", "level"
     );
 
     public PagedResponse<ApprovalLevelResponseDTO> findAll(PaginationRequest pagination, String search) {
         Specification<ApprovalLevel> spec = PageSpecs.and(
                 PageSpecs.notDeleted(),
-                PageSpecs.searchLike(search, "name", "description")
+                PageSpecs.searchLike(search, "name", "level")
         );
 
         return pagedQueryService.findAll(

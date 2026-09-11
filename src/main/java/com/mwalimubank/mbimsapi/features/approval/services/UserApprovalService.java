@@ -38,13 +38,13 @@ public class UserApprovalService {
     private final PagedQueryService pagedQueryService;
 
     private static final Set<String> DEPARTMENT_SORT_FIELDS = Set.of(
-            "id", "name", "description"
+            "id", "name"
     );
 
     public PagedResponse<UserApprovalResponseDTO> findAll(PaginationRequest pagination, String search) {
         Specification<UserApproval> spec = PageSpecs.and(
                 PageSpecs.notDeleted(),
-                PageSpecs.searchLike(search, "name", "description")
+                PageSpecs.searchLike(search, "name")
         );
 
         return pagedQueryService.findAll(

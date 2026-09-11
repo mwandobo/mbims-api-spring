@@ -29,42 +29,16 @@ public class UnitService {
     private final ApprovalStatusUtil approvalStatusUtil;
     private final CurrentUserService currentUserService;
     private final EmployeeRepository employeeRepository;
-
-//    public PagedResponse<UnitResponseDTO> findAll(PaginationRequest pagination, String search) {
-//        Specification<UnitEntity> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
-//        // TODO: Add search logic if needed
-//
-//        Page<UnitEntity> page = repository.findAll(spec, pagination.toPageable());
-//
-//        List<UnitResponseDTO> result = page.getContent().stream()
-//                .map(entity -> {
-//                    UnitResponseDTO dto = UnitResponseDTO.fromEntity(entity);
-//                    return dto;
-//                })
-//                .toList();
-//
-//        return new PagedResponse<>(
-//                result,
-//                new PaginationDto(
-//                        page.getTotalElements(),
-//                        page.getNumber() + 1,
-//                        page.getSize(),
-//                        page.getTotalPages()
-//                ),
-//                false
-//        );
-//    }
-
     private final PagedQueryService pagedQueryService;
 
     private static final Set<String> SORT_FIELDS = Set.of(
-            "id", "name", "description"
+            "id", "name", "description", "code"
     );
 
     public PagedResponse<UnitResponseDTO> findAll(PaginationRequest pagination, String search) {
         Specification<UnitEntity> spec = PageSpecs.and(
                 PageSpecs.notDeleted(),
-                PageSpecs.searchLike(search, "name", "description")
+                PageSpecs.searchLike(search, "name", "description", "code")
         );
 
         return pagedQueryService.findAll(
@@ -145,6 +119,4 @@ public class UnitService {
             repository.delete(entity);
         }
     }
-
-
 }

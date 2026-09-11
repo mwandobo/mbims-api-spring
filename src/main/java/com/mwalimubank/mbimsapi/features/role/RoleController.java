@@ -20,10 +20,10 @@ public class RoleController {
     private final RoleService service;
 
     @GetMapping
-    public PagedResponse<RoleResponseDTO> getAllUsers(
+    public PagedResponse<RoleResponseDTO> findAll(
             PaginationRequest pagination,
             @RequestParam(required = false) String search) {
-        return service.findAll(pagination, search);
+            return service.findAll(pagination, search);
     }
 
     @PostMapping()

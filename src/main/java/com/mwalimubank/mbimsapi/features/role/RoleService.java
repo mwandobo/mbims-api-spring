@@ -42,13 +42,13 @@ public class RoleService {
     private final PagedQueryService pagedQueryService;
 
     private static final Set<String> SORT_FIELDS = Set.of(
-            "id", "name", "description"
+            "id", "name"
     );
 
     public PagedResponse<RoleResponseDTO> findAll(PaginationRequest pagination, String search) {
         Specification<RoleEntity> spec = PageSpecs.and(
                 PageSpecs.notDeleted(),
-                PageSpecs.searchLike(search, "name", "description")
+                PageSpecs.searchLike(search, "name")
         );
 
         return pagedQueryService.findAll(
