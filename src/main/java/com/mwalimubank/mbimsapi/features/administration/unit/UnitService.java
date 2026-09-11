@@ -32,14 +32,21 @@ public class UnitService {
     private final PagedQueryService pagedQueryService;
 
     private static final Set<String> SORT_FIELDS = Set.of(
-            "id", "name", "description", "code"
+            "id", "name", "description", "code", "manager.name"
     );
+
+    private static final Map<String, String> SORT_ALIASES = Map.of(
+            "managerName", "manager.name"   // frontend sortBy=departmentName
+    );
+
 
     public PagedResponse<UnitResponseDTO> findAll(PaginationRequest pagination, String search) {
         Specification<UnitEntity> spec = PageSpecs.and(
                 PageSpecs.notDeleted(),
-                PageSpecs.searchLike(search, "name", "description", "code")
+                PageSpecs.searchLike(search, "name", "description", "code", "manager.name")
         );
+
+
 
         return pagedQueryService.findAll(
                 repository,
@@ -49,7 +56,8 @@ public class UnitService {
                 UnitEntity::getId,
                 UnitResponseDTO::fromEntity,
                 UnitResponseDTO::setApprovalStatus,
-                SORT_FIELDS
+                SORT_FIELDS,
+                SORT_ALIASES
         );
     }
 

@@ -60,14 +60,20 @@ public class ApprovalLevelService {
     @Value("${spring.front.end.url}")
     private String frontEndUrl;
 
-    private static final Set<String> DEPARTMENT_SORT_FIELDS = Set.of(
-            "id", "name", "level"
+    private static final Set<String> SORT_FIELDS = Set.of(
+            "id", "name", "level", "role.name"
     );
+
+    private static final Map<String, String> SORT_ALIASES = Map.of(
+            "roleName", "role.name"   // frontend sortBy=departmentName
+    );
+
+
 
     public PagedResponse<ApprovalLevelResponseDTO> findAll(PaginationRequest pagination, String search) {
         Specification<ApprovalLevel> spec = PageSpecs.and(
                 PageSpecs.notDeleted(),
-                PageSpecs.searchLike(search, "name", "level")
+                PageSpecs.searchLike(search, "name", "level", "role.name")
         );
 
         return pagedQueryService.findAll(
@@ -78,7 +84,8 @@ public class ApprovalLevelService {
                 ApprovalLevel::getId,
                 ApprovalLevelResponseDTO::fromEntity,
                 ApprovalLevelResponseDTO::setApprovalStatus,
-                DEPARTMENT_SORT_FIELDS
+                SORT_FIELDS,
+                SORT_ALIASES
         );
     }
 

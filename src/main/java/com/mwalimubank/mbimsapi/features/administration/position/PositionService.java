@@ -35,13 +35,18 @@ public class PositionService {
     private final PagedQueryService pagedQueryService;
 
     private static final Set<String> SORT_FIELDS = Set.of(
-            "id", "name", "description"
+            "id", "name", "description","createdAt", "updatedAt",
+            "department.name"           // real path
+    );
+
+    private static final Map<String, String> SORT_ALIASES = Map.of(
+            "departmentName", "department.name"   // frontend sortBy=departmentName
     );
 
     public PagedResponse<PositionResponseDTO> findAll(PaginationRequest pagination, String search) {
         Specification<PositionEntity> spec = PageSpecs.and(
                 PageSpecs.notDeleted(),
-                PageSpecs.searchLike(search, "name", "description")
+                PageSpecs.searchLike(search, "name", "description","department.name" )
         );
 
         return pagedQueryService.findAll(
@@ -52,7 +57,8 @@ public class PositionService {
                 PositionEntity::getId,
                 PositionResponseDTO::fromEntity,
                 PositionResponseDTO::setApprovalStatus,
-                SORT_FIELDS
+                SORT_FIELDS,
+                SORT_ALIASES
         );
     }
 

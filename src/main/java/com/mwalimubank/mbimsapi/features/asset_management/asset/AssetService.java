@@ -30,14 +30,20 @@ public class AssetService {
     private final CurrentUserService currentUserService;
     private final PagedQueryService pagedQueryService;
 
-    private static final Set<String> DEPARTMENT_SORT_FIELDS = Set.of(
-            "id", "name", "description"
+    private static final Set<String> SORT_FIELDS = Set.of(
+            "id", "name", "description","assetCategory.name"
     );
+
+    private static final Map<String, String> SORT_ALIASES = Map.of(
+            "assetCategoryName", "assetCategory.name"   // frontend sortBy=departmentName
+    );
+
+
 
     public PagedResponse<AssetResponseDTO> findAll(PaginationRequest pagination, String search) {
         Specification<AssetEntity> spec = PageSpecs.and(
                 PageSpecs.notDeleted(),
-                PageSpecs.searchLike(search, "name", "description")
+                PageSpecs.searchLike(search, "name", "description","assetCategory.name")
         );
 
         return pagedQueryService.findAll(
@@ -48,7 +54,8 @@ public class AssetService {
                 AssetEntity::getId,
                 AssetResponseDTO::fromEntity,
                 AssetResponseDTO::setApprovalStatus,
-                DEPARTMENT_SORT_FIELDS
+                SORT_FIELDS,
+                SORT_ALIASES
         );
     }
 
@@ -65,7 +72,7 @@ public class AssetService {
         entity.setName(request.getName());
         entity.setDescription(request.getDescription());
         AssetCategoryEntity assetcategory = validateAssetcategoryExists(request.getAsset_category_id());
-        entity.setAssetcategory(assetcategory);
+        entity.setAssetCategory(assetcategory);
         AssetEntity savedEntity = repository.save(entity);
 
         return  AssetResponseDTO.fromEntity(savedEntity);
@@ -105,7 +112,7 @@ public class AssetService {
         entity.setName(request.getName());
         entity.setDescription(request.getDescription());
         AssetCategoryEntity assetcategory = validateAssetcategoryExists(request.getAsset_category_id());
-        entity.setAssetcategory(assetcategory);
+        entity.setAssetCategory(assetcategory);
 
         AssetEntity updatedEntity = repository.save(entity);
 

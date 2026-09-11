@@ -22,6 +22,6 @@ public class AssetEntity extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "asset_category_id")
-    private AssetCategoryEntity assetcategory;
+    private AssetCategoryEntity assetCategory;
 
 }

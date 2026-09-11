@@ -25,9 +25,9 @@ public class AssetResponseDTO {
             dto.setId(asset.getId());
             dto.setName(asset.getName());
             dto.setDescription(asset.getDescription());
-            dto.setAssetCategory(asset.getAssetcategory() != null ? AssetCategoryResponseDTO.fromEntity(asset.getAssetcategory()) : null);
-            dto.setAssetCategoryName(asset.getAssetcategory() != null ? asset.getAssetcategory().getName() : null);
-            dto.setAssetCategoryId(asset.getAssetcategory() != null ? asset.getAssetcategory().getId() : null);
+            dto.setAssetCategory(asset.getAssetCategory() != null ? AssetCategoryResponseDTO.fromEntity(asset.getAssetCategory()) : null);
+            dto.setAssetCategoryName(asset.getAssetCategory() != null ? asset.getAssetCategory().getName() : null);
+            dto.setAssetCategoryId(asset.getAssetCategory() != null ? asset.getAssetCategory().getId() : null);
             dto.setUpdatedAt(asset.getUpdatedAt() != null ? asset.getUpdatedAt().toString() : null);
             dto.setCreatedAt(asset.getCreatedAt() != null ? asset.getCreatedAt().toString() : null);
             return dto;

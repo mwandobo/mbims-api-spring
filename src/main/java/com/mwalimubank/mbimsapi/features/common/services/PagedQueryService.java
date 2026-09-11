@@ -13,7 +13,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -23,6 +26,7 @@ public class PagedQueryService {
 
     private final ApprovalStatusUtil approvalStatusUtil;
 
+    /** Simple call — no sort aliases */
     public <E, D> PagedResponse<D> findAll(
             JpaSpecificationExecutor<E> repository,
             Specification<E> spec,
@@ -30,12 +34,35 @@ public class PagedQueryService {
             Class<E> entityClass,
             Function<E, Long> idGetter,
             Function<E, D> mapper,
-            BiConsumer<D, String> approvalSetter,  // dto.setApprovalStatus
+            BiConsumer<D, String> approvalSetter,
             Set<String> allowedSortFields
+    ) {
+        return findAll(
+                repository, spec, pagination, entityClass,
+                idGetter, mapper, approvalSetter,
+                allowedSortFields, Map.of()
+        );
+    }
+
+    /** Full call — with sort aliases (e.g. departmentName → department.name) */
+    public <E, D> PagedResponse<D> findAll(
+            JpaSpecificationExecutor<E> repository,
+            Specification<E> spec,
+            PaginationRequest pagination,
+            Class<E> entityClass,
+            Function<E, Long> idGetter,
+            Function<E, D> mapper,
+            BiConsumer<D, String> approvalSetter,
+            Set<String> allowedSortFields,
+            Map<String, String> sortAliases          // ← this makes the signature different
     ) {
         boolean hasApprovalMode = approvalStatusUtil.hasApprovalMode(entityClass.getSimpleName());
 
-        Pageable pageable = sanitizePageable(pagination.toPageable(), allowedSortFields);
+        Pageable pageable = sanitizePageable(
+                pagination.toPageable(),
+                allowedSortFields,
+                sortAliases
+        );
 
         Page<E> page = repository.findAll(spec, pageable);
         List<E> entities = page.getContent();
@@ -69,24 +96,34 @@ public class PagedQueryService {
         );
     }
 
-    private Pageable sanitizePageable(Pageable pageable, Set<String> allowed) {
-        if (allowed == null || allowed.isEmpty()) {
+    private Pageable sanitizePageable(
+            Pageable pageable,
+            Set<String> allowed,
+            Map<String, String> sortAliases
+    ) {
+        if (!pageable.getSort().isSorted()) {
             return pageable;
         }
 
-        Sort sort = pageable.getSort();
-        if (!sort.isSorted()) {
-            return pageable;
+        Sort.Order order = pageable.getSort().iterator().next();
+        String property = order.getProperty();
+
+        if (sortAliases != null && sortAliases.containsKey(property)) {
+            property = sortAliases.get(property);
         }
 
-        Sort.Order order = sort.iterator().next();
-        if (!allowed.contains(order.getProperty())) {
+        if (allowed != null && !allowed.isEmpty() && !allowed.contains(property)) {
             return PageRequest.of(
                     pageable.getPageNumber(),
                     pageable.getPageSize(),
                     Sort.by(Sort.Direction.DESC, "id")
             );
         }
-        return pageable;
+
+        return PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(order.getDirection(), property)
+        );
     }
 }
