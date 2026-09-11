@@ -5,6 +5,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public final class PageSpecs {
 
@@ -89,4 +90,37 @@ public final class PageSpecs {
                 ? (root, query, cb) -> cb.conjunction()
                 : result;
     }
+
+    @SafeVarargs
+    public static <T> Specification<T> or(Specification<T>... specs) {
+        Specification<T> result = null;
+        for (Specification<T> s : specs) {
+            if (s == null) continue;
+            result = result == null ? Specification.where(s) : result.or(s);
+        }
+        return result; // null if all specs were null — fine for PageSpecs.and(...)
+    }
+
+
+    /**
+     * Match coded columns by label text, e.g. search "male" → sex IN ('M')
+     */
+    public static <T> Specification<T> searchCoded(
+            String search,
+            String field,
+            Map<String, String> codeToLabel
+    ) {
+        if (search == null || search.isBlank()) {
+            return null;
+        }
+
+        List<String> codes = CodeLabelMaps.codesMatching(codeToLabel, search);
+        if (codes.isEmpty()) {
+            return null; // no label matched this term
+        }
+
+        return (root, query, cb) -> root.get(field).in(codes);
+    }
+
+
 }

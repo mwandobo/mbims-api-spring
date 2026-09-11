@@ -3,6 +3,7 @@ package com.mwalimubank.mbimsapi.features.customer.services;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
 import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
 import com.mwalimubank.mbimsapi.features.administration.department.dto.DepartmentResponseDTO;
+import com.mwalimubank.mbimsapi.features.common.CodeLabelMaps;
 import com.mwalimubank.mbimsapi.features.common.PageSpecs;
 import com.mwalimubank.mbimsapi.features.common.services.PagedQueryService;
 import com.mwalimubank.mbimsapi.features.customer.dto.CreateCustomerDTO;
@@ -30,13 +31,22 @@ public class CustomerService {
     private final PagedQueryService pagedQueryService;
 
     private static final Set<String> SORT_FIELDS = Set.of(
-            "id", "name", "createdAt"
+            "id", "name", "createdAt", "custType"
+    );
+
+    private static final Map<String, String> SORT_ALIASES = Map.of(
+            "customerType", "custType"       // frontend → DB field
     );
 
     public PagedResponse<CustomerResponseDTO> findAll(PaginationRequest pagination, String search) {
         Specification<CustomerEntity> spec = PageSpecs.and(
                 PageSpecs.notDeleted(),
-                PageSpecs.searchLike(search, "name", "createdAt")
+                PageSpecs.or(
+                        PageSpecs.searchLike(search,
+                                "name", "createdAt"
+                        ),
+                        PageSpecs.searchCoded(search, "custType", CodeLabelMaps.CUST_TYPE)
+                )
         );
 
         return pagedQueryService.findAll(
@@ -47,7 +57,8 @@ public class CustomerService {
                 CustomerEntity::getId,
                 CustomerResponseDTO::fromEntity,
                 CustomerResponseDTO::setApprovalStatus,
-                SORT_FIELDS
+                SORT_FIELDS,
+                SORT_ALIASES
         );
     }
 
