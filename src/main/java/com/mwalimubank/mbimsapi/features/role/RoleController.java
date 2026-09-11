@@ -22,7 +22,7 @@ public class RoleController {
     @GetMapping
     public PagedResponse<RoleResponseDTO> getAllUsers(
             PaginationRequest pagination,
-            @RequestParam(required = false, name = "q") String search) {
+            @RequestParam(required = false) String search) {
         return service.findAll(pagination, search);
     }
 

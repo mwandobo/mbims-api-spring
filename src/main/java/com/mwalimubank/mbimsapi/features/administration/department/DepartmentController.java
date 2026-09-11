@@ -20,7 +20,7 @@ public class DepartmentController {
     @GetMapping
     public PagedResponse<DepartmentResponseDTO> findAll(
             PaginationRequest pagination,
-            @RequestParam(required = false, name = "q") String search
+            @RequestParam(required = false) String search
     ) {
                 return service.findAll(pagination, search);
     }

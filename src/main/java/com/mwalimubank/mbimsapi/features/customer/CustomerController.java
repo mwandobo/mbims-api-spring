@@ -25,7 +25,7 @@ public class CustomerController {
     @GetMapping
     public PagedResponse<CustomerResponseDTO> findAll(
             PaginationRequest pagination,
-            @RequestParam(required = false, name = "q") String search) {
+            @RequestParam(required = false) String search) {
         return service.findAll(pagination, search);
     }
 

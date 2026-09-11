@@ -22,7 +22,7 @@ public class UserApprovalController {
     @GetMapping
     public PagedResponse<UserApprovalResponseDTO> getAll(
             PaginationRequest pagination,
-            @RequestParam(required = false, name = "q") String search
+            @RequestParam(required = false) String search
     ) {
         return  service.findAll(pagination, search);
     }

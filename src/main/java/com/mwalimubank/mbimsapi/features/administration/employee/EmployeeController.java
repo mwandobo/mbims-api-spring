@@ -31,7 +31,7 @@ public class EmployeeController {
     @GetMapping
     public PagedResponse<EmployeeResponseDTO> findAll(
             @ModelAttribute PaginationRequest pagination,  // or just PaginationRequest pagination
-            @RequestParam(required = false) String search
+            @RequestParam(required = false ) String search
     ) {
         return service.findAll(pagination, search);
     }
