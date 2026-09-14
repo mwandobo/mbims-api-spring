@@ -160,10 +160,7 @@ to handle error during build
     WHERE customer_id IS NOT NULL
     AND NOT EXISTS (SELECT 1 FROM MBIMS.customer c WHERE c.id = t.customer_id);
 
-
-
-
-
+to send email in background enable the send via queue in the application properties
 
 
 

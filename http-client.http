@@ -484,7 +484,7 @@ POST {{base_url}}/administration/employees/sync
 Authorization: Bearer {{token}}
 
 ###
-POST {{base_url}}/administration/employees/187/receive-credential
+POST {{base_url}}/administration/employees/187/share-credential
 Authorization: Bearer {{token}}
 
 
@@ -520,6 +520,12 @@ Authorization: Bearer {{token}}
 ###
 POST {{base_url}}/administration/employees/sync
 Authorization: Bearer {{token}}
+
+
+###
+GET {{base_url}}/reconciliation
+Authorization: Bearer {{token}}
+
 
 
 

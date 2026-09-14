@@ -26,8 +26,6 @@ public class EmployeeController {
     private final EmployeeSyncService employeeSyncService;
 
 
-
-
     @GetMapping
     public PagedResponse<EmployeeResponseDTO> findAll(
             @ModelAttribute PaginationRequest pagination,  // or just PaginationRequest pagination
@@ -35,11 +33,6 @@ public class EmployeeController {
     ) {
         return service.findAll(pagination, search);
     }
-
-//    @GetMapping("/{id}")
-//    public EmployeeResponseDTO findOne(@PathVariable Long id) {
-//        return service.findOne(id);
-//    }
 
     @PatchMapping("/{id}")
     public EmployeeResponseDTO update(

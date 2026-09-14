@@ -27,15 +27,10 @@ import com.mwalimubank.mbimsapi.features.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
-import com.mwalimubank.mbimsapi.core.dto.PaginationDto;
 import com.mwalimubank.mbimsapi.features.approval.util.ApprovalStatusUtil;
 import com.mwalimubank.mbimsapi.core.services.CurrentUserService;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,30 +81,6 @@ public class EmployeeService {
                 SORT_FIELDS
         );
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     public ApprovalAwareDTO<EmployeeResponseDTO> findOne  (Long  departmentId) {
         EmployeeEntity   department = repository.findById( departmentId)
@@ -264,9 +235,6 @@ public String receiveCredentials(Long id) {
 
             Map<String, Object> context = new HashMap<>();
 
-    //            String password = PasswordGenerator.generate(12);
-    //
-    //            context.put("expiryMinutes", 5);
             context.put("email", user.getEmail());
             context.put("name", user.getName());           // ← added
             context.put("password", password);
