@@ -11,12 +11,15 @@ import java.util.Set;
 public class ReconciliationResponseDTO {
 
     private Long id;
+    private String code;
     private String name;
     private String fileAName;
     private String fileBName;
     private Integer matchCount;
     private Integer missingInACount;
     private Integer missingInBCount;
+    private String staffName;
+    private Long staffId;
     private String status;
     private String createdAt;
     private String updatedAt;
@@ -29,6 +32,7 @@ public class ReconciliationResponseDTO {
     public static ReconciliationResponseDTO fromEntity(ReconciliationEntity entity) {
         ReconciliationResponseDTO dto = new ReconciliationResponseDTO();
         dto.setId(entity.getId());
+        dto.setCode(entity.getCode());
         dto.setName(entity.getName());
         dto.setFileAName(entity.getFileAName());
         dto.setFileBName(entity.getFileBName());
@@ -40,6 +44,12 @@ public class ReconciliationResponseDTO {
         if (entity.getCreatedAt() != null) {
             dto.setCreatedAt(entity.getCreatedAt().toString());
         }
+        dto.setStaffName(
+                entity.getCreatedBy() != null ? entity.getCreatedBy().getName() : null
+        );
+        dto.setStaffId(
+                entity.getCreatedBy() != null ? entity.getCreatedBy().getId() : null
+        );
         if (entity.getUpdatedAt() != null) {
             dto.setUpdatedAt(entity.getUpdatedAt().toString());
         }

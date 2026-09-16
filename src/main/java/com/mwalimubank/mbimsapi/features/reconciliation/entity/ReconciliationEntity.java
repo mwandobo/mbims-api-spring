@@ -1,6 +1,8 @@
 package com.mwalimubank.mbimsapi.features.reconciliation.entity;
 
 import com.mwalimubank.mbimsapi.core.entity.BaseEntity;
+import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
+import com.mwalimubank.mbimsapi.features.user.UserEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -13,6 +15,7 @@ public class ReconciliationEntity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String code;              // optional label from user
     private String name;              // optional label from user
     private String fileAName;
     private String fileBName;
@@ -21,6 +24,9 @@ public class ReconciliationEntity extends BaseEntity {
     private Integer missingInACount;
     private Integer missingInBCount;
 
-    private String status;            // COMPLETED
-    private Long createdBy;           // current user id (optional)
+    private String status;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_id")
+    private UserEntity createdBy;// COMPLETED
 }

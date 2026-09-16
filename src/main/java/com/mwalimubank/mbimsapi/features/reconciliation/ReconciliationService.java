@@ -3,6 +3,7 @@ package com.mwalimubank.mbimsapi.features.reconciliation;
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
 import com.mwalimubank.mbimsapi.core.services.CurrentUserService;
+import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
 import com.mwalimubank.mbimsapi.features.approval.util.ApprovalStatusUtil;
 import com.mwalimubank.mbimsapi.features.common.PageSpecs;
@@ -12,6 +13,8 @@ import com.mwalimubank.mbimsapi.features.reconciliation.entity.ReconciliationEnt
 import com.mwalimubank.mbimsapi.features.reconciliation.entity.ReconciliationItemEntity;
 import com.mwalimubank.mbimsapi.features.reconciliation.repository.ReconciliationItemRepository;
 import com.mwalimubank.mbimsapi.features.reconciliation.repository.ReconciliationRepository;
+import com.mwalimubank.mbimsapi.features.user.UserEntity;
+import com.mwalimubank.mbimsapi.features.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +35,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ReconciliationService {
     private final ReconciliationRepository repository;
+    private final UserRepository userRepository;
+    private final ReconciliationHelper helper;
     private final ReconciliationItemRepository itemRepository;
     private final PagedQueryService pagedQueryService;
     private final ApprovalStatusUtil approvalStatusUtil;
@@ -148,12 +153,15 @@ public class ReconciliationService {
         // Easier: return richer object from compareExcel
 
         ReconciliationEntity entity = new ReconciliationEntity();
+        entity.setCode(this.helper.nextReconCode());
         entity.setName(name != null ? name : "Reconciliation " + LocalDateTime.now());
         entity.setFileAName(files[0].getOriginalFilename());
         entity.setFileBName(files[1].getOriginalFilename());
         entity.setMatchCount(matches.size());
         entity.setStatus("COMPLETED");
-        entity.setCreatedBy(userId);
+
+
+        entity.setCreatedBy(currentUserService.getCurrentUser());
 
         List<String> missingA = missing.getOrDefault(files[0].getOriginalFilename(), List.of());
         List<String> missingB = missing.getOrDefault(files[1].getOriginalFilename(), List.of());
@@ -273,4 +281,16 @@ public class ReconciliationService {
     }
 
     private record FileDataset(String fileName, Set<String> values) {}
+
+
+    private UserEntity validateUserExists(Long id) {
+        if (id == null) {
+            if ("false" == "false") {
+                throw new IllegalArgumentException("User ID is required");
+            }
+            return null;
+        }
+        return userRepository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("User not found with id: " + id));
+    }
 }
