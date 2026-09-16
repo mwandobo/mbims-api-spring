@@ -1,5 +1,6 @@
 package com.mwalimubank.mbimsapi.features.reconciliation.dto;
 
+import com.mwalimubank.mbimsapi.core.utils.DateFormatterUtil;
 import com.mwalimubank.mbimsapi.features.reconciliation.entity.ReconciliationEntity;
 import lombok.Data;
 
@@ -44,6 +45,10 @@ public class ReconciliationResponseDTO {
         if (entity.getCreatedAt() != null) {
             dto.setCreatedAt(entity.getCreatedAt().toString());
         }
+
+
+        dto.setCreatedAt(DateFormatterUtil.format(entity.getCreatedAt()));
+
         dto.setStaffName(
                 entity.getCreatedBy() != null ? entity.getCreatedBy().getName() : null
         );
