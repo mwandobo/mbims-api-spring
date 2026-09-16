@@ -34,13 +34,15 @@ public class ReconciliationController {
     }
 
     @PostMapping("/compare")
-    public ResponseEntity<ReconciliationResponseDTO> compare(
-            @RequestParam("files") MultipartFile[] files,
-            @RequestParam(required = false) String name
+    public ResponseEntity<Map<String, Object>> compare(
+            @RequestParam("files") MultipartFile[] files
     ) {
-        Long userId = null; // or inject CurrentUserService and use getCurrentUserId()
-        // return service.compareAndSave(files, name);
-        return ResponseEntity.ok(service.compareAndSave(files, name, userId));
+        return ResponseEntity.ok(service.compareExcel(files));
+    }
+
+    @PostMapping("/submit")
+    public ResponseEntity<?> submit(@RequestBody Map<String, Object> payload) {
+        return ResponseEntity.ok(service.submit(payload));
     }
 
     @GetMapping("/{id}/items")

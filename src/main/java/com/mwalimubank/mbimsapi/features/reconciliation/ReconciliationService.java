@@ -135,37 +135,35 @@ public class ReconciliationService {
         );
     }
 
+
     @Transactional
-    public ReconciliationResponseDTO compareAndSave(
-            MultipartFile[] files,
-            String name,
-            Long userId
-    ) {
-        Map<String, Object> result = compareExcel(files);
+    public ReconciliationResponseDTO submit(Map<String, Object> payload) {
+
+        String name = (String) payload.get("name");
+        String fileAName = (String) payload.get("fileAName");
+        String fileBName = (String) payload.get("fileBName");
 
         @SuppressWarnings("unchecked")
-        Set<String> matches = (Set<String>) result.get("matches");
-        @SuppressWarnings("unchecked")
-        Map<String, List<String>> missing = (Map<String, List<String>>) result.get("missing");
+        List<String> matches = (List<String>) payload.get("matches");
 
-//        FileDataset a = /* you need names from parse - refactor slightly */;
-        // Easier: return richer object from compareExcel
+        @SuppressWarnings("unchecked")
+        Map<String, List<String>> missing = (Map<String, List<String>>) payload.get("missing");
+
+        List<String> missingA = missing.getOrDefault(fileAName, List.of());
+        List<String> missingB = missing.getOrDefault(fileBName, List.of());
 
         ReconciliationEntity entity = new ReconciliationEntity();
-        entity.setCode(this.helper.nextReconCode());
-        entity.setName(name != null ? name : "Reconciliation " + LocalDateTime.now());
-        entity.setFileAName(files[0].getOriginalFilename());
-        entity.setFileBName(files[1].getOriginalFilename());
+        entity.setCode(helper.nextReconCode());
+        entity.setName(name != null && !name.isBlank()
+                ? name
+                : "Reconciliation " + LocalDateTime.now());
+        entity.setFileAName(fileAName);
+        entity.setFileBName(fileBName);
         entity.setMatchCount(matches.size());
-        entity.setStatus("COMPLETED");
-
-
-        entity.setCreatedBy(currentUserService.getCurrentUser());
-
-        List<String> missingA = missing.getOrDefault(files[0].getOriginalFilename(), List.of());
-        List<String> missingB = missing.getOrDefault(files[1].getOriginalFilename(), List.of());
         entity.setMissingInACount(missingA.size());
         entity.setMissingInBCount(missingB.size());
+        entity.setStatus("COMPLETED");
+        entity.setCreatedBy(currentUserService.getCurrentUser());
 
         entity = repository.save(entity);
 
@@ -174,15 +172,14 @@ public class ReconciliationService {
             items.add(item(entity, v, "MATCH", null));
         }
         for (String v : missingA) {
-            items.add(item(entity, v, "MISSING_IN_B", files[0].getOriginalFilename()));
-            // missing from B's perspective: in A not in B
+            items.add(item(entity, v, "MISSING_IN_B", fileAName));
         }
         for (String v : missingB) {
-            items.add(item(entity, v, "MISSING_IN_A", files[1].getOriginalFilename()));
+            items.add(item(entity, v, "MISSING_IN_A", fileBName));
         }
         itemRepository.saveAll(items);
 
-        return ReconciliationResponseDTO.fromEntity(entity, matches, missing);
+        return ReconciliationResponseDTO.fromEntity(entity, new HashSet<>(matches), missing);
     }
 
     private ReconciliationItemEntity item(
@@ -315,17 +312,5 @@ public class ReconciliationService {
                 "missingInA", missingInA,   // values that exist in B but not in A
                 "missingInB", missingInB    // values that exist in A but not in B
         );
-    }
-
-
-    private UserEntity validateUserExists(Long id) {
-        if (id == null) {
-            if ("false" == "false") {
-                throw new IllegalArgumentException("User ID is required");
-            }
-            return null;
-        }
-        return userRepository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("User not found with id: " + id));
     }
 }
