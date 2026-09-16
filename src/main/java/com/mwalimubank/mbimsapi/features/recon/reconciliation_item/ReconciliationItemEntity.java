@@ -1,6 +1,7 @@
-package com.mwalimubank.mbimsapi.features.reconciliation.entity;
+package com.mwalimubank.mbimsapi.features.recon.reconciliation_item;
 
 import com.mwalimubank.mbimsapi.core.entity.BaseEntity;
+import com.mwalimubank.mbimsapi.features.reconciliation.entity.ReconciliationEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -12,6 +13,12 @@ public class ReconciliationItemEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column()
+    private String name;
+
+    @Column()
+    private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reconciliation_id")

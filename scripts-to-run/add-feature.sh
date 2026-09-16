@@ -114,6 +114,9 @@ CORE_ENTITY="$BASE_PACKAGE.core.entity"
 CORE_SERVICES="$BASE_PACKAGE.core.services"
 APPROVAL_UTIL="$BASE_PACKAGE.features.approval.util"
 APPROVAL_DTO="$BASE_PACKAGE.features.approval.dto"
+PAGED_QUERY_SERVICE="$BASE_PACKAGE.features.common.services"
+DATE_FORMAT_UTIL="$BASE_PACKAGE.core.utils"
+PAGE_SPECS="$BASE_PACKAGE.features.common"
 
 # ====================== ENHANCED LOGGING ======================
 echo "=================================================="
@@ -171,10 +174,10 @@ public class ${FEATURE_PASCAL}Entity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column()
     private String name;
 
-    @Column(columnDefinition = "VARCHAR(1000)")
+    @Column()
     private String description;
 }
 EOF
@@ -185,16 +188,12 @@ EOF
 cat <<EOF > "$BASE_DIR/${FEATURE_PASCAL}Repository.java"
 package $FULL_PACKAGE;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import java.util.Optional;
 
-public interface ${FEATURE_PASCAL}Repository extends JpaRepository<${FEATURE_PASCAL}Entity, Long> {
+public interface ${FEATURE_PASCAL}Repository extends JpaRepository<${FEATURE_PASCAL}Entity, Long> , JpaSpecificationExecutor<${FEATURE_PASCAL}Entity>{
     Optional<${FEATURE_PASCAL}Entity> findByName(String name);
-
-    Page<${FEATURE_PASCAL}Entity> findAll(Specification<${FEATURE_PASCAL}Entity> spec, Pageable pageable);
 }
 EOF
 
@@ -220,6 +219,7 @@ cat <<EOF > "$BASE_DIR/dto/${FEATURE_PASCAL}ResponseDTO.java"
 package $FULL_PACKAGE.dto;
 
 import $FULL_PACKAGE.${FEATURE_PASCAL}Entity;
+import $DATE_FORMAT_UTIL.DateFormatterUtil;
 import lombok.Data;
 
 @Data
@@ -236,8 +236,8 @@ public class ${FEATURE_PASCAL}ResponseDTO {
         dto.setId(entity.getId());
         dto.setName(entity.getName());
         dto.setDescription(entity.getDescription());
-        dto.setCreatedAt(entity.getCreatedAt() != null ? entity.getCreatedAt().toString() : null);
-        dto.setUpdatedAt(entity.getUpdatedAt() != null ? entity.getUpdatedAt().toString() : null);
+        dto.setCreatedAt(DateFormatterUtil.format(entity.getCreatedAt()));
+        dto.setUpdatedAt(DateFormatterUtil.format(entity.getUpdatedAt()));
         return dto;
     }
 }
@@ -251,6 +251,8 @@ package $FULL_PACKAGE;
 
 import $CORE_DTO.PaginationRequest;
 import $FULL_PACKAGE.dto.Create${FEATURE_PASCAL}DTO;
+import com.mwalimubank.mbimsapi.features.common.services.PagedQueryService;
+
 import $FULL_PACKAGE.dto.${FEATURE_PASCAL}ResponseDTO;
 import $FULL_PACKAGE.${FEATURE_PASCAL}Entity;
 import lombok.RequiredArgsConstructor;
@@ -262,7 +264,9 @@ import $CORE_DTO.PagedResponse;
 import $CORE_DTO.PaginationDto;
 import $APPROVAL_UTIL.ApprovalStatusUtil;
 import $CORE_SERVICES.CurrentUserService;
+import $PAGED_QUERY_SERVICE.PagedQueryService;
 import $APPROVAL_DTO.ApprovalAwareDTO;
+import $PAGE_SPECS.PageSpecs;
 import java.util.*;
 
 @Service
@@ -271,22 +275,38 @@ public class ${FEATURE_PASCAL}Service {
     private final ${FEATURE_PASCAL}Repository repository;
     private final ApprovalStatusUtil approvalStatusUtil;
     private final CurrentUserService currentUserService;
+    private final PagedQueryService pagedQueryService;
 
-    public PagedResponse<${FEATURE_PASCAL}ResponseDTO> findAll(PaginationRequest pagination, String search) {
-        Specification<${FEATURE_PASCAL}Entity> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
-        // Add search logic here if needed
+    private static final Set<String> SORT_FIELDS = Set.of(
+            "id", "name"
+    );
 
-        Page<${FEATURE_PASCAL}Entity> page = repository.findAll(spec, pagination.toPageable());
+     private static final Map<String, String> SORT_ALIASES = Map.of(
+            // frontend column id → entity field if needed eg department.name to departmentName
+    );
 
-        List<${FEATURE_PASCAL}ResponseDTO> result = page.getContent().stream()
-                .map(${FEATURE_PASCAL}ResponseDTO::fromEntity)
-                .toList();
+    public PagedResponse<${FEATURE_PASCAL}ResponseDTO> findAll(
+            PaginationRequest pagination,
+            String search
+    ) {
+           Specification<${FEATURE_PASCAL}Entity> spec = PageSpecs.and(
+                  PageSpecs.notDeleted(),
+                  PageSpecs.searchLike(search,
+                          "name"
+                  )
+          );
 
-        return new PagedResponse<>(
-                result,
-                new PaginationDto(page.getTotalElements(), page.getNumber() + 1, page.getSize(), page.getTotalPages()),
-                false
-        );
+          return pagedQueryService.findAll(
+                  repository,
+                  spec,
+                  pagination,
+                  ${FEATURE_PASCAL}Entity.class,
+                  ${FEATURE_PASCAL}Entity::getId,
+                  ${FEATURE_PASCAL}ResponseDTO::fromEntity,
+                  ${FEATURE_PASCAL}ResponseDTO::setApprovalStatus,
+                  SORT_FIELDS,
+                  SORT_ALIASES
+          );
     }
 
     @Transactional

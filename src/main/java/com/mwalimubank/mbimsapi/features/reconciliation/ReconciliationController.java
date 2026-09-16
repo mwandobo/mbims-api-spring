@@ -43,6 +43,11 @@ public class ReconciliationController {
         return ResponseEntity.ok(service.compareAndSave(files, name, userId));
     }
 
+    @GetMapping("/{id}/items")
+    public ResponseEntity<?> getItems(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getItems(id));
+    }
+
 //    @PostMapping("/compare")
 //    public Map<String, Object> compare(@RequestParam("files") MultipartFile[] files) {
 //        return service.compareExcel(files);

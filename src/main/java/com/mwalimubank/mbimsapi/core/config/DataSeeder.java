@@ -148,6 +148,13 @@ public class DataSeeder {
                     new PermissionDef("reconciliation_read", "View Reconciliation"),
                     new PermissionDef("reconciliation_update", "Edit Reconciliation"),
                     new PermissionDef("reconciliation_delete", "Delete Reconciliation")
+            )),
+
+                   new PermissionGroup("reconciliation_item", List.of(
+            new PermissionDef("reconciliation_item_create", "Create Reconciliation Item"),
+                    new PermissionDef("reconciliation_item_read", "View Reconciliation Item"),
+                    new PermissionDef("reconciliation_item_update", "Edit Reconciliation Item"),
+                    new PermissionDef("reconciliation_item_delete", "Delete Reconciliation Item")
             ))
 
 

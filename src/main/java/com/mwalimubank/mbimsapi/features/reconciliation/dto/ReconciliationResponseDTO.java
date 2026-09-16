@@ -41,12 +41,6 @@ public class ReconciliationResponseDTO {
         dto.setMissingInACount(entity.getMissingInACount());
         dto.setMissingInBCount(entity.getMissingInBCount());
         dto.setStatus(entity.getStatus());
-        // use your DateFormatterUtil if createdAt is Instant
-        if (entity.getCreatedAt() != null) {
-            dto.setCreatedAt(entity.getCreatedAt().toString());
-        }
-
-
         dto.setCreatedAt(DateFormatterUtil.format(entity.getCreatedAt()));
 
         dto.setStaffName(

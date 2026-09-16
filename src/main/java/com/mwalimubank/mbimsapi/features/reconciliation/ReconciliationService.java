@@ -3,15 +3,14 @@ package com.mwalimubank.mbimsapi.features.reconciliation;
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
 import com.mwalimubank.mbimsapi.core.services.CurrentUserService;
-import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
 import com.mwalimubank.mbimsapi.features.approval.util.ApprovalStatusUtil;
 import com.mwalimubank.mbimsapi.features.common.PageSpecs;
 import com.mwalimubank.mbimsapi.features.common.services.PagedQueryService;
+import com.mwalimubank.mbimsapi.features.recon.reconciliation_item.ReconciliationItemEntity;
+import com.mwalimubank.mbimsapi.features.recon.reconciliation_item.ReconciliationItemRepository;
 import com.mwalimubank.mbimsapi.features.reconciliation.dto.ReconciliationResponseDTO;
 import com.mwalimubank.mbimsapi.features.reconciliation.entity.ReconciliationEntity;
-import com.mwalimubank.mbimsapi.features.reconciliation.entity.ReconciliationItemEntity;
-import com.mwalimubank.mbimsapi.features.reconciliation.repository.ReconciliationItemRepository;
 import com.mwalimubank.mbimsapi.features.reconciliation.repository.ReconciliationRepository;
 import com.mwalimubank.mbimsapi.features.user.UserEntity;
 import com.mwalimubank.mbimsapi.features.user.UserRepository;
@@ -281,6 +280,42 @@ public class ReconciliationService {
     }
 
     private record FileDataset(String fileName, Set<String> values) {}
+
+    public Map<String, Object> getItems(Long reconciliationId) {
+        ReconciliationEntity recon = repository.findById(reconciliationId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Reconciliation not found"));
+
+        List<ReconciliationItemEntity> items = itemRepository.findByReconciliationId(reconciliationId);
+
+        List<String> matches = items.stream()
+                .filter(i -> "MATCH".equals(i.getItemType()))
+                .map(ReconciliationItemEntity::getValue)
+                .toList();
+
+        List<String> missingInA = items.stream()
+                .filter(i -> "MISSING_IN_A".equals(i.getItemType()))
+                .map(ReconciliationItemEntity::getValue)
+                .toList();
+
+        List<String> missingInB = items.stream()
+                .filter(i -> "MISSING_IN_B".equals(i.getItemType()))
+                .map(ReconciliationItemEntity::getValue)
+                .toList();
+
+        return Map.of(
+                "id", recon.getId(),
+                "name", recon.getName(),
+                "fileAName", recon.getFileAName(),
+                "fileBName", recon.getFileBName(),
+                "matchCount", matches.size(),
+                "missingInACount", missingInA.size(),
+                "missingInBCount", missingInB.size(),
+                "matches", matches,
+                "missingInA", missingInA,   // values that exist in B but not in A
+                "missingInB", missingInB    // values that exist in A but not in B
+        );
+    }
 
 
     private UserEntity validateUserExists(Long id) {
