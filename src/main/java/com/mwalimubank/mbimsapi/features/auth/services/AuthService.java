@@ -2,6 +2,7 @@ package com.mwalimubank.mbimsapi.features.auth.services;
 
 import com.mwalimubank.mbimsapi.core.constants.FrontEndRouteConstants;
 import com.mwalimubank.mbimsapi.core.utils.JwtUtil;
+import com.mwalimubank.mbimsapi.core.utils.PasswordGenerator;
 import com.mwalimubank.mbimsapi.features.auth.dtos.*;
 import com.mwalimubank.mbimsapi.features.notification.NotificationService;
 import com.mwalimubank.mbimsapi.features.notification.dto.NotificationResponseDto;
@@ -101,7 +102,7 @@ public class AuthService {
 
         userRepository.save(user);
 
-        sendAuthNotification(user,otp,"send-otp", "Otp Verification");
+//        sendAuthNotification(user,otp,"send-otp", "Otp Verification");
 
         return new RegisterResponse(user.getName(), user.getEmail());
     }
@@ -124,18 +125,22 @@ public class AuthService {
 
 
     // --------- PASSWORD RECOVERY REQUEST ---------
-    public void passwordRecoveryRequest(String email) {
-        UserEntity user = userRepository.findByEmail(email)
+    public void passwordRecoveryRequest(RecoverPasswordRequest request) {
+        UserEntity user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalStateException("User not found"));
         String otp = otpService.generateOtp(user.getId());
+
+        String rawPassword = PasswordGenerator.generate(12);
+
+        user.setPassword(passwordEncoder.encode(rawPassword));
 
         user.setIsRecoveryRequested(true);
         user.setOtp(otp);
         userRepository.save(user);
 
-        sendAuthNotification(user,otp,"password-change", "Request For Password Change");
+        sendAuthNotification(user,otp,rawPassword, "recover-password", "Request For Password Change");
 
-        log.info("Password recovery OTP sent for user: {}", email);
+        log.info("Password recovery OTP sent for user: {}", user.getEmail());
     }
 
 
@@ -174,7 +179,7 @@ public class AuthService {
 
     }
 
-    public void sendAuthNotification(UserEntity user, String otp, String template, String subject) {
+    public void sendAuthNotification(UserEntity user, String otp, String password, String template, String subject) {
         try {
             log.info("Auth notification for user={}", toJson(user));
 
@@ -187,10 +192,14 @@ public class AuthService {
                 context.put("otp", otp);
             }
 
-            if ("password-change".equals(template)) {
+            if ("recover-password".equals(template)) {
                 context.put("name", user.getName());
                 context.put("expiryMinutes", 5);
                 context.put("year", Year.now().getValue());
+                context.put("email", user.getEmail());
+                context.put("password", password);
+                context.put("redirectUrl", redirectUrl);
+
             }
 
             context.put("expiryMinutes", 5);

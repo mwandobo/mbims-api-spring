@@ -38,6 +38,17 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+
+    // --------- PASSWORD RECOVERY REQUEST ---------
+    @PostMapping ("recover-password")
+    public ResponseEntity<PasswordRecoveryResponse> passwordRecoveryRequest(
+            @RequestBody RecoverPasswordRequest request
+    ) {
+        authService.passwordRecoveryRequest(request);
+        PasswordRecoveryResponse response = new PasswordRecoveryResponse("OTP sent for password recovery");
+        return ResponseEntity.ok(response);
+    }
+
     // --------- CHANGE PASSWORD ---------
     @PostMapping("/change-password/{id}")
     public ResponseEntity<ChangePasswordResponse> changePassword(
@@ -49,13 +60,4 @@ public class AuthController {
 
     }
 
-    // --------- PASSWORD RECOVERY REQUEST ---------
-    @GetMapping("/password-recovery-request")
-    public ResponseEntity<PasswordRecoveryResponse> passwordRecoveryRequest(
-            @RequestParam String email
-    ) {
-        authService.passwordRecoveryRequest(email);
-        PasswordRecoveryResponse response = new PasswordRecoveryResponse("OTP sent for password recovery");
-        return ResponseEntity.ok(response);
-    }
 }

@@ -124,58 +124,124 @@ public class NotificationService {
         return saved;
     }
 
-    public String sendNotification(SendNotificationDto dto) throws MessagingException {
+//    public String sendNotification(SendNotificationDto dto) throws MessagingException {
+//
+//        NotificationChannelsEnum channel = dto.getChannel();
+//        String template = dto.getTemplate();
+//        List<String> recipients = dto.getRecipients();
+//        Long userId = dto.getUserId();
+//        String subject = dto.getSubject();
+//        Map<String, Object> context = dto.getContext();
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//
+//        CustomUserDetails customUser = (CustomUserDetails) auth.getPrincipal();
+//
+//        UserEntity user = customUser.getUser(); // ✅ REAL entity
+//
+//
+//                context.put("user", user);
+//        String description = dto.getDescription();
+//        String forName = dto.getForName();
+//        Long forId = dto.getForId();
+//        String redirectUrl = dto.getRedirectUrl();
+//
+//        // 1. SEND EMAIL IF CHANNEL IS EMAIL
+//        if (NotificationChannelsEnum.EMAIL.name().equalsIgnoreCase(String.valueOf(channel))) {
+//
+//            EmailPayload emailPayload = EmailPayload.builder()
+//                    .to(recipients)
+//                    .subject(subject)
+//                    .template(template)
+//                    .context(context)
+//                    .build();
+//
+//            emailService.sendEmail(emailPayload); // async or sync based on your implementation
+//        }
+//
+//        // 2. CREATE NOTIFICATION RECORDS FOR EACH RECIPIENT
+//        for (String recipientId : recipients) {
+//
+//            CreateNotificationDto createDto = new CreateNotificationDto();
+//            createDto.setTitle(subject);
+//            createDto.setDescription(description);
+//            createDto.setForName(forName);
+//            createDto.setForId(forId);
+//            createDto.setUserId(dto.getUserId());
+////            createDto.setRecipientId(Long.valueOf(recipientId));
+//            createDto.setRedirectUrl(redirectUrl);
+//            createDto.setGroup(""); // same behavior as NestJS
+//
+//            this.create(createDto);
+//        }
+//
+//        return "notification sent successfully";
+//    }
 
-        NotificationChannelsEnum channel = dto.getChannel();
-        String template = dto.getTemplate();
-        List<String> recipients = dto.getRecipients();
-        Long userId = dto.getUserId();
-        String subject = dto.getSubject();
-        Map<String, Object> context = dto.getContext();
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        CustomUserDetails customUser = (CustomUserDetails) auth.getPrincipal();
+public String sendNotification(SendNotificationDto dto) throws MessagingException {
 
-        UserEntity user = customUser.getUser(); // ✅ REAL entity
+    NotificationChannelsEnum channel = dto.getChannel();
+    String template = dto.getTemplate();
+    List<String> recipients = dto.getRecipients();
+    Long userId = dto.getUserId();
+    String subject = dto.getSubject();
+    Map<String, Object> context = dto.getContext();
+    String description = dto.getDescription();
+    String forName = dto.getForName();
+    Long forId = dto.getForId();
+    String redirectUrl = dto.getRedirectUrl();
 
+    // Resolve user safely (works for logged-in AND anonymous recovery)
+    UserEntity user = null;
 
-                context.put("user", user);
-        String description = dto.getDescription();
-        String forName = dto.getForName();
-        Long forId = dto.getForId();
-        String redirectUrl = dto.getRedirectUrl();
-
-        // 1. SEND EMAIL IF CHANNEL IS EMAIL
-        if (NotificationChannelsEnum.EMAIL.name().equalsIgnoreCase(String.valueOf(channel))) {
-
-            EmailPayload emailPayload = EmailPayload.builder()
-                    .to(recipients)
-                    .subject(subject)
-                    .template(template)
-                    .context(context)
-                    .build();
-
-            emailService.sendEmail(emailPayload); // async or sync based on your implementation
-        }
-
-        // 2. CREATE NOTIFICATION RECORDS FOR EACH RECIPIENT
-        for (String recipientId : recipients) {
-
-            CreateNotificationDto createDto = new CreateNotificationDto();
-            createDto.setTitle(subject);
-            createDto.setDescription(description);
-            createDto.setForName(forName);
-            createDto.setForId(forId);
-            createDto.setUserId(dto.getUserId());
-//            createDto.setRecipientId(Long.valueOf(recipientId));
-            createDto.setRedirectUrl(redirectUrl);
-            createDto.setGroup(""); // same behavior as NestJS
-
-            this.create(createDto);
-        }
-
-        return "notification sent successfully";
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    if (auth != null
+            && auth.isAuthenticated()
+            && auth.getPrincipal() instanceof CustomUserDetails customUser) {
+        user = customUser.getUser();
     }
+
+    // Fallback: use userId from DTO (password recovery, system jobs, etc.)
+    if (user == null && userId != null) {
+        user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalStateException("User not found with id: " + userId));
+    }
+
+    if (context == null) {
+        context = new java.util.HashMap<>();
+    }
+    if (user != null) {
+        context.put("user", user);
+    }
+
+    // 1. SEND EMAIL IF CHANNEL IS EMAIL
+    if (NotificationChannelsEnum.EMAIL.name().equalsIgnoreCase(String.valueOf(channel))) {
+        EmailPayload emailPayload = EmailPayload.builder()
+                .to(recipients)
+                .subject(subject)
+                .template(template)
+                .context(context)
+                .build();
+
+        emailService.sendEmail(emailPayload);
+    }
+
+    // 2. CREATE NOTIFICATION RECORDS FOR EACH RECIPIENT
+    for (String recipientId : recipients) {
+        CreateNotificationDto createDto = new CreateNotificationDto();
+        createDto.setTitle(subject);
+        createDto.setDescription(description);
+        createDto.setForName(forName);
+        createDto.setForId(forId);
+        createDto.setUserId(userId);
+        createDto.setRedirectUrl(redirectUrl);
+        createDto.setGroup("");
+
+        this.create(createDto);
+    }
+
+    return "notification sent successfully";
+}
 
     public List<NotificationResponseDto> findByUserId(Long userId) {
 
