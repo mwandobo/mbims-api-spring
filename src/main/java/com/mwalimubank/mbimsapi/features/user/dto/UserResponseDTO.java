@@ -16,6 +16,7 @@ public class UserResponseDTO {
     private String email;
     private RoleResponseDTO role;
     private String roleName;
+    private Boolean isPasswordChanged;
     private Boolean isRecoveryRequested;
     private Boolean isOtpVerified;
     private String phone;
@@ -38,6 +39,7 @@ public class UserResponseDTO {
             dto.setRole(user.getRole() != null ? RoleResponseDTO.fromEntity(user.getRole()) : null);
               dto.setRoleName(user.getRole() != null ? user.getRole().getName() : null);
             dto.setIsRecoveryRequested(user.getIsRecoveryRequested());
+            dto.setIsPasswordChanged(user.getIsPasswordChanged());
             dto.setIsOtpVerified(user.getIsOtpVerified());
             dto.setPhone(user.getPhone());
             dto.setOtp(user.getOtp());

@@ -23,11 +23,21 @@ public class CurrentUserService {
     @Autowired
     private JwtUtil jwtUtil;
 
-    public UserEntity getCurrentUser() {  // also fixed the typo in the method name
+//    public UserEntity getCurrentUser() {  // also fixed the typo in the method name
+//        String token = extractTokenFromRequest();
+//        if (token != null && jwtUtil.validateToken(token)) {
+//            Long userId = jwtUtil.extractUserId(token);
+//            return userRepository.findById(userId)
+//                    .orElseThrow(() -> new IllegalStateException("User not authenticated or invalid token"));
+//        }
+//        throw new IllegalStateException("User not authenticated or invalid token");
+//    }
+
+    public UserEntity getCurrentUser() {
         String token = extractTokenFromRequest();
         if (token != null && jwtUtil.validateToken(token)) {
             Long userId = jwtUtil.extractUserId(token);
-            return userRepository.findById(userId)
+            return userRepository.findByIdWithRole(userId)
                     .orElseThrow(() -> new IllegalStateException("User not authenticated or invalid token"));
         }
         throw new IllegalStateException("User not authenticated or invalid token");

@@ -44,6 +44,9 @@ public class UserEntity extends BaseEntity {
     @Column(name = "is_otp_verified", nullable = true)
     private Boolean isOtpVerified = false;
 
+    @Column(name = "is_password_changed", nullable = true)
+    private Boolean isPasswordChanged = false;
+
     @Column(name = "is_recovery_requested", nullable = true)
     private Boolean isRecoveryRequested;
 }

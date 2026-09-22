@@ -124,6 +124,24 @@ public class DataSeeder {
                     new PermissionDef("performance_customer_stats", "Performance Customer  Stats")
             )),
 
+            new PermissionGroup("performance_management", List.of(
+                    new PermissionDef("performance_read", "View Performance Management")
+            )),
+
+            new PermissionGroup("customer_onboarding", List.of(
+                    new PermissionDef("customer_onboarding_create", "Create Customer Onboarding"),
+                    new PermissionDef("customer_onboarding_read", "View Customer Onboarding"),
+                    new PermissionDef("customer_onboarding_update", "Edit Customer Onboarding"),
+                    new PermissionDef("customer_onboarding_delete", "Delete Customer Onboarding")
+            )),
+
+            new PermissionGroup("deposits", List.of(
+                    new PermissionDef("deposits_create", "Create Deposits"),
+                    new PermissionDef("deposits_read", "View Deposits"),
+                    new PermissionDef("deposits_update", "Edit Deposits"),
+                    new PermissionDef("deposits_delete", "Delete Deposits")
+            )),
+
             new PermissionGroup("customer", List.of(
                     new PermissionDef("customer_create", "Create Customer"),
                     new PermissionDef("customer_read", "View Customer"),

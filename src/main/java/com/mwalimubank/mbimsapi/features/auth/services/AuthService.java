@@ -2,10 +2,7 @@ package com.mwalimubank.mbimsapi.features.auth.services;
 
 import com.mwalimubank.mbimsapi.core.constants.FrontEndRouteConstants;
 import com.mwalimubank.mbimsapi.core.utils.JwtUtil;
-import com.mwalimubank.mbimsapi.features.auth.dtos.LoginRequest;
-import com.mwalimubank.mbimsapi.features.auth.dtos.LoginResponse;
-import com.mwalimubank.mbimsapi.features.auth.dtos.RegisterRequest;
-import com.mwalimubank.mbimsapi.features.auth.dtos.RegisterResponse;
+import com.mwalimubank.mbimsapi.features.auth.dtos.*;
 import com.mwalimubank.mbimsapi.features.notification.NotificationService;
 import com.mwalimubank.mbimsapi.features.notification.dto.NotificationResponseDto;
 import com.mwalimubank.mbimsapi.features.notification.dto.SendNotificationDto;
@@ -141,24 +138,40 @@ public class AuthService {
         log.info("Password recovery OTP sent for user: {}", email);
     }
 
+
+
     // --------- CHANGE PASSWORD ---------
-    public void changePassword(String email, String oldPassword, String newPassword) {
-        UserEntity user = userRepository.findByEmail(email)
+    public ChangePasswordResponse changePassword(Long id, ChangePasswordRequest request) {
+        UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("User not found"));
 
-        if (!user.getIsRecoveryRequested()) {
-            throw new IllegalStateException("No Request For Change Password Found");
+//        if (!user.getIsRecoveryRequested()) {
+//            throw new IllegalStateException("No Request For Change Password Found");
+//        }
+
+        if (request.getNewPassword() == null || request.getConfirmPassword() == null || !request.getNewPassword().equals( request.getConfirmPassword())) {
+            throw new IllegalStateException("Passwords do not match");
         }
 
-        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            throw new IllegalStateException("Old password is incorrect");
-        }
-
-        user.setPassword(passwordEncoder.encode(newPassword));
-        user.setIsRecoveryRequested(false);
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setIsPasswordChanged(true);
         userRepository.save(user);
 
-        log.info("Password changed successfully for user: {}", email);
+        String jwt = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole().getId());
+
+
+        // 🔥 Fetch notifications (like NestJS)
+        List<NotificationResponseDto> notifications = notificationService.findByUserId(user.getId());
+
+        log.info("Password changed successfully for user: {}", user.getEmail());
+
+        // 🔥 Return structured response
+        return new ChangePasswordResponse(
+                jwt,
+                UserResponseDTO.fromEntity(user) ,
+                notifications
+        );
+
     }
 
     public void sendAuthNotification(UserEntity user, String otp, String template, String subject) {
