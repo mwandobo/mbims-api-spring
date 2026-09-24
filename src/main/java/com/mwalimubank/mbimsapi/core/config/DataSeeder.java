@@ -121,11 +121,10 @@ public class DataSeeder {
                     new PermissionDef("dashboard_activities_read", "View system Activities")
             )),
             new PermissionGroup("performance", List.of(
-                    new PermissionDef("performance_customer_stats", "Performance Customer  Stats")
-            )),
-
-            new PermissionGroup("performance_management", List.of(
-                    new PermissionDef("performance_read", "View Performance Management")
+                    new PermissionDef("performance_read", "Performance Management"),
+                    new PermissionDef("performance_customer_stats", "Performance Customer  Stats"),
+                    new PermissionDef("individual_performance", "Performance for Individual"),
+                    new PermissionDef("unit_performance", "Performance for Unit")
             )),
 
             new PermissionGroup("customer_onboarding", List.of(

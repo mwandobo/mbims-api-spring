@@ -162,10 +162,23 @@ to handle error during build
 
 to send email in background enable the send via queue in the application properties
 
+smtp mwalimu bank
 
 
 
 
+# email settings
+spring.mail.host=mwalimubank-co-tz.mail.protection.outlook.com
+spring.mail.port=25
+spring.mail.username=apps@mwalimubank.co.tz
+spring.mail.password=YOUR_PASSWORD
+
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+spring.mail.properties.mail.smtp.starttls.required=true
+spring.mail.properties.mail.smtp.ssl.enable=false
+
+spring.front.end.url=http://localhost:3000
 
 
 
