@@ -44,4 +44,10 @@ public class AssetRequestController {
         service.delete(id, soft);
         return ApiResponse.success(null);
     }
+
+    @GetMapping("/{id}/submit")
+    public ApiResponse<String> submit(@PathVariable Long id) {
+        String message = service.submit(id);
+        return ApiResponse.success(message);
+    }
 }
