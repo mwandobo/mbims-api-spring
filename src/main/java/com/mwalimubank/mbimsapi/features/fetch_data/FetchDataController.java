@@ -5,11 +5,13 @@ import com.mwalimubank.mbimsapi.features.administration.employee.dto.EmployeeRes
 import com.mwalimubank.mbimsapi.features.administration.position.dto.PositionResponseDTO;
 import com.mwalimubank.mbimsapi.features.administration.unit.dto.UnitResponseDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.SysApprovalResponseDTO;
+import com.mwalimubank.mbimsapi.features.asset_management.asset.dto.AssetResponseDTO;
 import com.mwalimubank.mbimsapi.features.asset_management.assetcategory.dto.AssetCategoryResponseDTO;
 import com.mwalimubank.mbimsapi.features.role.dto.RoleResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -55,5 +57,12 @@ public class FetchDataController {
     @GetMapping("positions")
     public List<PositionResponseDTO> fetchPositions(   ) {
         return service.fetchPositions();
+    }
+
+    @GetMapping("assets-by-asset-categories")
+    public List<AssetResponseDTO> fetchAssetsByAssetCategories(
+            @RequestParam(required = false) Long type
+    ) {
+        return service.fetchAssetsByAssetCategories(type);
     }
 }

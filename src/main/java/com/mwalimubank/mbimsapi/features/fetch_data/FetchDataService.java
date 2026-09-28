@@ -16,6 +16,9 @@ import com.mwalimubank.mbimsapi.features.approval.dto.SysApprovalResponseDTO;
 import com.mwalimubank.mbimsapi.features.approval.entity.SysApproval;
 import com.mwalimubank.mbimsapi.features.approval.repository.SysApprovalRepository;
 import com.mwalimubank.mbimsapi.features.approval.util.ApprovalStatusUtil;
+import com.mwalimubank.mbimsapi.features.asset_management.asset.AssetEntity;
+import com.mwalimubank.mbimsapi.features.asset_management.asset.AssetRepository;
+import com.mwalimubank.mbimsapi.features.asset_management.asset.dto.AssetResponseDTO;
 import com.mwalimubank.mbimsapi.features.asset_management.assetcategory.AssetCategoryEntity;
 import com.mwalimubank.mbimsapi.features.asset_management.assetcategory.AssetCategoryRepository;
 import com.mwalimubank.mbimsapi.features.asset_management.assetcategory.dto.AssetCategoryResponseDTO;
@@ -44,6 +47,7 @@ public class FetchDataService {
     private final EmployeeRepository employeeRepository;
     private final UnitRepository unitRepository;
     private final PositionRepository positionRepository;
+    private final AssetRepository assetRepository;
 
 
     private <E, D> List<D> fetchData(
@@ -156,10 +160,23 @@ public class FetchDataService {
         );
     }
 
-    private String getAsString(Object[] row, int index) {
-        if (row == null || index >= row.length || row[index] == null) {
-            return null;
+    public List<AssetResponseDTO> fetchAssetsByAssetCategories(Long assetCategoryId) {
+
+        List<AssetEntity> assets;
+
+        if (assetCategoryId != null) {
+            assets = assetRepository.findByAssetCategoryId(assetCategoryId);
+        } else {
+            assets = assetRepository.findAll();
         }
-        return row[index].toString();
+
+        return fetchData(
+                assets,
+                AssetEntity.class.getSimpleName(),
+                AssetEntity::getId,
+                AssetResponseDTO::fromEntity,
+                AssetResponseDTO::setApprovalStatus
+        );
     }
+
 }
