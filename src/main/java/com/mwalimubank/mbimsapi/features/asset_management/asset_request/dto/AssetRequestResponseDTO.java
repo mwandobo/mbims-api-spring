@@ -15,6 +15,7 @@ public class AssetRequestResponseDTO {
 
     // Created By info
     private Long createdById;
+    private Integer requestedItemsQuantity;
     private String createdByName;
 
     private String approvalStatus;
@@ -27,12 +28,22 @@ public class AssetRequestResponseDTO {
         dto.setName(entity.getName());
         dto.setDescription(entity.getDescription());
         dto.setStatus(entity.getStatus());
+        if (entity.getItems() != null && !entity.getItems().isEmpty()) {
+            // Option 1: Total quantity (sum of all item quantities)
+            int totalQuantity = entity.getItems().stream()
+                    .mapToInt(item -> item.getQuantity() != null ? item.getQuantity() : 0)
+                    .sum();
+            dto.setRequestedItemsQuantity(totalQuantity);
+
+            // Option 2: Just the number of items (uncomment if you prefer this)
+            // dto.setRequestedItemsQuantity(entity.getItems().size());
+        } else {
+            dto.setRequestedItemsQuantity(0);
+        }
         dto.setStatusLabel(mapStatusLabel(entity.getStatus()));
         if (entity.getCreatedBy() != null) {
             dto.setCreatedById(entity.getCreatedBy().getId());
-            // Adjust according to your UserEntity fields
             dto.setCreatedByName(entity.getCreatedBy().getName());
-            // or getFirstName() + " " + getLastName()
         }
 
         dto.setCreatedAt(DateFormatterUtil.format(entity.getCreatedAt()));
