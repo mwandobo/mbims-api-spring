@@ -1,5 +1,6 @@
 package com.mwalimubank.mbimsapi.features.approval.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mwalimubank.mbimsapi.core.dto.ApiResponse;
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
@@ -28,7 +29,7 @@ public class ApprovalActionController {
     }
 
     @PostMapping
-    public ApiResponse<ApprovalActionEntity> create(@RequestBody ApprovalActionRequestDTO request) {
+    public ApiResponse<ApprovalActionEntity> create(@RequestBody ApprovalActionRequestDTO request) throws JsonProcessingException {
         return ApiResponse.success(service.create(request));
     }
 

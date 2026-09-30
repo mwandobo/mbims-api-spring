@@ -1,9 +1,13 @@
 package com.mwalimubank.mbimsapi.features.approval;
 
+import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
 import com.mwalimubank.mbimsapi.features.approval.dto.SysApprovalRequestDTO;
 import com.mwalimubank.mbimsapi.features.approval.entity.SysApprovalEntity;
 import com.mwalimubank.mbimsapi.features.approval.enums.StatusEnum;
 import com.mwalimubank.mbimsapi.features.approval.repository.SysApprovalRepository;
+import com.mwalimubank.mbimsapi.features.asset_management.asset_request.AssetRequestEntity;
+import com.mwalimubank.mbimsapi.features.role.RoleEntity;
+import com.mwalimubank.mbimsapi.features.user.UserEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -23,10 +27,10 @@ public class SysApprovalSeeder implements CommandLineRunner {
 
     private void seedApprovals() {
         List<SysApprovalRequestDTO> approvals = List.of(
-                createDto("User Approval", "Approvals For User", "User", StatusEnum.PENDING),
-                createDto("Role Approval", "Approvals For  for Role", "Role", StatusEnum.PENDING),
-                createDto("Department Approval", "Approvals For  for Department", "DepartmentEntity", StatusEnum.PENDING),
-                createDto("Brand Approval", "Approvals For  for Brand", "BrandEntity", StatusEnum.PENDING)
+                createDto("User Approval", "Approvals For User", UserEntity.class.getSimpleName(), StatusEnum.PENDING),
+                createDto("Role Approval", "Approvals For  for Role", RoleEntity.class.getSimpleName(), StatusEnum.PENDING),
+                createDto("Department Approval", "Approvals For  for Department", DepartmentEntity.class.getSimpleName(), StatusEnum.PENDING),
+                createDto("Asset Request Approval", "Approvals For Asset Request", AssetRequestEntity.class.getSimpleName(), StatusEnum.PENDING)
         );
 
         for (SysApprovalRequestDTO dto : approvals) {

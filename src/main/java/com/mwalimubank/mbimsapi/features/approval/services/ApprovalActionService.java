@@ -1,5 +1,7 @@
 package com.mwalimubank.mbimsapi.features.approval.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
 import com.mwalimubank.mbimsapi.core.dto.PaginationDto;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
@@ -104,7 +106,9 @@ public class ApprovalActionService {
 
 
     @Transactional
-    public ApprovalActionEntity create(ApprovalActionRequestDTO request) {
+    public ApprovalActionEntity create(ApprovalActionRequestDTO request) throws JsonProcessingException {
+
+
 
         ApprovalLevelEntity approvalLevel = approvalLevelRepository.findById(request.getApprovalLevelId())
                 .orElseThrow(() -> new IllegalStateException("Approval Level not found"));
@@ -124,23 +128,24 @@ public class ApprovalActionService {
             throw new IllegalStateException("Entity Creator Id is missing in DTO");
         }
 
-        Long userId = currentUserService.getCurrentUserId();
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalStateException("User Not found"));
+        UserEntity user = currentUserService.getCurrentUser();
 
         UserEntity entityCreator = userRepository.findById(request.getEntityCreatorId())
                 .orElseThrow(() -> new IllegalStateException("User Not found"));
 
-
         ApprovalActionEntity action = new ApprovalActionEntity();
         action.setApprovalLevel(approvalLevel);
         action.setUser(user);
+        action.setRole(user.getRole());
         action.setName(request.getName());
         action.setDescription(request.getDescription());
         action.setAction(request.getAction());
         action.setEntityName(request.getEntityName());
         action.setEntityId(request.getEntityId());
         action.setEntityCreatorId(request.getEntityCreatorId());
+
+
+
 
         ApprovalActionEntity saved = repository.save(action);
 

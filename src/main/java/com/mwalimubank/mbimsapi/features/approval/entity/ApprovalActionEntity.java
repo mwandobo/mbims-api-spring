@@ -17,15 +17,15 @@ public class ApprovalActionEntity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column()
     private String name;
 
     @Enumerated(EnumType.STRING) // Store enum as text in DB (better readability than ORDINAL)
-    @Column(nullable = false)
+    @Column()
     private ApprovalActionEnum action = ApprovalActionEnum.PENDING; // default value
 
     @Enumerated(EnumType.STRING) // Store enum as text in DB (better readability than ORDINAL)
-    @Column(nullable = false)
+    @Column()
     private ApprovalActionCreationTypeEnum type = ApprovalActionCreationTypeEnum.NORMAL; // default value
 
     @Column()
@@ -51,8 +51,8 @@ public class ApprovalActionEntity extends BaseEntity {
     @JoinColumn(name = "user_approval_id")
     private UserApprovalEntity userApproval;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "role_id")
+    @ManyToOne(fetch = FetchType.EAGER, optional = true)
+    @JoinColumn(name = "role_id", nullable = true)
     private RoleEntity role;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -60,6 +60,6 @@ public class ApprovalActionEntity extends BaseEntity {
     private UserEntity user;
 
     @Enumerated(EnumType.STRING) // Store enum as text in DB (better readability than ORDINAL)
-    @Column(nullable = false)
+    @Column()
     private StatusEnum status = StatusEnum.PENDING; // default value
 }
