@@ -1,0 +1,12 @@
+The system supports the dynamic approval (work flow)
+
+models
+  1. Sys_Approvals
+  2. User_Approvals
+  3. Approval_Level
+  4. Approval Action
+
+    1. Sys_Approvals
+     These are the approvals that are direct attached with the system.
+     They are attached during the development phase
+     Attached to the entity level

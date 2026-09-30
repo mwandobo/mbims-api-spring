@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "mbimsapi_department")
+@Table(name = "department")
 public class DepartmentEntity extends BaseEntity {
 
     @Id

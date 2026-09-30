@@ -3,14 +3,12 @@ package com.mwalimubank.mbimsapi.features.approval.services;
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
 import com.mwalimubank.mbimsapi.core.dto.PaginationDto;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
-import com.mwalimubank.mbimsapi.core.dto.PaginationResponse;
 import com.mwalimubank.mbimsapi.core.services.CurrentUserService;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalActionRequestDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalActionResponseDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
-import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalLevelResponseDTO;
-import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalAction;
-import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalLevel;
+import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalActionEntity;
+import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalLevelEntity;
 import com.mwalimubank.mbimsapi.features.approval.enums.ApprovalActionEnum;
 import com.mwalimubank.mbimsapi.features.approval.repository.ApprovalActionRepository;
 import com.mwalimubank.mbimsapi.features.approval.repository.ApprovalLevelRepository;
@@ -47,16 +45,16 @@ public class ApprovalActionService {
             PaginationRequest pagination,
             String search
     ) {
-        Specification<ApprovalAction> spec = getEntitySpecification(search);
-        boolean hasApprovalMode = approvalStatusUtil.hasApprovalMode(ApprovalAction.class.getSimpleName());
+        Specification<ApprovalActionEntity> spec = getEntitySpecification(search);
+        boolean hasApprovalMode = approvalStatusUtil.hasApprovalMode(ApprovalActionEntity.class.getSimpleName());
 
-        Page<ApprovalAction> page =
+        Page<ApprovalActionEntity> page =
                 repository.findAll(spec, pagination.toPageable());
 
-        List<ApprovalAction> entities = page.getContent();
+        List<ApprovalActionEntity> entities = page.getContent();
 
         List<Long> ids = entities.stream()
-                .map(ApprovalAction::getId)
+                .map(ApprovalActionEntity::getId)
                 .toList();
         Map<Long, String> statusMap = hasApprovalMode
                 ? approvalStatusUtil.getBulkApprovalStatuses(UserEntity.class.getSimpleName(), ids)
@@ -88,8 +86,8 @@ public class ApprovalActionService {
         );
     }
 
-    private static Specification< ApprovalAction> getEntitySpecification(String search) {
-        Specification< ApprovalAction> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
+    private static Specification<ApprovalActionEntity> getEntitySpecification(String search) {
+        Specification<ApprovalActionEntity> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
 
         // Optional search filter (case-insensitive)
         if (search != null && !search.trim().isEmpty()) {
@@ -106,12 +104,12 @@ public class ApprovalActionService {
 
 
     @Transactional
-    public ApprovalAction create(ApprovalActionRequestDTO request) {
+    public ApprovalActionEntity create(ApprovalActionRequestDTO request) {
 
-        ApprovalLevel approvalLevel = approvalLevelRepository.findById(request.getApprovalLevelId())
+        ApprovalLevelEntity approvalLevel = approvalLevelRepository.findById(request.getApprovalLevelId())
                 .orElseThrow(() -> new IllegalStateException("Approval Level not found"));
 
-        Optional<ApprovalAction> existing =
+        Optional<ApprovalActionEntity> existing =
                 repository.findByApprovalLevelIdAndEntityId(
                         request.getApprovalLevelId(),
                         request.getEntityId()
@@ -134,7 +132,7 @@ public class ApprovalActionService {
                 .orElseThrow(() -> new IllegalStateException("User Not found"));
 
 
-        ApprovalAction action = new ApprovalAction();
+        ApprovalActionEntity action = new ApprovalActionEntity();
         action.setApprovalLevel(approvalLevel);
         action.setUser(user);
         action.setName(request.getName());
@@ -144,7 +142,7 @@ public class ApprovalActionService {
         action.setEntityId(request.getEntityId());
         action.setEntityCreatorId(request.getEntityCreatorId());
 
-        ApprovalAction saved = repository.save(action);
+        ApprovalActionEntity saved = repository.save(action);
 
         // 🔔 Send Notifications (equivalent to NestJS)
        handleApprovalNotifications(
@@ -156,7 +154,7 @@ public class ApprovalActionService {
     }
 
     public ApprovalAwareDTO<ApprovalActionResponseDTO> findOne  (Long  userId) {
-        ApprovalAction   entity = repository.findById( userId)
+        ApprovalActionEntity entity = repository.findById( userId)
                 .orElseThrow(() -> new IllegalStateException(" User not found"));
 
         ApprovalActionResponseDTO dto = ApprovalActionResponseDTO.fromEntity(entity);
@@ -164,17 +162,17 @@ public class ApprovalActionService {
         return approvalStatusUtil.attachApprovalInfo(
                 dto,
                 entity.getId(),
-                ApprovalLevel.class.getSimpleName(),
+                ApprovalLevelEntity.class.getSimpleName(),
                 currentUserService.getCurrentUserRoleId()
         );
     }
 
     @Transactional
-    public ApprovalAction update(Long id, ApprovalActionRequestDTO request) {
-        ApprovalAction action = repository.findById(id)
+    public ApprovalActionEntity update(Long id, ApprovalActionRequestDTO request) {
+        ApprovalActionEntity action = repository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Approval Action not found"));
 
-        ApprovalLevel approvalLevel = approvalLevelRepository.findById(request.getApprovalLevelId())
+        ApprovalLevelEntity approvalLevel = approvalLevelRepository.findById(request.getApprovalLevelId())
                 .orElseThrow(() -> new IllegalStateException("Approval Level not found"));
 
         Long userId = currentUserService.getCurrentUserId();
@@ -195,7 +193,7 @@ public class ApprovalActionService {
 
     @Transactional
     public void delete(Long id, boolean soft) {
-        ApprovalAction action = repository.findById(id)
+        ApprovalActionEntity action = repository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("ApprovalAction not found"));
 
         if (soft) {
@@ -209,7 +207,7 @@ public class ApprovalActionService {
     @Transactional
     public void handleApprovalNotifications(
             ApprovalActionRequestDTO dto,
-            ApprovalLevel approvalLevel,
+            ApprovalLevelEntity approvalLevel,
             UserEntity entityCreator,
             UserEntity performedByUser
     ) {
@@ -217,7 +215,7 @@ public class ApprovalActionService {
         // 🟥 CASE 1: Request Rejected
         if (dto.getAction().equals(ApprovalActionEnum.REJECTED)) {
 
-            List<ApprovalLevel> previousLevels =
+            List<ApprovalLevelEntity> previousLevels =
                     approvalLevelRepository.findByUserApprovalIdAndLevelLessThanEqual(
                             approvalLevel.getUserApproval().getId(),
                             approvalLevel.getLevel()
@@ -280,7 +278,7 @@ public class ApprovalActionService {
         log.info("Checking for next approval level after {} ({})…",
                 approvalLevel.getId(), approvalLevel.getName());
 
-        Optional<ApprovalLevel> nextLevel = approvalLevelRepository
+        Optional<ApprovalLevelEntity> nextLevel = approvalLevelRepository
                 .findFirstByUserApprovalIdAndLevelGreaterThanOrderByLevelAsc(
                         approvalLevel.getUserApproval().getId(),
                         approvalLevel.getLevel()
@@ -332,7 +330,7 @@ public class ApprovalActionService {
             return;
         }
 
-        ApprovalLevel _nextLevel = nextLevel.get();
+        ApprovalLevelEntity _nextLevel = nextLevel.get();
 
         // -----------------------------------------------
         // 🟦 CASE 3: There *is* a next level → Notify next approvers

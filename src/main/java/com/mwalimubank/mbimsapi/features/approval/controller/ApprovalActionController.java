@@ -3,16 +3,11 @@ package com.mwalimubank.mbimsapi.features.approval.controller;
 import com.mwalimubank.mbimsapi.core.dto.ApiResponse;
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
-import com.mwalimubank.mbimsapi.core.dto.PaginationResponse;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalActionRequestDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalActionResponseDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
-import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalLevelRequestDTO;
-import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalAction;
-import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalLevel;
+import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalActionEntity;
 import com.mwalimubank.mbimsapi.features.approval.services.ApprovalActionService;
-import com.mwalimubank.mbimsapi.features.approval.services.ApprovalLevelService;
-import com.mwalimubank.mbimsapi.features.user.dto.UserResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,7 +28,7 @@ public class ApprovalActionController {
     }
 
     @PostMapping
-    public ApiResponse<ApprovalAction> create(@RequestBody ApprovalActionRequestDTO request) {
+    public ApiResponse<ApprovalActionEntity> create(@RequestBody ApprovalActionRequestDTO request) {
         return ApiResponse.success(service.create(request));
     }
 
@@ -45,7 +40,7 @@ public class ApprovalActionController {
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<ApprovalAction> update(
+    public ApiResponse<ApprovalActionEntity> update(
             @PathVariable Long id,
             @RequestBody ApprovalActionRequestDTO request
     ) {

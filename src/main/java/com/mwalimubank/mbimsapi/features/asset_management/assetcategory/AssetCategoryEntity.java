@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "mbimsapi_assetcategory")
+@Table(name = "asset_category")
 public class AssetCategoryEntity extends BaseEntity {
 
     @Id

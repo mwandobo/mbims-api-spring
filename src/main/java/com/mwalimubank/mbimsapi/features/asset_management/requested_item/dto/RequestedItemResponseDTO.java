@@ -14,6 +14,7 @@ public class RequestedItemResponseDTO {
     private Long assetId;
     private String assetName;
     private String categoryName;
+    private Long categoryId;
 
     // Request info
     private Long requestId;
@@ -38,6 +39,7 @@ public class RequestedItemResponseDTO {
 
             if (entity.getAsset().getAssetCategory() != null) {
                 dto.setCategoryName(entity.getAsset().getAssetCategory().getName());
+                dto.setCategoryId(entity.getAsset().getAssetCategory().getId());
             }
         }
 

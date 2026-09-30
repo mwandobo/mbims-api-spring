@@ -1,7 +1,6 @@
 package com.mwalimubank.mbimsapi.features.approval.dto;
 
-import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalLevel;
-import com.mwalimubank.mbimsapi.features.approval.entity.UserApproval;
+import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalLevelEntity;
 import com.mwalimubank.mbimsapi.features.approval.enums.StatusEnum;
 import com.mwalimubank.mbimsapi.features.role.dto.RoleResponseDTO;
 
@@ -23,7 +22,7 @@ public class ApprovalLevelResponseDTO {
     private String roleName;
     private StatusEnum status;
 
-    public static ApprovalLevelResponseDTO fromEntity(ApprovalLevel entity) {
+    public static ApprovalLevelResponseDTO fromEntity(ApprovalLevelEntity entity) {
         ApprovalLevelResponseDTO dto = new ApprovalLevelResponseDTO();
         dto.setName(entity.getName());
         dto.setId(entity.getId());

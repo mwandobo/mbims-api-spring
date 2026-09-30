@@ -6,7 +6,7 @@ import lombok.*;
 
 @Data
 @Entity
-@Table(name = "mbimsapi_permissions")
+@Table(name = "permission")
 public class PermissionEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

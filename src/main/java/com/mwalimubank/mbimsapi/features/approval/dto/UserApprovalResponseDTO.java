@@ -1,6 +1,6 @@
 package com.mwalimubank.mbimsapi.features.approval.dto;
 
-import com.mwalimubank.mbimsapi.features.approval.entity.UserApproval;
+import com.mwalimubank.mbimsapi.features.approval.entity.UserApprovalEntity;
 import com.mwalimubank.mbimsapi.features.approval.enums.StatusEnum;
 import lombok.Data;
 
@@ -16,7 +16,7 @@ public class UserApprovalResponseDTO {
     private String sysApprovalName;
     private StatusEnum status;
 
-    public static UserApprovalResponseDTO fromEntity(UserApproval entity) {
+    public static UserApprovalResponseDTO fromEntity(UserApprovalEntity entity) {
         UserApprovalResponseDTO dto = new UserApprovalResponseDTO();
         dto.setName(entity.getName());
         dto.setId(entity.getId());

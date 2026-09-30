@@ -1,7 +1,7 @@
 package com.mwalimubank.mbimsapi.features.approval;
 
 import com.mwalimubank.mbimsapi.features.approval.dto.SysApprovalRequestDTO;
-import com.mwalimubank.mbimsapi.features.approval.entity.SysApproval;
+import com.mwalimubank.mbimsapi.features.approval.entity.SysApprovalEntity;
 import com.mwalimubank.mbimsapi.features.approval.enums.StatusEnum;
 import com.mwalimubank.mbimsapi.features.approval.repository.SysApprovalRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class SysApprovalSeeder implements CommandLineRunner {
 
         for (SysApprovalRequestDTO dto : approvals) {
             if (repository.findByName(dto.getName()) == null) {
-                SysApproval entity = new SysApproval();
+                SysApprovalEntity entity = new SysApprovalEntity();
                 entity.setName(dto.getName());
                 entity.setDescription(dto.getDescription());
                 entity.setEntityName(dto.getEntityName());

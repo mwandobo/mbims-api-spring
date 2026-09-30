@@ -1,7 +1,6 @@
 package com.mwalimubank.mbimsapi.features.transaction.entity;
 
 import com.mwalimubank.mbimsapi.core.entity.BaseEntity;
-import com.mwalimubank.mbimsapi.features.approval.entity.SysApproval;
 import com.mwalimubank.mbimsapi.features.customer.entity.CustomerEntity;
 import jakarta.persistence.*;
 import lombok.Data;

@@ -1,10 +1,10 @@
 package com.mwalimubank.mbimsapi.features.approval.util;
 
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
-import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalAction;
-import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalLevel;
-import com.mwalimubank.mbimsapi.features.approval.entity.SysApproval;
-import com.mwalimubank.mbimsapi.features.approval.entity.UserApproval;
+import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalActionEntity;
+import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalLevelEntity;
+import com.mwalimubank.mbimsapi.features.approval.entity.SysApprovalEntity;
+import com.mwalimubank.mbimsapi.features.approval.entity.UserApprovalEntity;
 import com.mwalimubank.mbimsapi.features.approval.enums.ApprovalActionEnum;
 import com.mwalimubank.mbimsapi.features.approval.repository.ApprovalActionRepository;
 import com.mwalimubank.mbimsapi.features.approval.repository.ApprovalLevelRepository;
@@ -35,7 +35,7 @@ public class ApprovalStatusUtil {
     public boolean hasApprovalMode(String entityName) {
         log.debug("Checking approval mode for entity: {}", entityName);
 
-        Optional<SysApproval> sys = sysApprovalRepository.findByEntityName(entityName);
+        Optional<SysApprovalEntity> sys = sysApprovalRepository.findByEntityName(entityName);
         if (sys.isEmpty()) {
             log.debug("No SysApproval found for entity: {}", entityName);
             return false;
@@ -43,7 +43,7 @@ public class ApprovalStatusUtil {
 
         log.debug("Found SysApproval with id: {}", sys.get().getId());
 
-        Optional<UserApproval> userApproval =
+        Optional<UserApprovalEntity> userApproval =
                 userApprovalRepository.findBySysApprovalId(sys.get().getId());
 
         if (userApproval.isEmpty()) {
@@ -53,7 +53,7 @@ public class ApprovalStatusUtil {
 
         log.debug("Found UserApproval with id: {}", userApproval.get().getId());
 
-        List<ApprovalLevel> levels =
+        List<ApprovalLevelEntity> levels =
                 approvalLevelRepository.findByUserApprovalId(userApproval.get().getId());
 
         if (levels.isEmpty()) {
@@ -72,19 +72,19 @@ public class ApprovalStatusUtil {
      */
     public String getApprovalStatus(String entityName, Long entityId) {
 
-        UserApproval userApproval = getUserApproval(entityName);
+        UserApprovalEntity userApproval = getUserApproval(entityName);
         if (userApproval == null) return "PENDING";
 
-        List<ApprovalLevel> levels =
+        List<ApprovalLevelEntity> levels =
                 approvalLevelRepository.findByUserApprovalId(userApproval.getId());
 
         if (levels.isEmpty()) return "PENDING";
 
         List<Long> levelIds = levels.stream()
-                .map(ApprovalLevel::getId)
+                .map(ApprovalLevelEntity::getId)
                 .collect(Collectors.toList());
 
-        List<ApprovalAction> actions =
+        List<ApprovalActionEntity> actions =
                 approvalActionRepository.findByEntityIdAndApprovalLevelIdIn(entityId, levelIds);
 
         if (actions.isEmpty()) return "PENDING";
@@ -94,9 +94,9 @@ public class ApprovalStatusUtil {
             return "REJECTED";
         }
 
-        for (ApprovalLevel level : levels) {
+        for (ApprovalLevelEntity level : levels) {
 
-            List<ApprovalAction> levelActions = actions.stream()
+            List<ApprovalActionEntity> levelActions = actions.stream()
                     .filter(a -> a.getApprovalLevel().getId().equals(level.getId()))
                     .toList();
 
@@ -131,7 +131,7 @@ public class ApprovalStatusUtil {
 
         Map<Long, String> statuses = new HashMap<>();
 
-        UserApproval userApproval = getUserApproval(entityName);
+        UserApprovalEntity userApproval = getUserApproval(entityName);
         if (userApproval == null) {
             log.debug("No UserApproval found → defaulting all to PENDING");
             entityIds.forEach(id -> statuses.put(id, "PENDING"));
@@ -140,12 +140,12 @@ public class ApprovalStatusUtil {
 
         log.debug("UserApproval ID: {}", userApproval.getId());
 
-        List<ApprovalLevel> levels =
+        List<ApprovalLevelEntity> levels =
                 approvalLevelRepository.findByUserApprovalId(userApproval.getId());
 
         log.debug("Approval Levels count: {}", levels.size());
         log.debug("Approval Levels: {}", levels.stream()
-                .map(ApprovalLevel::getId)
+                .map(ApprovalLevelEntity::getId)
                 .toList());
 
         if (levels.isEmpty()) {
@@ -154,7 +154,7 @@ public class ApprovalStatusUtil {
             return statuses;
         }
 
-        List<ApprovalAction> actions =
+        List<ApprovalActionEntity> actions =
                 approvalActionRepository.findByEntityNameAndEntityIdIn(entityName, entityIds);
 
         log.debug("Total actions fetched: {}", actions.size());
@@ -167,14 +167,14 @@ public class ApprovalStatusUtil {
         ));
 
         // Group by entityId
-        Map<Long, List<ApprovalAction>> actionsByEntity =
-                actions.stream().collect(Collectors.groupingBy(ApprovalAction::getEntityId));
+        Map<Long, List<ApprovalActionEntity>> actionsByEntity =
+                actions.stream().collect(Collectors.groupingBy(ApprovalActionEntity::getEntityId));
 
         for (Long entityId : entityIds) {
 
             log.debug("---- Evaluating entityId: {} ----", entityId);
 
-            List<ApprovalAction> entityActions =
+            List<ApprovalActionEntity> entityActions =
                     actionsByEntity.getOrDefault(entityId, new ArrayList<>());
 
             log.debug("Total actions for entity {}: {}", entityId, entityActions.size());
@@ -188,9 +188,9 @@ public class ApprovalStatusUtil {
             boolean rejected = false;
             boolean pending = false;
 
-            for (ApprovalLevel level : levels) {
+            for (ApprovalLevelEntity level : levels) {
 
-                List<ApprovalAction> levelActions = entityActions.stream()
+                List<ApprovalActionEntity> levelActions = entityActions.stream()
                         .filter(a -> a.getApprovalLevel().getId().equals(level.getId()))
                         .toList();
 
@@ -239,8 +239,8 @@ public class ApprovalStatusUtil {
     /**
      * Helpers
      */
-    private UserApproval getUserApproval(String entityName) {
-        Optional<SysApproval> sys = sysApprovalRepository.findByEntityName(entityName);
+    private UserApprovalEntity getUserApproval(String entityName) {
+        Optional<SysApprovalEntity> sys = sysApprovalRepository.findByEntityName(entityName);
         if (sys.isEmpty()) return null;
 
         return userApprovalRepository
@@ -269,7 +269,7 @@ public class ApprovalStatusUtil {
             return buildBasic(entity, hasApprovalMode, approvalStatus);
         }
 
-        UserApproval userApproval = getUserApproval(entityName);
+        UserApprovalEntity userApproval = getUserApproval(entityName);
 
         if (userApproval == null) {
             log.debug("No UserApproval found → fallback");
@@ -278,7 +278,7 @@ public class ApprovalStatusUtil {
 
         log.debug("UserApproval ID: {}", userApproval.getId());
 
-        List<ApprovalLevel> levels = getLevelsByUserApproval(userApproval.getId());
+        List<ApprovalLevelEntity> levels = getLevelsByUserApproval(userApproval.getId());
 
         log.debug("Levels count: {}", levels.size());
         log.debug("Levels: {}", levels.stream()
@@ -286,10 +286,10 @@ public class ApprovalStatusUtil {
                 .toList());
 
         List<Long> levelIds = levels.stream()
-                .map(ApprovalLevel::getId)
+                .map(ApprovalLevelEntity::getId)
                 .toList();
 
-        List<ApprovalAction> actions = getActions(entityId, levelIds);
+        List<ApprovalActionEntity> actions = getActions(entityId, levelIds);
 
         log.debug("Total actions fetched: {}", actions.size());
         actions.forEach(a -> log.debug(
@@ -301,7 +301,7 @@ public class ApprovalStatusUtil {
         boolean isMyLevelApproved = false;
         boolean shouldApprove = false;
 
-        ApprovalLevel myLevel = levels.stream()
+        ApprovalLevelEntity myLevel = levels.stream()
                 .filter(level -> level.getRole().getId().equals(userRoleId))
                 .findFirst()
                 .orElse(null);
@@ -312,7 +312,7 @@ public class ApprovalStatusUtil {
             log.debug("My level found → ID: {}, createdAt: {}",
                     myLevel.getId(), myLevel.getCreatedAt());
 
-            List<ApprovalAction> myActions = actions.stream()
+            List<ApprovalActionEntity> myActions = actions.stream()
                     .filter(a -> a.getApprovalLevel().getId().equals(myLevel.getId()))
                     .toList();
 
@@ -326,7 +326,7 @@ public class ApprovalStatusUtil {
 
         if ("PENDING".equals(approvalStatus) && myLevel != null && !isMyLevelApproved) {
 
-            List<ApprovalLevel> previousLevels = levels.stream()
+            List<ApprovalLevelEntity> previousLevels = levels.stream()
                     .filter(lvl ->
                             lvl.getCreatedAt() != null &&
                                     myLevel.getCreatedAt() != null &&
@@ -335,7 +335,7 @@ public class ApprovalStatusUtil {
                     .toList();
 
             log.debug("Previous levels: {}", previousLevels.stream()
-                    .map(ApprovalLevel::getId)
+                    .map(ApprovalLevelEntity::getId)
                     .toList());
 
             boolean allPrevApproved = previousLevels.stream().allMatch(lvl -> {
@@ -379,11 +379,11 @@ public class ApprovalStatusUtil {
 
 
 
-    public List<ApprovalLevel> getLevelsByUserApproval(Long userApprovalId) {
+    public List<ApprovalLevelEntity> getLevelsByUserApproval(Long userApprovalId) {
         return approvalLevelRepository.findByUserApprovalId(userApprovalId);
     }
 
-    public List<ApprovalAction> getActions(Long entityId, List<Long> levelIds) {
+    public List<ApprovalActionEntity> getActions(Long entityId, List<Long> levelIds) {
         return approvalActionRepository
                 .findByEntityIdAndApprovalLevelIdIn(entityId, levelIds);
     }

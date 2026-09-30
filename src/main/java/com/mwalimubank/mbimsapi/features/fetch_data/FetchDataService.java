@@ -13,7 +13,7 @@ import com.mwalimubank.mbimsapi.features.administration.unit.UnitEntity;
 import com.mwalimubank.mbimsapi.features.administration.unit.UnitRepository;
 import com.mwalimubank.mbimsapi.features.administration.unit.dto.UnitResponseDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.SysApprovalResponseDTO;
-import com.mwalimubank.mbimsapi.features.approval.entity.SysApproval;
+import com.mwalimubank.mbimsapi.features.approval.entity.SysApprovalEntity;
 import com.mwalimubank.mbimsapi.features.approval.repository.SysApprovalRepository;
 import com.mwalimubank.mbimsapi.features.approval.util.ApprovalStatusUtil;
 import com.mwalimubank.mbimsapi.features.asset_management.asset.AssetEntity;
@@ -111,8 +111,8 @@ public class FetchDataService {
 
         return fetchData(
                 sysApprovalRepository.findAll(),
-                SysApproval.class.getSimpleName(),
-                SysApproval::getId,
+                SysApprovalEntity.class.getSimpleName(),
+                SysApprovalEntity::getId,
                 SysApprovalResponseDTO::fromEntity,
                 SysApprovalResponseDTO::setApprovalStatus
         );

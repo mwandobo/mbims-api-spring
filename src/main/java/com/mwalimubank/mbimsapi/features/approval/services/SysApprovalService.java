@@ -2,7 +2,7 @@ package com.mwalimubank.mbimsapi.features.approval.services;
 
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
 import com.mwalimubank.mbimsapi.core.dto.PaginationResponse;
-import com.mwalimubank.mbimsapi.features.approval.entity.SysApproval;
+import com.mwalimubank.mbimsapi.features.approval.entity.SysApprovalEntity;
 import com.mwalimubank.mbimsapi.features.approval.repository.SysApprovalRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,8 +15,8 @@ public class SysApprovalService {
 
     private final SysApprovalRepository repository;
 
-    public PaginationResponse<SysApproval> findAll(PaginationRequest pagination, String search) {
-        Specification<SysApproval> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
+    public PaginationResponse<SysApprovalEntity> findAll(PaginationRequest pagination, String search) {
+        Specification<SysApprovalEntity> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
 
         if (search != null && !search.trim().isEmpty()) {
             spec = spec.and((root, query, cb) ->
@@ -26,7 +26,7 @@ public class SysApprovalService {
             );
         }
 
-        Page<SysApproval> dataDtos = repository.findAll(spec, pagination.toPageable());
+        Page<SysApprovalEntity> dataDtos = repository.findAll(spec, pagination.toPageable());
         return PaginationResponse.of(dataDtos);
     }
 }

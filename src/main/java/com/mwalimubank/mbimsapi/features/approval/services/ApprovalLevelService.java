@@ -2,17 +2,14 @@ package com.mwalimubank.mbimsapi.features.approval.services;
 
 import com.mwalimubank.mbimsapi.core.constants.FrontEndRouteConstants;
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
-import com.mwalimubank.mbimsapi.core.dto.PaginationDto;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
 import com.mwalimubank.mbimsapi.core.services.CurrentUserService;
-import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
-import com.mwalimubank.mbimsapi.features.administration.department.dto.DepartmentResponseDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalLevelRequestDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalLevelResponseDTO;
-import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalAction;
-import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalLevel;
-import com.mwalimubank.mbimsapi.features.approval.entity.UserApproval;
+import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalActionEntity;
+import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalLevelEntity;
+import com.mwalimubank.mbimsapi.features.approval.entity.UserApprovalEntity;
 import com.mwalimubank.mbimsapi.features.approval.enums.ApprovalActionCreationTypeEnum;
 import com.mwalimubank.mbimsapi.features.approval.enums.ApprovalActionEnum;
 import com.mwalimubank.mbimsapi.features.approval.repository.ApprovalActionRepository;
@@ -28,13 +25,11 @@ import com.mwalimubank.mbimsapi.features.role.RoleEntity;
 import com.mwalimubank.mbimsapi.features.role.RoleRepository;
 import com.mwalimubank.mbimsapi.features.user.UserEntity;
 import com.mwalimubank.mbimsapi.features.user.UserRepository;
-import com.mwalimubank.mbimsapi.features.user.dto.UserResponseDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,7 +66,7 @@ public class ApprovalLevelService {
 
 
     public PagedResponse<ApprovalLevelResponseDTO> findAll(PaginationRequest pagination, String search) {
-        Specification<ApprovalLevel> spec = PageSpecs.and(
+        Specification<ApprovalLevelEntity> spec = PageSpecs.and(
                 PageSpecs.notDeleted(),
                 PageSpecs.searchLike(search, "name", "level", "role.name")
         );
@@ -80,8 +75,8 @@ public class ApprovalLevelService {
                 repository,
                 spec,
                 pagination,
-                ApprovalLevel.class,
-                ApprovalLevel::getId,
+                ApprovalLevelEntity.class,
+                ApprovalLevelEntity::getId,
                 ApprovalLevelResponseDTO::fromEntity,
                 ApprovalLevelResponseDTO::setApprovalStatus,
                 SORT_FIELDS,
@@ -94,7 +89,7 @@ public class ApprovalLevelService {
     @Transactional
     public ApprovalLevelResponseDTO create(Long userApprovalId , ApprovalLevelRequestDTO request) {
         // 1️⃣ Validate UserApproval
-        UserApproval userApproval = userApprovalRepository.findById(userApprovalId)
+        UserApprovalEntity userApproval = userApprovalRepository.findById(userApprovalId)
                 .orElseThrow(() -> new IllegalStateException("User Approval Not Found"));
 
         // 2️⃣ Validate Role
@@ -111,7 +106,7 @@ public class ApprovalLevelService {
         int nextLevel = updateApprovalLevelOrder(userApprovalId, "CREATE", null);
 
         // 5️⃣ Create new ApprovalLevel
-        ApprovalLevel level = new ApprovalLevel();
+        ApprovalLevelEntity level = new ApprovalLevelEntity();
         level.setName(request.getName());
         level.setDescription(request.getDescription());
         level.setLevel(nextLevel);
@@ -119,17 +114,17 @@ public class ApprovalLevelService {
         level.setRole(role);
 
         // 6️⃣ Save new level
-        ApprovalLevel saved = repository.save(level);
+        ApprovalLevelEntity saved = repository.save(level);
 
         // 7️⃣ Find previous level (by createdAt descending, excluding this new one)
-        Optional<ApprovalLevel> previousLevelOpt =
+        Optional<ApprovalLevelEntity> previousLevelOpt =
                 repository.findByUserApprovalIdAndLevel(userApproval.getId(), saved.getLevel() - 1);
 
         if (previousLevelOpt.isPresent()) {
-            ApprovalLevel previousLevel = previousLevelOpt.get();
+            ApprovalLevelEntity previousLevel = previousLevelOpt.get();
 
             // 8️⃣ Load all actions for previous level
-            List<ApprovalAction> previousActions = approvalActionRepository
+            List<ApprovalActionEntity> previousActions = approvalActionRepository
                     .findByApprovalLevelId(previousLevel.getId());
 
             // 9️⃣ Check if all are APPROVED
@@ -138,9 +133,9 @@ public class ApprovalLevelService {
 
             if (allApproved) {
                 // 10️⃣ Duplicate actions for new level
-                List<ApprovalAction> newActions = previousActions.stream()
+                List<ApprovalActionEntity> newActions = previousActions.stream()
                         .map(a -> {
-                            ApprovalAction action = new ApprovalAction();
+                            ApprovalActionEntity action = new ApprovalActionEntity();
                             action.setApprovalLevel(saved);
                             action.setUser(saved.getUser()); // or current user
                             action.setName(a.getName());
@@ -168,7 +163,7 @@ public class ApprovalLevelService {
 
 
     public ApprovalAwareDTO<ApprovalLevelResponseDTO> findOne  (Long  userId) {
-        ApprovalLevel   entity = repository.findById( userId)
+        ApprovalLevelEntity entity = repository.findById( userId)
                 .orElseThrow(() -> new IllegalStateException(" User not found"));
 
         ApprovalLevelResponseDTO dto = ApprovalLevelResponseDTO.fromEntity(entity);
@@ -176,19 +171,19 @@ public class ApprovalLevelService {
         return approvalStatusUtil.attachApprovalInfo(
                 dto,
                 entity.getId(),
-                ApprovalLevel.class.getSimpleName(),
+                ApprovalLevelEntity.class.getSimpleName(),
                 currentUserService.getCurrentUserRoleId()
         );
     }
 
     @Transactional
-    public ApprovalLevel update(Long id, Long userApprovalId, ApprovalLevelRequestDTO request) {
+    public ApprovalLevelEntity update(Long id, Long userApprovalId, ApprovalLevelRequestDTO request) {
             repository.findByRoleIdAndUserApprovalId(request.getRoleId(), userApprovalId)
                 .ifPresent(l -> {
                     throw new IllegalStateException("Approval Level already exists for this role and userApproval");
                 });
 
-        ApprovalLevel level = repository.findById(id)
+        ApprovalLevelEntity level = repository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("ApprovalLevel not found"));
 
         level.setName(request.getName());
@@ -216,7 +211,7 @@ public class ApprovalLevelService {
 
     @Transactional
     public void delete(Long id, boolean soft) {
-        ApprovalLevel level = repository.findById(id)
+        ApprovalLevelEntity level = repository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("ApprovalLevel not found"));
 
         updateApprovalLevelOrder(level.getUserApproval().getId(), "DELETE", level);
@@ -234,10 +229,10 @@ public class ApprovalLevelService {
     public int updateApprovalLevelOrder(
             Long userApprovalId,
             String action,
-            ApprovalLevel affectedLevel
+            ApprovalLevelEntity affectedLevel
     ) {
 
-        List<ApprovalLevel> levels = repository.findByUserApprovalIdOrderByLevelAsc(userApprovalId);
+        List<ApprovalLevelEntity> levels = repository.findByUserApprovalIdOrderByLevelAsc(userApprovalId);
 
         if ("CREATE".equalsIgnoreCase(action)) {
             // Return next level
@@ -248,7 +243,7 @@ public class ApprovalLevelService {
             int deletedLevelNum = affectedLevel.getLevel();
 
             // Shift levels down after deletion
-            for (ApprovalLevel lvl : levels) {
+            for (ApprovalLevelEntity lvl : levels) {
                 if (lvl.getLevel() > deletedLevelNum) {
                     lvl.setLevel(lvl.getLevel() - 1);
                     repository.save(lvl); // update
@@ -263,7 +258,7 @@ public class ApprovalLevelService {
 
 
     @Transactional
-    public void sendCreateLevelNotification(ApprovalLevel level, RoleEntity role) throws MessagingException {
+    public void sendCreateLevelNotification(ApprovalLevelEntity level, RoleEntity role) throws MessagingException {
 
         log.info("Approval level passed level={}", toJson(level));
 

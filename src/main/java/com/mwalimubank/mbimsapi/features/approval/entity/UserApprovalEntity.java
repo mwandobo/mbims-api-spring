@@ -7,8 +7,8 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "mbimsapi_user_approvals")
-public class UserApproval extends BaseEntity {
+@Table(name = "user_approval")
+public class UserApprovalEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,7 +21,7 @@ public class UserApproval extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "sys_approval_id")
-    private SysApproval sysApproval;
+    private SysApprovalEntity sysApproval;
 
     @Enumerated(EnumType.STRING) // Store enum as text in DB (better readability than ORDINAL)
     @Column(nullable = false)

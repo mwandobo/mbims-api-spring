@@ -6,7 +6,7 @@ import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.UserApprovalRequestDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.UserApprovalResponseDTO;
-import com.mwalimubank.mbimsapi.features.approval.entity.UserApproval;
+import com.mwalimubank.mbimsapi.features.approval.entity.UserApprovalEntity;
 import com.mwalimubank.mbimsapi.features.approval.services.UserApprovalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +29,7 @@ public class UserApprovalController {
 
     // ✅ Create new UserApproval
     @PostMapping
-    public ApiResponse<UserApproval> create(@RequestBody UserApprovalRequestDTO request) {
+    public ApiResponse<UserApprovalEntity> create(@RequestBody UserApprovalRequestDTO request) {
         return ApiResponse.success(service.create(request));
     }
 
@@ -42,7 +42,7 @@ public class UserApprovalController {
 
     // ✅ Update UserApproval
     @PutMapping("/{id}")
-    public ApiResponse<UserApproval> update(
+    public ApiResponse<UserApprovalEntity> update(
             @PathVariable Long id,
             @RequestBody UserApprovalRequestDTO request
     ) {

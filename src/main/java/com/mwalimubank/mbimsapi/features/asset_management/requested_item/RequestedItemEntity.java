@@ -22,11 +22,11 @@ public class RequestedItemEntity extends BaseEntity {
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "request_id", nullable = false)
+    @JoinColumn(name = "request_id")
     private AssetRequestEntity request;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "asset_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "asset_id")
     private AssetEntity asset;
 
     @Column(nullable = false)

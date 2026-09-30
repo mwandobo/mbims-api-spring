@@ -3,7 +3,7 @@ package com.mwalimubank.mbimsapi.features.approval.controller;
 import com.mwalimubank.mbimsapi.core.dto.ApiResponse;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
 import com.mwalimubank.mbimsapi.core.dto.PaginationResponse;
-import com.mwalimubank.mbimsapi.features.approval.entity.SysApproval;
+import com.mwalimubank.mbimsapi.features.approval.entity.SysApprovalEntity;
 import com.mwalimubank.mbimsapi.features.approval.services.SysApprovalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +19,7 @@ public class SysApprovalController {
     private final SysApprovalService service;
 
     @GetMapping()
-    public ApiResponse<PaginationResponse<SysApproval>> getAllPermissions(
+    public ApiResponse<PaginationResponse<SysApprovalEntity>> getAllPermissions(
             PaginationRequest pagination,
             @RequestParam(required = false) String search
     ) {

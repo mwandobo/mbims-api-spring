@@ -6,7 +6,7 @@ import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalLevelRequestDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalLevelResponseDTO;
-import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalLevel;
+import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalLevelEntity;
 import com.mwalimubank.mbimsapi.features.approval.services.ApprovalLevelService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +42,7 @@ public class ApprovalLevelController {
     }
 
     @PatchMapping("/{id}")
-    public ApiResponse<ApprovalLevel> update(
+    public ApiResponse<ApprovalLevelEntity> update(
                             @RequestParam(required = false) Long userApprovalId,
             @PathVariable Long id,
             @RequestBody ApprovalLevelRequestDTO request

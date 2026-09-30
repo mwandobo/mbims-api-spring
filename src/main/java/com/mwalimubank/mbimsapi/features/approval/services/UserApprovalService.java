@@ -1,16 +1,13 @@
 package com.mwalimubank.mbimsapi.features.approval.services;
 
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
-import com.mwalimubank.mbimsapi.core.dto.PaginationDto;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
 import com.mwalimubank.mbimsapi.core.services.CurrentUserService;
-import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
-import com.mwalimubank.mbimsapi.features.administration.department.dto.DepartmentResponseDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.UserApprovalRequestDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.UserApprovalResponseDTO;
-import com.mwalimubank.mbimsapi.features.approval.entity.SysApproval;
-import com.mwalimubank.mbimsapi.features.approval.entity.UserApproval;
+import com.mwalimubank.mbimsapi.features.approval.entity.SysApprovalEntity;
+import com.mwalimubank.mbimsapi.features.approval.entity.UserApprovalEntity;
 import com.mwalimubank.mbimsapi.features.approval.repository.SysApprovalRepository;
 import com.mwalimubank.mbimsapi.features.approval.repository.UserApprovalRepository;
 import com.mwalimubank.mbimsapi.features.approval.util.ApprovalStatusUtil;
@@ -18,14 +15,10 @@ import com.mwalimubank.mbimsapi.features.common.PageSpecs;
 import com.mwalimubank.mbimsapi.features.common.services.PagedQueryService;
 import com.mwalimubank.mbimsapi.features.user.UserEntity;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -42,7 +35,7 @@ public class UserApprovalService {
     );
 
     public PagedResponse<UserApprovalResponseDTO> findAll(PaginationRequest pagination, String search) {
-        Specification<UserApproval> spec = PageSpecs.and(
+        Specification<UserApprovalEntity> spec = PageSpecs.and(
                 PageSpecs.notDeleted(),
                 PageSpecs.searchLike(search, "name")
         );
@@ -51,16 +44,16 @@ public class UserApprovalService {
                 repository,
                 spec,
                 pagination,
-                UserApproval.class,
-                UserApproval::getId,
+                UserApprovalEntity.class,
+                UserApprovalEntity::getId,
                 UserApprovalResponseDTO::fromEntity,
                 UserApprovalResponseDTO::setApprovalStatus,
                 DEPARTMENT_SORT_FIELDS
         );
     }
 
-    private static Specification< UserApproval> getEntitySpecification(String search) {
-        Specification< UserApproval> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
+    private static Specification<UserApprovalEntity> getEntitySpecification(String search) {
+        Specification<UserApprovalEntity> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
 
         // Optional search filter (case-insensitive)
         if (search != null && !search.trim().isEmpty()) {
@@ -76,12 +69,12 @@ public class UserApprovalService {
     }
 
     @Transactional
-    public UserApproval create(UserApprovalRequestDTO request) {
-        UserApproval userApproval = new UserApproval();
+    public UserApprovalEntity create(UserApprovalRequestDTO request) {
+        UserApprovalEntity userApproval = new UserApprovalEntity();
         userApproval.setName(request.getName());
         userApproval.setDescription(request.getDescription());
 
-        SysApproval sysApproval = sysApprovalRepository.findById(request.getSysApprovalId())
+        SysApprovalEntity sysApproval = sysApprovalRepository.findById(request.getSysApprovalId())
                 .orElseThrow(() -> new IllegalStateException("System approval does not exist"));
         userApproval.setSysApproval(sysApproval);
 
@@ -89,7 +82,7 @@ public class UserApprovalService {
     }
 
     public ApprovalAwareDTO<UserApprovalResponseDTO> findOne  (Long  userId) {
-        UserApproval   entity = repository.findById( userId)
+        UserApprovalEntity entity = repository.findById( userId)
                 .orElseThrow(() -> new IllegalStateException(" User not found"));
 
         UserApprovalResponseDTO dto = UserApprovalResponseDTO.fromEntity(entity);
@@ -103,12 +96,12 @@ public class UserApprovalService {
     }
 
     @Transactional
-    public UserApproval update(Long id, UserApprovalRequestDTO request) {
-        UserApproval userApproval = repository.findById(id)
+    public UserApprovalEntity update(Long id, UserApprovalRequestDTO request) {
+        UserApprovalEntity userApproval = repository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("UserApproval not found with id: " + id));
 
         // Check if another userApproval with the same name exists
-        UserApproval existing = repository.findByName(request.getName());
+        UserApprovalEntity existing = repository.findByName(request.getName());
         if (existing != null && !existing.getId().equals(id)) {
             throw new IllegalStateException("UserApproval with name '" + request.getName() + "' already exists");
         }
@@ -116,7 +109,7 @@ public class UserApprovalService {
         userApproval.setName(request.getName());
         userApproval.setDescription(request.getDescription());
 
-        SysApproval sysApproval = sysApprovalRepository.findById(request.getSysApprovalId())
+        SysApprovalEntity sysApproval = sysApprovalRepository.findById(request.getSysApprovalId())
                 .orElseThrow(() -> new IllegalStateException("System approval does not exist"));
         userApproval.setSysApproval(sysApproval);
 
@@ -125,7 +118,7 @@ public class UserApprovalService {
 
     @Transactional
     public void delete(Long id, boolean soft) {
-        UserApproval userApproval = repository.findById(id)
+        UserApprovalEntity userApproval = repository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("UserApproval not found with id: " + id));
 
         if (soft) {
