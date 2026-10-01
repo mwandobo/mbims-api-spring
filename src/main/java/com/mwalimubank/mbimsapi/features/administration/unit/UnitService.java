@@ -87,9 +87,7 @@ public class UnitService {
                 .orElseThrow(() -> new IllegalStateException("Unit not found"));
         return approvalStatusUtil.attachApprovalInfo(
                 UnitResponseDTO.fromEntity(entity),
-                entity.getId(),
-                UnitEntity.class.getSimpleName(),
-                currentUserService.getCurrentUserRoleId()
+                entity
         );
     }
 

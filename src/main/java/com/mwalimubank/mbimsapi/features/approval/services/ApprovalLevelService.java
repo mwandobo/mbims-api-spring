@@ -137,7 +137,7 @@ public class ApprovalLevelService {
                         .map(a -> {
                             ApprovalActionEntity action = new ApprovalActionEntity();
                             action.setApprovalLevel(saved);
-                            action.setUser(saved.getUser()); // or current user
+                            action.setCreatedBy(saved.getUser()); // or current user
                             action.setName(a.getName());
                             action.setDescription(a.getDescription());
                             action.setAction(a.getAction());
@@ -170,9 +170,7 @@ public class ApprovalLevelService {
 
         return approvalStatusUtil.attachApprovalInfo(
                 dto,
-                entity.getId(),
-                ApprovalLevelEntity.class.getSimpleName(),
-                currentUserService.getCurrentUserRoleId()
+                entity
         );
     }
 

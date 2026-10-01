@@ -75,9 +75,7 @@ public class CustomerService {
                 .orElseThrow(() -> new IllegalStateException("Customer not found"));
         return approvalStatusUtil.attachApprovalInfo(
                 CustomerResponseDTO.fromEntity(entity),
-                entity.getId(),
-                CustomerEntity.class.getSimpleName(),
-                currentUserService.getCurrentUserRoleId()
+                entity
         );
     }
 

@@ -56,8 +56,8 @@ public class ApprovalActionEntity extends BaseEntity {
     private RoleEntity role;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    @JoinColumn(name = "created_by_id")
+    private UserEntity createdBy;
 
     @Enumerated(EnumType.STRING) // Store enum as text in DB (better readability than ORDINAL)
     @Column()

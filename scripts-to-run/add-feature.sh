@@ -323,9 +323,7 @@ public class ${FEATURE_PASCAL}Service {
                 .orElseThrow(() -> new IllegalStateException("${FEATURE_PASCAL} not found"));
         return approvalStatusUtil.attachApprovalInfo(
                 ${FEATURE_PASCAL}ResponseDTO.fromEntity(entity),
-                entity.getId(),
-                ${FEATURE_PASCAL}Entity.class.getSimpleName(),
-                currentUserService.getCurrentUserRoleId()
+                entity,
         );
     }
 

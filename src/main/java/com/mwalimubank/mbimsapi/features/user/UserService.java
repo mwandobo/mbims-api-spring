@@ -120,9 +120,7 @@ public class UserService {
 
            return approvalStatusUtil.attachApprovalInfo(
                     dto,
-                    user.getId(),
-                    UserEntity.class.getSimpleName(),
-                    currentUserService.getCurrentUserRoleId()
+                    user
                 );
      }
 

@@ -54,9 +54,7 @@ public class GenericDetailService {
                 .orElseThrow(() -> new IllegalStateException("GenericDetail not found"));
         return approvalStatusUtil.attachApprovalInfo(
                 GenericDetailResponseDTO.fromEntity(entity),
-                entity.getId(),
-                GenericDetailEntity.class.getSimpleName(),
-                currentUserService.getCurrentUserRoleId()
+                entity
         );
     }
 

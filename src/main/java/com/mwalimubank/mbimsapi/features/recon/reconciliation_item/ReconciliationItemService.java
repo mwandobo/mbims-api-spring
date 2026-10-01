@@ -74,9 +74,7 @@ public class ReconciliationItemService {
                 .orElseThrow(() -> new IllegalStateException("ReconciliationItem not found"));
         return approvalStatusUtil.attachApprovalInfo(
                 ReconciliationItemResponseDTO.fromEntity(entity),
-                entity.getId(),
-                ReconciliationItemEntity.class.getSimpleName(),
-                currentUserService.getCurrentUserRoleId()
+                entity
         );
     }
 

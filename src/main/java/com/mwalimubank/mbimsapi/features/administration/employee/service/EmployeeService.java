@@ -82,17 +82,15 @@ public class EmployeeService {
         );
     }
 
-    public ApprovalAwareDTO<EmployeeResponseDTO> findOne  (Long  departmentId) {
-        EmployeeEntity   department = repository.findById( departmentId)
+    public ApprovalAwareDTO<EmployeeResponseDTO> findOne  (Long  id) {
+        EmployeeEntity   entity = repository.findById( id)
                 .orElseThrow(() -> new IllegalStateException(" Employee not found"));
 
-        EmployeeResponseDTO dto = EmployeeResponseDTO.fromEntity(department);
+        EmployeeResponseDTO dto = EmployeeResponseDTO.fromEntity(entity);
 
         return approvalStatusUtil.attachApprovalInfo(
                 dto,
-                department.getId(),
-                EmployeeEntity.class.getSimpleName(),
-                currentUserService.getCurrentUserRoleId()
+                entity
         );
     }
 

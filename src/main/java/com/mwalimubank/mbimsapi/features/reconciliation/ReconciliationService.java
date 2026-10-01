@@ -88,9 +88,7 @@ public class ReconciliationService {
 
         return approvalStatusUtil.attachApprovalInfo(
                 dto,
-                entity.getId(),
-                ReconciliationEntity.class.getSimpleName(),
-                currentUserService.getCurrentUserRoleId()
+                entity
         );
     }
 

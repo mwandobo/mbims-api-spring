@@ -106,9 +106,7 @@ public class PositionService {
                 .orElseThrow(() -> new IllegalStateException("Position not found"));
         return approvalStatusUtil.attachApprovalInfo(
                 PositionResponseDTO.fromEntity(entity),
-                entity.getId(),
-                PositionEntity.class.getSimpleName(),
-                currentUserService.getCurrentUserRoleId()
+                entity
         );
     }
 

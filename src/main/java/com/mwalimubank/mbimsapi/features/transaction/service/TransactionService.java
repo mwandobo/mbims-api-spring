@@ -63,9 +63,7 @@ public class TransactionService {
                 .orElseThrow(() -> new IllegalStateException("Transaction not found"));
         return approvalStatusUtil.attachApprovalInfo(
                 TransactionResponseDTO.fromEntity(entity),
-                entity.getId(),
-                TransactionEntity.class.getSimpleName(),
-                currentUserService.getCurrentUserRoleId()
+                entity
         );
     }
 

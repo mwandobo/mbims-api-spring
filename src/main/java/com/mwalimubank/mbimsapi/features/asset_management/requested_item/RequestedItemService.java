@@ -92,9 +92,7 @@ public class RequestedItemService {
 
         return approvalStatusUtil.attachApprovalInfo(
                 RequestedItemResponseDTO.fromEntity(entity),
-                entity.getId(),
-                RequestedItemEntity.class.getSimpleName(),
-                currentUserService.getCurrentUserRoleId()
+                entity
         );
     }
 

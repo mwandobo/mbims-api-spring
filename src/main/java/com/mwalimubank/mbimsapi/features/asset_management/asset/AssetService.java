@@ -86,9 +86,7 @@ public class AssetService {
 
            return approvalStatusUtil.attachApprovalInfo(
                     dto,
-                    asset.getId(),
-                    AssetEntity.class.getSimpleName(),
-                    currentUserService.getCurrentUserRoleId()
+                    asset
                 );
      }
 

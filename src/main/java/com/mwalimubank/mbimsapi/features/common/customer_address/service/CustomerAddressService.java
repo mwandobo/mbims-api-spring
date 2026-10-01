@@ -53,9 +53,7 @@ public class CustomerAddressService {
                 .orElseThrow(() -> new IllegalStateException("CustomerAddress not found"));
         return approvalStatusUtil.attachApprovalInfo(
                 CustomerAddressResponseDTO.fromEntity(entity),
-                entity.getId(),
-                CustomerAddressEntity.class.getSimpleName(),
-                currentUserService.getCurrentUserRoleId()
+                entity
         );
     }
 

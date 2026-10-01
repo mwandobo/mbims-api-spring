@@ -68,16 +68,14 @@ public class DepartmentService {
     }
 
     public  ApprovalAwareDTO<DepartmentResponseDTO> findOne  (Long  departmentId) {
-          DepartmentEntity   department = repository.findById( departmentId)
+          DepartmentEntity  entity = repository.findById( departmentId)
                  .orElseThrow(() -> new IllegalStateException(" Department not found"));
 
-          DepartmentResponseDTO dto = DepartmentResponseDTO.fromEntity(department);
+          DepartmentResponseDTO dto = DepartmentResponseDTO.fromEntity(entity);
 
            return approvalStatusUtil.attachApprovalInfo(
                     dto,
-                    department.getId(),
-                    DepartmentEntity.class.getSimpleName(),
-                    currentUserService.getCurrentUserRoleId()
+                   entity
                 );
      }
 

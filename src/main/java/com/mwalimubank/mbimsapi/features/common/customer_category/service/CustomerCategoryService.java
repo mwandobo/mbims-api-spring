@@ -54,9 +54,7 @@ public class CustomerCategoryService {
                 .orElseThrow(() -> new IllegalStateException("CustomerCategory not found"));
         return approvalStatusUtil.attachApprovalInfo(
                 CustomerCategoryResponseDTO.fromEntity(entity),
-                entity.getId(),
-                CustomerCategoryEntity.class.getSimpleName(),
-                currentUserService.getCurrentUserRoleId()
+                entity
         );
     }
 

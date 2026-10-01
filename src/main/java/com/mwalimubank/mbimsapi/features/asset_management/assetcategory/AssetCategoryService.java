@@ -74,9 +74,7 @@ public class AssetCategoryService {
 
            return approvalStatusUtil.attachApprovalInfo(
                     dto,
-                    assetcategory.getId(),
-                    AssetCategoryEntity.class.getSimpleName(),
-                    currentUserService.getCurrentUserRoleId()
+                    assetcategory
                 );
      }
 

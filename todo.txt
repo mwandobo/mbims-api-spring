@@ -24,6 +24,9 @@ in generate property
  ability to find compulsory roles for descendants roles
  handle sort by parentId name
  password generator to use number and text only
+ refactor approval level response body to not include entities
+
+
 
 
 

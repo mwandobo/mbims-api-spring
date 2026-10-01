@@ -1,5 +1,7 @@
 package com.mwalimubank.mbimsapi.features.approval.util;
 
+import com.mwalimubank.mbimsapi.core.entity.BaseEntity;
+import com.mwalimubank.mbimsapi.core.services.CurrentUserService;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
 import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalActionEntity;
 import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalLevelEntity;
@@ -27,6 +29,8 @@ public class ApprovalStatusUtil {
     private final UserApprovalRepository userApprovalRepository;
     private final ApprovalLevelRepository approvalLevelRepository;
     private final ApprovalActionRepository approvalActionRepository;
+    private final CurrentUserService currentUserService;
+
 
     /**
      * Check if approval mode is enabled
@@ -249,15 +253,14 @@ public class ApprovalStatusUtil {
     }
 
 
-    public <T> ApprovalAwareDTO<T> attachApprovalInfo(
-            T entity,
-            Long entityId,
-            String entityName,
-            Long userRoleId
+    public <D, E extends BaseEntity> ApprovalAwareDTO<D> attachApprovalInfo(
+            D responseDto,
+            E entity
     ) {
+        Long entityId = entity.getId();
+        String entityName = entity.getClass().getSimpleName();
 
         log.debug("==== ATTACH APPROVAL INFO START ====");
-        log.debug("Entity: {}, ID: {}, UserRoleId: {}", entityName, entityId, userRoleId);
 
         boolean hasApprovalMode = hasApprovalMode(entityName);
         String approvalStatus = getApprovalStatus(entityName, entityId);
@@ -266,14 +269,14 @@ public class ApprovalStatusUtil {
 
         if (!hasApprovalMode || "REJECTED".equals(approvalStatus)) {
             log.debug("Skipping approval logic (mode off or rejected)");
-            return buildBasic(entity, hasApprovalMode, approvalStatus);
+            return buildBasic(responseDto, hasApprovalMode, approvalStatus);
         }
 
         UserApprovalEntity userApproval = getUserApproval(entityName);
 
         if (userApproval == null) {
             log.debug("No UserApproval found → fallback");
-            return buildBasic(entity, hasApprovalMode, approvalStatus);
+            return buildBasic(responseDto, hasApprovalMode, approvalStatus);
         }
 
         log.debug("UserApproval ID: {}", userApproval.getId());
@@ -300,6 +303,8 @@ public class ApprovalStatusUtil {
 
         boolean isMyLevelApproved = false;
         boolean shouldApprove = false;
+
+        Long userRoleId =  currentUserService.getCurrentUserRoleId();
 
         ApprovalLevelEntity myLevel = levels.stream()
                 .filter(level -> level.getRole().getId().equals(userRoleId))
@@ -356,7 +361,7 @@ public class ApprovalStatusUtil {
         log.debug("==== ATTACH APPROVAL INFO END ====");
 
         return new ApprovalAwareDTO<>(
-                entity,
+                responseDto,
                 hasApprovalMode,
                 approvalStatus,
                 isMyLevelApproved,

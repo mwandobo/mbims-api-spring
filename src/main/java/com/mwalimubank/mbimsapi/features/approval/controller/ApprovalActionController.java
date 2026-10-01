@@ -23,9 +23,11 @@ public class ApprovalActionController {
     @GetMapping
     public PagedResponse<ApprovalActionResponseDTO> findAll(
             PaginationRequest pagination,
-            @RequestParam(required = false) String search
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String entityName,
+            @RequestParam(required = false) Long entityId
     ) {
-        return service.findAll(pagination, search);
+        return service.findAll(pagination, search,entityName, entityId);
     }
 
     @PostMapping

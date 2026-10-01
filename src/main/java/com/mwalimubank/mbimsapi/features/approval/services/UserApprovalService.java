@@ -89,9 +89,7 @@ public class UserApprovalService {
 
         return approvalStatusUtil.attachApprovalInfo(
                 dto,
-                entity.getId(),
-                UserEntity.class.getSimpleName(),
-                currentUserService.getCurrentUserRoleId()
+                entity
         );
     }
 

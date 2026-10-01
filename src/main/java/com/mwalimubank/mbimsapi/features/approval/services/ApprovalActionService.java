@@ -1,9 +1,7 @@
 package com.mwalimubank.mbimsapi.features.approval.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
-import com.mwalimubank.mbimsapi.core.dto.PaginationDto;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
 import com.mwalimubank.mbimsapi.core.services.CurrentUserService;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalActionRequestDTO;
@@ -15,6 +13,8 @@ import com.mwalimubank.mbimsapi.features.approval.enums.ApprovalActionEnum;
 import com.mwalimubank.mbimsapi.features.approval.repository.ApprovalActionRepository;
 import com.mwalimubank.mbimsapi.features.approval.repository.ApprovalLevelRepository;
 import com.mwalimubank.mbimsapi.features.approval.util.ApprovalStatusUtil;
+import com.mwalimubank.mbimsapi.features.common.PageSpecs;
+import com.mwalimubank.mbimsapi.features.common.services.PagedQueryService;
 import com.mwalimubank.mbimsapi.features.notification.NotificationService;
 import com.mwalimubank.mbimsapi.features.notification.dto.SendNotificationDto;
 import com.mwalimubank.mbimsapi.features.notification.enums.NotificationChannelsEnum;
@@ -23,7 +23,6 @@ import com.mwalimubank.mbimsapi.features.user.UserEntity;
 import com.mwalimubank.mbimsapi.features.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,66 +41,54 @@ public class ApprovalActionService {
     private final CurrentUserService currentUserService;
     private final NotificationService notificationService;
     private final ApprovalStatusUtil approvalStatusUtil;
+    private final PagedQueryService pagedQueryService;
+
+    private static final Set<String> SORT_FIELDS = Set.of(
+            "id", "name", "createdBy.name"
+    );
+
+    private static final Map<String, String> SORT_ALIASES = Map.of(
+            "createdByName", "createdBy.name"   // frontend sortBy=departmentName
+    );
+
+
 
     public PagedResponse<ApprovalActionResponseDTO> findAll(
             PaginationRequest pagination,
-            String search
-    ) {
-        Specification<ApprovalActionEntity> spec = getEntitySpecification(search);
-        boolean hasApprovalMode = approvalStatusUtil.hasApprovalMode(ApprovalActionEntity.class.getSimpleName());
-
-        Page<ApprovalActionEntity> page =
-                repository.findAll(spec, pagination.toPageable());
-
-        List<ApprovalActionEntity> entities = page.getContent();
-
-        List<Long> ids = entities.stream()
-                .map(ApprovalActionEntity::getId)
-                .toList();
-        Map<Long, String> statusMap = hasApprovalMode
-                ? approvalStatusUtil.getBulkApprovalStatuses(UserEntity.class.getSimpleName(), ids)
-                : Collections.emptyMap();
-
-        List<ApprovalActionResponseDTO> result = entities.stream()
-                .map(entity -> {
-                    ApprovalActionResponseDTO dto = ApprovalActionResponseDTO.fromEntity(entity);
-
-                    if (hasApprovalMode) {
-                        dto.setApprovalStatus(
-                                statusMap.get(entity.getId())
-                        );
+            String search,
+            String entityName,
+            Long entityId
+    ){
+        Specification<ApprovalActionEntity> spec = PageSpecs.and(
+                PageSpecs.notDeleted(),
+                PageSpecs.searchLike(search, "name", "createdBy.name"),
+                (root, query, cb) -> {
+                    if (entityName == null || entityName.isBlank()) {
+                        return cb.conjunction();
                     }
+                    return cb.equal(root.get("entityName"), entityName);
+                },
 
-                    return dto;
-                })
-                .toList();
-
-        return new PagedResponse<>(
-                result,
-                new PaginationDto(
-                        page.getTotalElements(),
-                        page.getNumber() + 1,
-                        page.getSize(),
-                        page.getTotalPages()
-                ),
-                hasApprovalMode // or dynamic logic
+                // Filter by entityId
+                (root, query, cb) -> {
+                    if (entityId == null) {
+                        return cb.conjunction();
+                    }
+                    return cb.equal(root.get("entityId"), entityId);
+                }
         );
-    }
 
-    private static Specification<ApprovalActionEntity> getEntitySpecification(String search) {
-        Specification<ApprovalActionEntity> spec = (root, query, cb) -> cb.isFalse(root.get("deleted"));
-
-        // Optional search filter (case-insensitive)
-        if (search != null && !search.trim().isEmpty()) {
-            String likePattern = "%" + search.trim().toLowerCase() + "%";
-            spec = spec.and((root, query, cb) ->
-                    cb.or(
-                            cb.like(cb.lower(root.get("title")), likePattern),
-                            cb.like(cb.lower(root.get("description")), likePattern)
-                    )
-            );
-        }
-        return spec;
+        return pagedQueryService.findAll(
+                repository,
+                spec,
+                pagination,
+                ApprovalActionEntity.class,
+                ApprovalActionEntity::getId,
+                ApprovalActionResponseDTO::fromEntity,
+                ApprovalActionResponseDTO::setApprovalStatus,
+                SORT_FIELDS,
+                SORT_ALIASES
+        );
     }
 
 
@@ -135,7 +122,7 @@ public class ApprovalActionService {
 
         ApprovalActionEntity action = new ApprovalActionEntity();
         action.setApprovalLevel(approvalLevel);
-        action.setUser(user);
+        action.setCreatedBy(user);
         action.setRole(user.getRole());
         action.setName(request.getName());
         action.setDescription(request.getDescription());
@@ -166,9 +153,7 @@ public class ApprovalActionService {
 
         return approvalStatusUtil.attachApprovalInfo(
                 dto,
-                entity.getId(),
-                ApprovalLevelEntity.class.getSimpleName(),
-                currentUserService.getCurrentUserRoleId()
+                entity
         );
     }
 
@@ -186,7 +171,7 @@ public class ApprovalActionService {
                 .orElseThrow(() -> new IllegalStateException("User Not found"));
 
         action.setApprovalLevel(approvalLevel);
-        action.setUser(user);
+        action.setCreatedBy(user);
         action.setName(request.getName());
         action.setDescription(request.getDescription());
         action.setAction(request.getAction());

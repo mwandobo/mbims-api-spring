@@ -53,9 +53,7 @@ public class OtherIdService {
                 .orElseThrow(() -> new IllegalStateException("OtherId not found"));
         return approvalStatusUtil.attachApprovalInfo(
                 OtherIdResponseDTO.fromEntity(entity),
-                entity.getId(),
-                OtherIdEntity.class.getSimpleName(),
-                currentUserService.getCurrentUserRoleId()
+                entity
         );
     }
 
