@@ -20,12 +20,14 @@ public class AssetRequestResponseDTO {
 
     private String approvalStatus;
     private String createdAt;
+    private String entityName;
     private String updatedAt;
 
     public static AssetRequestResponseDTO fromEntity(AssetRequestEntity entity) {
         AssetRequestResponseDTO dto = new AssetRequestResponseDTO();
         dto.setId(entity.getId());
         dto.setName(entity.getName());
+        dto.setEntityName(entity.getClass().getSimpleName());
         dto.setDescription(entity.getDescription());
         dto.setStatus(entity.getStatus());
         if (entity.getItems() != null && !entity.getItems().isEmpty()) {

@@ -160,7 +160,7 @@ GET {{base_url}}/approval-actions
 Authorization: Bearer {{token}}
 
 ### approve levels
-GET /api/v1/approval-actions?userApprovalId=1&entityId=15&page=1&size=50&sortBy=id&direction=ASC
+GET {{base_url}}/approval-actions?entityName=AssetRequestEntity&entityId=6
 Authorization: Bearer {{token}}
 
 
