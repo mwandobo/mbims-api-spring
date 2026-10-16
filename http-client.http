@@ -536,6 +536,17 @@ Authorization: Bearer {{token}}
 GET {{base_url}}/reconciliations/3/items
 Authorization: Bearer {{token}}
 
+###
+GET {{base_url}}/deposits
+Authorization: Bearer {{token}}
+
+###
+GET {{base_url}}/deposits
+Authorization: Bearer {{token}}
+
+###
+POST {{base_url}}/deposits/sync
+Authorization: Bearer {{token}}
 
 
 

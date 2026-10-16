@@ -167,12 +167,17 @@ public class DataSeeder {
                     new PermissionDef("reconciliation_delete", "Delete Reconciliation")
             )),
 
-                   new PermissionGroup("reconciliation_item", List.of(
-            new PermissionDef("reconciliation_item_create", "Create Reconciliation Item"),
+            new PermissionGroup("reconciliation_item", List.of(
+                    new PermissionDef("reconciliation_item_create", "Create Reconciliation Item"),
                     new PermissionDef("reconciliation_item_read", "View Reconciliation Item"),
                     new PermissionDef("reconciliation_item_update", "Edit Reconciliation Item"),
                     new PermissionDef("reconciliation_item_delete", "Delete Reconciliation Item")
+            )),
+
+            new PermissionGroup("setting", List.of(
+                    new PermissionDef("setting_read", "View Settings")
             ))
+
 
 
             // 👉 continue copying ALL groups from NestJS
