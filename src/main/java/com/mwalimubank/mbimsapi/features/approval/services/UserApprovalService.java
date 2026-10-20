@@ -70,6 +70,11 @@ public class UserApprovalService {
 
     @Transactional
     public UserApprovalEntity create(UserApprovalRequestDTO request) {
+        if (repository.existsBySysApprovalId(request.getSysApprovalId())) {
+            throw new IllegalStateException(
+                    "UserApproval already exists for system approval id: " + request.getSysApprovalId()
+            );
+        }
         UserApprovalEntity userApproval = new UserApprovalEntity();
         userApproval.setName(request.getName());
         userApproval.setDescription(request.getDescription());

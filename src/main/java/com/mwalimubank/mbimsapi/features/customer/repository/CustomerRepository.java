@@ -1,10 +1,6 @@
 package com.mwalimubank.mbimsapi.features.customer.repository;
 
-import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
 import com.mwalimubank.mbimsapi.features.customer.entity.CustomerEntity;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -54,7 +50,8 @@ public interface CustomerRepository extends JpaRepository<CustomerEntity, Long>,
                 s.TMSTAMP,
                 s.CUST_TYPE,
                 s.CUST_STATUS,
-                s.FK_BANKEMPLOYEEID
+                s.FK_BANKEMPLOYEEID,
+                s.FK_BRANCH_PORTFBRA
             FROM PROFITS.CUSTOMER s
             WHERE s.CUST_ID IS NOT NULL
         ) AS s
@@ -87,7 +84,8 @@ public interface CustomerRepository extends JpaRepository<CustomerEntity, Long>,
                 cust_type             = s.CUST_TYPE,
                 cust_status           = s.CUST_STATUS,
                 employee_code         = s.FK_BANKEMPLOYEEID,
-                updated_at            = CURRENT_TIMESTAMP
+                updated_at            = CURRENT_TIMESTAMP,
+                unit_code             = s.FK_BRANCH_PORTFBRA
         WHEN NOT MATCHED THEN
             INSERT (
           cust_id, first_name, middle_name, last_name, name,
@@ -98,7 +96,7 @@ public interface CustomerRepository extends JpaRepository<CustomerEntity, Long>,
           non_resident, vip_indicator, blacklist_indicator,
           customer_begin_date, customer_open_date, title,
           created_at, cust_type, cust_status,
-          deleted, updated_at, employee_code
+          deleted, updated_at, employee_code,unit_code
             ) VALUES (
           s.CUST_ID, s.FIRST_NAME, s.MIDDLE_NAME, s.SURNAME, s.full_name,
           s.SEX, s.DATE_OF_BIRTH, s.MOBILE_TEL, s.E_MAIL,
@@ -108,7 +106,7 @@ public interface CustomerRepository extends JpaRepository<CustomerEntity, Long>,
           s.NON_RESIDENT, s.VIP_IND, s.BLACKLISTED_IND,
           s.CUSTOMER_BEGIN_DAT, s.CUST_OPEN_DATE, s.TITLE,
           s.TMSTAMP, s.CUST_TYPE, s.CUST_STATUS,
-          0, CURRENT_TIMESTAMP, s.FK_BANKEMPLOYEEID
+          0, CURRENT_TIMESTAMP, s.FK_BANKEMPLOYEEID, s.FK_BRANCH_PORTFBRA
             )
         """, nativeQuery = true)
     int upsertAllCustomers();

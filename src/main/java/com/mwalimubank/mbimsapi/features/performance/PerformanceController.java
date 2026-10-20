@@ -17,25 +17,16 @@ public class PerformanceController {
     private final PerformanceService service;
 
 
-    @GetMapping("/customer-stats")
-    public  CustomerStatsResponseDTO findCustomers(
-            PaginationRequest pagination,
-            @RequestParam(required = false) String search) {
-        return service.findCustomers();
-    }
-
     @GetMapping("/unit-stats")
-    public ResponseEntity<?> getUnitStats(
+    public ResponseEntity<List<UnitPerformanceDTO>> getUnitStats(
             @RequestParam(defaultValue = "4") int limit) {
 
-        List<UnitPerformanceDTO> stats = service.findTopUnitStats(limit);
-        return ResponseEntity.ok(stats);
+        return ResponseEntity.ok(service.findTopUnitStats(limit));
     }
 
     @GetMapping("/unit-stats/all")
-    public ResponseEntity<?> getAllUnitStats() {
-        List<UnitPerformanceDTO> stats = service.findAllUnitStats();
-        return ResponseEntity.ok(stats);
+    public ResponseEntity<List<UnitPerformanceDTO>> getAllUnitStats() {
+        return ResponseEntity.ok(service.findAllUnitStats());
     }
 
 }

@@ -60,6 +60,9 @@ public class CustomerEntity extends BaseEntity {
     @Column(name = "employer_address")
     private String employerAddress;
 
+    @Column(name = "unit_code")
+    private String unitCode;
+
     @Column(name = "identification_number")
     private String identificationNumber;
 

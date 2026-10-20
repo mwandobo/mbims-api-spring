@@ -10,4 +10,6 @@ public interface UserApprovalRepository extends JpaRepository<UserApprovalEntity
     UserApprovalEntity findByName(String name);
 
     Optional<UserApprovalEntity> findBySysApprovalId(Long sysApprovalId);
+
+    boolean existsBySysApprovalId(Long sysApprovalId);
 }

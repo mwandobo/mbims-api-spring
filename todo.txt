@@ -26,6 +26,12 @@ in generate property
  password generator to use number and text only
  refactor approval level response body to not include entities
  populate gl accounts
+in deposit change unit_id to unit_code
+delete level refactor
+
+Approval
+in approval select department first then position
+Add a room to attach dynamic approval for complicated tasks
 
 
 

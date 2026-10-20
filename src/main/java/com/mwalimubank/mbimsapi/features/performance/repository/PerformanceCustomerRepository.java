@@ -17,80 +17,67 @@ public interface PerformanceCustomerRepository extends JpaRepository<CustomerEnt
 
     long countByCustType(String custType);
 
-    @Query("""
-        SELECT c.custStatus, COUNT(c)
-        FROM CustomerEntity c
-        GROUP BY c.custStatus
-        """)
-    List<Object[]> countByStatus();
-
-    @Query("""
-        SELECT c.custStatus, COUNT(c)
-        FROM CustomerEntity c
-        WHERE c.custType = :custType
-        GROUP BY c.custStatus
-        """)
-    List<Object[]> countByStatusAndCustType(@Param("custType") String custType);
-
-    @Query("""
-        SELECT c.custStatus, COUNT(c)
-        FROM CustomerEntity c
-        WHERE c.custType IN ('2', '3')
-        GROUP BY c.custStatus
-        """)
-    List<Object[]> countByStatusCorporate();
-
-
-    /**
-     * Returns top units by number of customers.
-     * Each row: [unitId, unitName, totalCustomers, active, dormant, closed]
-     */
     @Query(value = """
-    SELECT * FROM (
+    SELECT unit_id, unit_code, unit_name, customer_count, deposit_total
+    FROM (
         SELECT 
-            u.id AS unit_id,
-            u.name AS unit_name,
-            COUNT(c.id) AS total_customers,
-            SUM(CASE WHEN c.cust_status = '2' THEN 1 ELSE 0 END) AS active,
-            SUM(CASE WHEN c.cust_status = '1' THEN 1 ELSE 0 END) AS dormant,
-            SUM(CASE WHEN c.cust_status IN ('S', 'SUSPENDED') OR c.cust_status IS NULL THEN 1 ELSE 0 END) AS closed,
-            ROW_NUMBER() OVER (ORDER BY COUNT(c.id) DESC) AS rn
-        FROM MBIMS.customer c
-        INNER JOIN MBIMS.employee e ON e.staff_no = c.employee_code
-        INNER JOIN MBIMS.unit u ON u.id = e.unit_id
-        WHERE c.deleted = 0
-          AND e.deleted = 0
-          AND u.deleted = 0
-          AND c.employee_code IS NOT NULL
-        GROUP BY u.id, u.name
-    ) AS ranked
+            u.id                                    AS unit_id,
+            u.code                             AS unit_code,
+            u.name                                  AS unit_name,
+            COALESCE(c.customer_count, 0)           AS customer_count,
+            COALESCE(d.deposit_total, 0)            AS deposit_total,
+            ROW_NUMBER() OVER (ORDER BY COALESCE(c.customer_count, 0) DESC, COALESCE(d.deposit_total, 0) DESC) AS rn
+        FROM MBIMS.unit u
+        LEFT JOIN (
+            SELECT 
+                unit_code,
+                COUNT(*) AS customer_count
+            FROM MBIMS.customer
+            WHERE deleted = 0
+              AND unit_code IS NOT NULL
+            GROUP BY unit_code
+        ) c ON c.unit_code = u.code
+        LEFT JOIN (
+            SELECT 
+                UNIT_ID,
+                SUM(DC_AMOUNT) AS deposit_total
+            FROM MBIMS.deposit
+            GROUP BY UNIT_ID
+        ) d ON d.UNIT_ID = u.code
+        WHERE u.deleted = 0
+    ) ranked
     WHERE ranked.rn <= :limit
     """, nativeQuery = true)
-    List<Object[]> findTopUnitsByCustomerCount(@Param("limit") int limit);
+    List<Object[]> findTopUnitsPerformance(@Param("limit") int limit);
 
-    /**
-     * Same as above but without limit (for "Show More" page)
-     */
+
     @Query(value = """
+    SELECT 
+        u.id                                    AS unit_id,
+        u.code                                  AS unit_code,
+        u.name                                  AS unit_name,
+        COALESCE(c.customer_count, 0)           AS customer_count,
+        COALESCE(d.deposit_total, 0)            AS deposit_total
+    FROM MBIMS.unit u
+    LEFT JOIN (
         SELECT 
-            u.id AS unit_id,
-            u.name AS unit_name,
-            COUNT(c.id) AS total_customers,
-            SUM(CASE WHEN c.cust_status = '2' THEN 1 ELSE 0 END) AS active,
-            SUM(CASE WHEN c.cust_status = '1' THEN 1 ELSE 0 END) AS dormant,
-            SUM(CASE WHEN c.cust_status IN ('S', 'SUSPENDED') OR c.cust_status IS NULL THEN 1 ELSE 0 END) AS closed
-        FROM MBIMS.customer c
-        INNER JOIN MBIMS.employee e ON e.staff_no = c.employee_code
-        INNER JOIN MBIMS.unit u ON u.id = e.unit_id
-        WHERE c.deleted = 0
-          AND e.deleted = 0
-          AND u.deleted = 0
-          AND c.employee_code IS NOT NULL
-        GROUP BY u.id, u.name
-        ORDER BY total_customers DESC
-        """, nativeQuery = true)
-    List<Object[]> findAllUnitsByCustomerCount();
-
-
+            unit_code,
+            COUNT(*) AS customer_count
+        FROM MBIMS.customer
+        WHERE deleted = 0
+          AND unit_code IS NOT NULL
+        GROUP BY unit_code
+    ) c ON c.unit_code = u.code
+    LEFT JOIN (
+        SELECT 
+            UNIT_ID,
+            SUM(DC_AMOUNT) AS deposit_total
+        FROM MBIMS.deposit
+        GROUP BY UNIT_ID
+    ) d ON d.UNIT_ID = u.code
+    WHERE u.deleted = 0
+    ORDER BY customer_count DESC, deposit_total DESC
+    """, nativeQuery = true)
+    List<Object[]> findAllUnitsPerformance();
 
 }

@@ -174,6 +174,13 @@ public class DataSeeder {
                     new PermissionDef("reconciliation_item_delete", "Delete Reconciliation Item")
             )),
 
+            new PermissionGroup("resource_request", List.of(
+                    new PermissionDef("resource_request_create", "Create Resource Request"),
+                    new PermissionDef("resource_request_read", "View Resource Request"),
+                    new PermissionDef("resource_request_update", "Edit Resource Request"),
+                    new PermissionDef("resource_request_delete", "Delete Resource Request")
+            )),
+
             new PermissionGroup("setting", List.of(
                     new PermissionDef("setting_read", "View Settings")
             ))
