@@ -11,4 +11,5 @@ import java.util.Optional;
 
 public interface UnitRepository extends JpaRepository<UnitEntity, Long> , JpaSpecificationExecutor<UnitEntity> {
     Optional<UnitEntity> findByName(String name);
+    boolean existsByCode(String code);
 }
