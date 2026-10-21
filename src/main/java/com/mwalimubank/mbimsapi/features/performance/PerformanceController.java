@@ -1,7 +1,6 @@
 package com.mwalimubank.mbimsapi.features.performance;
 
-import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
-import com.mwalimubank.mbimsapi.features.performance.dto.CustomerStatsResponseDTO;
+import com.mwalimubank.mbimsapi.features.performance.dto.IndividualPerformanceDTO;
 import com.mwalimubank.mbimsapi.features.performance.dto.UnitPerformanceDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +26,17 @@ public class PerformanceController {
     @GetMapping("/unit-stats/all")
     public ResponseEntity<List<UnitPerformanceDTO>> getAllUnitStats() {
         return ResponseEntity.ok(service.findAllUnitStats());
+    }
+
+    @GetMapping("/individual-stats")
+    public ResponseEntity<List<IndividualPerformanceDTO>> getIndividualStats(
+            @RequestParam(defaultValue = "4") int limit) {
+        return ResponseEntity.ok(service.findTopIndividualStats(limit));
+    }
+
+    @GetMapping("/individual-stats/all")
+    public ResponseEntity<List<IndividualPerformanceDTO>> getAllIndividualStats() {
+        return ResponseEntity.ok(service.findAllIndividualStats());
     }
 
 }
