@@ -38,5 +38,4 @@ public class PerformanceController {
     public ResponseEntity<List<IndividualPerformanceDTO>> getAllIndividualStats() {
         return ResponseEntity.ok(service.findAllIndividualStats());
     }
-
 }
