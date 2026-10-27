@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 public class ApprovalAwareDTO<T> {
@@ -14,4 +16,5 @@ public class ApprovalAwareDTO<T> {
     private boolean isMyLevelApproved;
     private boolean shouldApprove;
     private Long currentLevelId;
+    List<ApproverInfoDTO> approvers;      // ← new
 }

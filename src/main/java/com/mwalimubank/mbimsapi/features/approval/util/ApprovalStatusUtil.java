@@ -3,6 +3,7 @@ package com.mwalimubank.mbimsapi.features.approval.util;
 import com.mwalimubank.mbimsapi.core.entity.BaseEntity;
 import com.mwalimubank.mbimsapi.core.services.CurrentUserService;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
+import com.mwalimubank.mbimsapi.features.approval.dto.ApproverInfoDTO;
 import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalActionEntity;
 import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalLevelEntity;
 import com.mwalimubank.mbimsapi.features.approval.entity.SysApprovalEntity;
@@ -12,6 +13,8 @@ import com.mwalimubank.mbimsapi.features.approval.repository.ApprovalActionRepos
 import com.mwalimubank.mbimsapi.features.approval.repository.ApprovalLevelRepository;
 import com.mwalimubank.mbimsapi.features.approval.repository.SysApprovalRepository;
 import com.mwalimubank.mbimsapi.features.approval.repository.UserApprovalRepository;
+import com.mwalimubank.mbimsapi.features.user.UserEntity;
+import com.mwalimubank.mbimsapi.features.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +34,7 @@ public class ApprovalStatusUtil {
     private final ApprovalLevelRepository approvalLevelRepository;
     private final ApprovalActionRepository approvalActionRepository;
     private final CurrentUserService currentUserService;
+    private final UserRepository userRepository;
 
 
     /**
@@ -359,6 +364,7 @@ public class ApprovalStatusUtil {
         }
 
         log.debug("==== ATTACH APPROVAL INFO END ====");
+        List<ApproverInfoDTO> approvers = buildApprovers(levels);
 
         return new ApprovalAwareDTO<>(
                 responseDto,
@@ -366,23 +372,49 @@ public class ApprovalStatusUtil {
                 approvalStatus,
                 isMyLevelApproved,
                 shouldApprove,
-                myLevel != null ? myLevel.getId() : null
+                myLevel != null ? myLevel.getId() : null,
+
+                approvers                          // ← new
         );
     }
 
+    private List<ApproverInfoDTO> buildApprovers(List<ApprovalLevelEntity> levels) {
+        if (levels == null || levels.isEmpty()) {
+            return List.of();
+        }
 
-    private <T> ApprovalAwareDTO<T> buildDefault(T entity) {
-        return new ApprovalAwareDTO<>(entity, false, "N/A", false, false, null);
+        return levels.stream()
+                .sorted(Comparator.comparing(
+                        ApprovalLevelEntity::getCreatedAt,
+                        Comparator.nullsLast(Comparator.naturalOrder())
+                ))
+                .flatMap(level -> {
+                    if (level.getRole() == null) {
+                        return Stream.empty();
+                    }
+
+                    Long roleId = level.getRole().getId();
+                    String position = level.getRole().getName();   // e.g. "Branch Manager"
+
+                    List<UserEntity> usersInRole = userRepository.findByRoleId(roleId);
+
+                    if (usersInRole.isEmpty()) {
+                        // Fallback: still show the role even if no users are currently assigned
+                        return Stream.of(new ApproverInfoDTO(position, position));
+                    }
+
+                    return usersInRole.stream()
+                            .map(user -> new ApproverInfoDTO(
+                                    user.getName(),     // person's name
+                                    position            // role / position
+                            ));
+                })
+                .toList();
     }
 
     private <T> ApprovalAwareDTO<T> buildBasic(T entity, boolean hasApprovalMode, String status) {
-        return new ApprovalAwareDTO<>(entity, hasApprovalMode, status, false, false, null);
+        return new ApprovalAwareDTO<>(entity, hasApprovalMode, status, false, false, null, List.of());
     }
-
-
-
-
-
 
     public List<ApprovalLevelEntity> getLevelsByUserApproval(Long userApprovalId) {
         return approvalLevelRepository.findByUserApprovalId(userApprovalId);
