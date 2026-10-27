@@ -19,6 +19,9 @@ public class UserApprovalEntity extends BaseEntity {
     @Column()
     private String description;
 
+    @Column()
+    private Integer order = 1;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "sys_approval_id")
     private SysApprovalEntity sysApproval;

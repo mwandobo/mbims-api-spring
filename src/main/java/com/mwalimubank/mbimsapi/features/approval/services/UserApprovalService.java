@@ -13,7 +13,6 @@ import com.mwalimubank.mbimsapi.features.approval.repository.UserApprovalReposit
 import com.mwalimubank.mbimsapi.features.approval.util.ApprovalStatusUtil;
 import com.mwalimubank.mbimsapi.features.common.PageSpecs;
 import com.mwalimubank.mbimsapi.features.common.services.PagedQueryService;
-import com.mwalimubank.mbimsapi.features.user.UserEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -85,6 +84,8 @@ public class UserApprovalService {
 
         return repository.save(userApproval);
     }
+
+
 
     public ApprovalAwareDTO<UserApprovalResponseDTO> findOne  (Long  userId) {
         UserApprovalEntity entity = repository.findById( userId)

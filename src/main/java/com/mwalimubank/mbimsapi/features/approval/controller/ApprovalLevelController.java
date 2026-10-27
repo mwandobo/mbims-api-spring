@@ -6,11 +6,16 @@ import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalLevelRequestDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalLevelResponseDTO;
+import com.mwalimubank.mbimsapi.features.approval.dto.CreateApprovalOverrideRequest;
 import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalLevelEntity;
 import com.mwalimubank.mbimsapi.features.approval.services.ApprovalLevelService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/approval-levels")
@@ -57,5 +62,17 @@ public class ApprovalLevelController {
     ) {
         service.delete(id, soft);
         return ApiResponse.success(null);
+    }
+
+    @PostMapping("/override")
+    public ResponseEntity<List<ApprovalLevelResponseDTO>> createOverride(
+            @RequestBody CreateApprovalOverrideRequest request) {
+
+        List<ApprovalLevelResponseDTO> result = service.createBulkOverride(
+                request.getEntityName(),
+                request.getLevels()
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 }
