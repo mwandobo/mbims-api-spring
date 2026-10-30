@@ -85,20 +85,9 @@ public class PositionService {
         PositionEntity saved = repository.save(entity);
 
         // Create corresponding Role (simple – just use the position name)
-        createRoleForPosition(saved);
+        createRoleForPositionName(request.getName());
 
         return PositionResponseDTO.fromEntity(saved);
-    }
-
-    private void createRoleForPosition(PositionEntity position) {
-        // Only create if a role with this name does not already exist
-        if (roleRepository.findByName(position.getName()).isEmpty()) {
-            RoleEntity role = new RoleEntity();
-            role.setName(position.getName());
-            // set description or other fields if needed
-            // role.setDescription("Role for position: " + position.getName());
-            roleRepository.save(role);
-        }
     }
 
     public ApprovalAwareDTO<PositionResponseDTO> findOne(Long id) {
@@ -115,13 +104,58 @@ public class PositionService {
         PositionEntity entity = repository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Position not found"));
 
-        entity.setName(request.getName());
+        String oldName = entity.getName();
+        String newName = request.getName();
+
+        // Update position fields
+        entity.setName(newName);
         entity.setDescription(request.getDescription());
         DepartmentEntity department = validateDepartmentExists(request.getDepartmentId());
         entity.setDepartment(department);
 
         PositionEntity updated = repository.save(entity);
+
+        // ===== Sync Role =====
+        syncRoleForPosition(oldName, newName);
+
         return PositionResponseDTO.fromEntity(updated);
+    }
+
+    /**
+     * Keeps the Role in sync with the Position name.
+     * - If a role with the old name exists → rename it
+     * - If no role exists → create a new one with the new name
+     */
+    private void syncRoleForPosition(String oldName, String newName) {
+        // 1. Try to find the existing role by the old position name
+        Optional<RoleEntity> existingRole = roleRepository.findByName(oldName);
+
+        if (existingRole.isPresent()) {
+            RoleEntity role = existingRole.get();
+
+            // Only rename if the name actually changed
+            if (!oldName.equals(newName)) {
+                // Check that the new name is not already taken by another role
+                roleRepository.findByName(newName).ifPresent(r -> {
+                    throw new IllegalStateException(
+                            "Cannot rename role. A role with name '" + newName + "' already exists");
+                });
+
+                role.setName(newName);
+                roleRepository.save(role);
+            }
+        } else {
+            // 2. Role does not exist → create it
+            createRoleForPositionName(newName);
+        }
+    }
+
+    private void createRoleForPositionName(String name) {
+        if (roleRepository.findByName(name).isEmpty()) {
+            RoleEntity role = new RoleEntity();
+            role.setName(name);
+            roleRepository.save(role);
+        }
     }
 
     @Transactional
