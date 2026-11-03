@@ -68,10 +68,13 @@ public class ApprovalLevelService {
 
 
 
-    public PagedResponse<ApprovalLevelResponseDTO> findAll(PaginationRequest pagination, String search) {
+    public PagedResponse<ApprovalLevelResponseDTO> findAll(PaginationRequest pagination, String search , Long userApprovalId) {
         Specification<ApprovalLevelEntity> spec = PageSpecs.and(
                 PageSpecs.notDeleted(),
-                PageSpecs.searchLike(search, "name", "level", "role.name")
+                PageSpecs.searchLike(search, "name", "level", "role.name"),
+                userApprovalId != null
+                        ? (root, query, cb) -> cb.equal(root.get("userApproval").get("id"), userApprovalId)
+                        : null
         );
 
         return pagedQueryService.findAll(

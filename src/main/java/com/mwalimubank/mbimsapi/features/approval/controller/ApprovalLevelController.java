@@ -27,9 +27,10 @@ public class ApprovalLevelController {
     @GetMapping
     public PagedResponse<ApprovalLevelResponseDTO> getAll(
             PaginationRequest pagination,
-            @RequestParam(required = false ) String search
+            @RequestParam(required = false ) String search,
+            @RequestParam(required = false) Long userApprovalId   // ← add thi
     ) {
-        return service.findAll(pagination, search);
+        return service.findAll(pagination, search, userApprovalId);
     }
 
     @PostMapping
