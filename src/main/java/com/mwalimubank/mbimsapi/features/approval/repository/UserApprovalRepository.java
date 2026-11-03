@@ -38,4 +38,13 @@ public interface UserApprovalRepository extends JpaRepository<UserApprovalEntity
     """)
     List<UserApprovalEntity> findAllBySysApprovalIdOrderByOrderDesc(
             @Param("sysApprovalId") Long sysApprovalId);
+
+    @Query("""
+    SELECT u FROM UserApprovalEntity u
+    WHERE u.sysApproval.id = :sysApprovalId
+      AND (u.deleted = false OR u.deleted IS NULL)
+    ORDER BY COALESCE(u.order, 1) ASC
+    """)
+    List<UserApprovalEntity> findAllBySysApprovalIdOrderByOrderAsc(
+            @Param("sysApprovalId") Long sysApprovalId);
 }

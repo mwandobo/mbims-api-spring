@@ -6,6 +6,7 @@ import java.util.List;
 
 @Data
 public class CreateApprovalOverrideRequest {
-    private String entityName;                     // e.g. "AssetRequest"
+    private String entityName;
+    private Long entityId;// e.g. "AssetRequest"
     private List<ApprovalLevelRequestDTO> levels;  // the list coming from the frontend
 }

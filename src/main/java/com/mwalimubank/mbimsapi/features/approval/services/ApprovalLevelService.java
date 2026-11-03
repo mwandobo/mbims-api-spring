@@ -7,16 +7,10 @@ import com.mwalimubank.mbimsapi.core.services.CurrentUserService;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalLevelRequestDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalLevelResponseDTO;
-import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalActionEntity;
-import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalLevelEntity;
-import com.mwalimubank.mbimsapi.features.approval.entity.SysApprovalEntity;
-import com.mwalimubank.mbimsapi.features.approval.entity.UserApprovalEntity;
+import com.mwalimubank.mbimsapi.features.approval.entity.*;
 import com.mwalimubank.mbimsapi.features.approval.enums.ApprovalActionCreationTypeEnum;
 import com.mwalimubank.mbimsapi.features.approval.enums.ApprovalActionEnum;
-import com.mwalimubank.mbimsapi.features.approval.repository.ApprovalActionRepository;
-import com.mwalimubank.mbimsapi.features.approval.repository.ApprovalLevelRepository;
-import com.mwalimubank.mbimsapi.features.approval.repository.SysApprovalRepository;
-import com.mwalimubank.mbimsapi.features.approval.repository.UserApprovalRepository;
+import com.mwalimubank.mbimsapi.features.approval.repository.*;
 import com.mwalimubank.mbimsapi.features.approval.util.ApprovalStatusUtil;
 import com.mwalimubank.mbimsapi.features.common.PageSpecs;
 import com.mwalimubank.mbimsapi.features.common.services.PagedQueryService;
@@ -54,6 +48,8 @@ public class ApprovalLevelService {
     private final ApprovalStatusUtil approvalStatusUtil;
     private final CurrentUserService currentUserService;
     private final PagedQueryService pagedQueryService;
+    private final EntityApprovalAssignmentRepository assignmentRepository;
+
 
     @Value("${spring.front.end.url}")
     private String frontEndUrl;
@@ -168,66 +164,129 @@ public class ApprovalLevelService {
     }
 
 
+//    @Transactional
+//    public List<ApprovalLevelResponseDTO> createBulkOverride(
+//            String entityName,
+//            List<ApprovalLevelRequestDTO> levelRequests
+//    ) {
+//        if (levelRequests == null || levelRequests.isEmpty()) {
+//            throw new IllegalArgumentException("At least one approval level is required");
+//        }
+//
+//        // 1. Find the SysApproval for this entity
+//        SysApprovalEntity sysApproval = sysApprovalRepository.findByEntityName(entityName)
+//                .orElseThrow(() -> new IllegalStateException(
+//                        "SysApproval not found for entity: " + entityName));
+//
+//        // 2. Find the highest existing order for this SysApproval
+//        int nextOrder = userApprovalRepository
+//                .findMaxOrderBySysApprovalId(sysApproval.getId())
+//                .orElse(0) + 1;
+//
+//        // 3. Create a new UserApproval (the override)
+//        UserApprovalEntity newUserApproval = new UserApprovalEntity();
+//        newUserApproval.setSysApproval(sysApproval);
+//        newUserApproval.setName(sysApproval.getName() + " - Override #" + nextOrder);
+//        newUserApproval.setDescription("Entity-specific approval chain (order " + nextOrder + ")");
+//        newUserApproval.setOrder(nextOrder);               // ← the new distinguishing field
+//        // optional: newUserApproval.setStatus(...);
+//
+//        UserApprovalEntity savedUserApproval = userApprovalRepository.save(newUserApproval);
+//
+//        // 4. Create all levels under this new UserApproval
+//        List<ApprovalLevelResponseDTO> createdLevels = new ArrayList<>();
+//        int levelCounter = 1;
+//
+//        for (ApprovalLevelRequestDTO req : levelRequests) {
+//            RoleEntity role = roleRepository.findById(req.getRoleId())
+//                    .orElseThrow(() -> new IllegalStateException(
+//                            "Role not found with id: " + req.getRoleId()));
+//
+//            // Optional: prevent duplicate role in the same override chain
+//            repository.findByRoleIdAndUserApprovalId(req.getRoleId(), savedUserApproval.getId())
+//                    .ifPresent(l -> {
+//                        throw new IllegalStateException(
+//                                "Role already exists in this override chain: " + role.getName());
+//                    });
+//
+//            ApprovalLevelEntity level = new ApprovalLevelEntity();
+//            level.setName(req.getName() != null ? req.getName() : role.getName());
+//            level.setDescription(req.getDescription());
+//            level.setLevel(levelCounter++);
+//            level.setUserApproval(savedUserApproval);
+//            level.setRole(role);
+//
+//            ApprovalLevelEntity savedLevel = repository.save(level);
+//            createdLevels.add(ApprovalLevelResponseDTO.fromEntity(savedLevel));
+//        }
+//
+//        log.info("Created override UserApproval id={} (order={}) with {} levels for entity={}",
+//                savedUserApproval.getId(), nextOrder, createdLevels.size(), entityName);
+//
+//        return createdLevels;
+//    }
+
     @Transactional
     public List<ApprovalLevelResponseDTO> createBulkOverride(
             String entityName,
+            Long entityId,
             List<ApprovalLevelRequestDTO> levelRequests
     ) {
         if (levelRequests == null || levelRequests.isEmpty()) {
             throw new IllegalArgumentException("At least one approval level is required");
         }
+        if (entityId == null) {
+            throw new IllegalArgumentException("entityId is required");
+        }
 
-        // 1. Find the SysApproval for this entity
         SysApprovalEntity sysApproval = sysApprovalRepository.findByEntityName(entityName)
                 .orElseThrow(() -> new IllegalStateException(
                         "SysApproval not found for entity: " + entityName));
 
-        // 2. Find the highest existing order for this SysApproval
         int nextOrder = userApprovalRepository
                 .findMaxOrderBySysApprovalId(sysApproval.getId())
                 .orElse(0) + 1;
 
-        // 3. Create a new UserApproval (the override)
-        UserApprovalEntity newUserApproval = new UserApprovalEntity();
-        newUserApproval.setSysApproval(sysApproval);
-        newUserApproval.setName(sysApproval.getName() + " - Override #" + nextOrder);
-        newUserApproval.setDescription("Entity-specific approval chain (order " + nextOrder + ")");
-        newUserApproval.setOrder(nextOrder);               // ← the new distinguishing field
-        // optional: newUserApproval.setStatus(...);
+        UserApprovalEntity custom = new UserApprovalEntity();
+        custom.setSysApproval(sysApproval);
+        custom.setName(sysApproval.getName() + " - Custom #" + nextOrder);
+        custom.setDescription("Custom approval for one record");
+        custom.setOrder(nextOrder);
 
-        UserApprovalEntity savedUserApproval = userApprovalRepository.save(newUserApproval);
+        UserApprovalEntity saved = userApprovalRepository.save(custom);
 
-        // 4. Create all levels under this new UserApproval
-        List<ApprovalLevelResponseDTO> createdLevels = new ArrayList<>();
-        int levelCounter = 1;
+        List<ApprovalLevelResponseDTO> created = new ArrayList<>();
+        int levelNo = 1;
 
         for (ApprovalLevelRequestDTO req : levelRequests) {
             RoleEntity role = roleRepository.findById(req.getRoleId())
-                    .orElseThrow(() -> new IllegalStateException(
-                            "Role not found with id: " + req.getRoleId()));
-
-            // Optional: prevent duplicate role in the same override chain
-            repository.findByRoleIdAndUserApprovalId(req.getRoleId(), savedUserApproval.getId())
-                    .ifPresent(l -> {
-                        throw new IllegalStateException(
-                                "Role already exists in this override chain: " + role.getName());
-                    });
+                    .orElseThrow(() -> new IllegalStateException("Role not found: " + req.getRoleId()));
 
             ApprovalLevelEntity level = new ApprovalLevelEntity();
             level.setName(req.getName() != null ? req.getName() : role.getName());
             level.setDescription(req.getDescription());
-            level.setLevel(levelCounter++);
-            level.setUserApproval(savedUserApproval);
+            level.setLevel(levelNo++);
+            level.setUserApproval(saved);
             level.setRole(role);
 
-            ApprovalLevelEntity savedLevel = repository.save(level);
-            createdLevels.add(ApprovalLevelResponseDTO.fromEntity(savedLevel));
+            created.add(ApprovalLevelResponseDTO.fromEntity(repository.save(level)));
         }
 
-        log.info("Created override UserApproval id={} (order={}) with {} levels for entity={}",
-                savedUserApproval.getId(), nextOrder, createdLevels.size(), entityName);
+        // One active assignment per row
+        assignmentRepository
+                .findFirstByEntityNameAndEntityIdAndDeletedFalseOrderByIdDesc(entityName, entityId)
+                .ifPresent(old -> {
+                    old.setDeleted(true);
+                    assignmentRepository.save(old);
+                });
 
-        return createdLevels;
+        EntityApprovalAssignmentEntity assignment = new EntityApprovalAssignmentEntity();
+        assignment.setEntityName(entityName);
+        assignment.setEntityId(entityId);
+        assignment.setUserApproval(saved);
+        assignmentRepository.save(assignment);
+
+        return created;
     }
 
 

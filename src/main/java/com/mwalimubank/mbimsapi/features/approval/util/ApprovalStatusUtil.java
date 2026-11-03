@@ -4,15 +4,9 @@ import com.mwalimubank.mbimsapi.core.entity.BaseEntity;
 import com.mwalimubank.mbimsapi.core.services.CurrentUserService;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApproverInfoDTO;
-import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalActionEntity;
-import com.mwalimubank.mbimsapi.features.approval.entity.ApprovalLevelEntity;
-import com.mwalimubank.mbimsapi.features.approval.entity.SysApprovalEntity;
-import com.mwalimubank.mbimsapi.features.approval.entity.UserApprovalEntity;
+import com.mwalimubank.mbimsapi.features.approval.entity.*;
 import com.mwalimubank.mbimsapi.features.approval.enums.ApprovalActionEnum;
-import com.mwalimubank.mbimsapi.features.approval.repository.ApprovalActionRepository;
-import com.mwalimubank.mbimsapi.features.approval.repository.ApprovalLevelRepository;
-import com.mwalimubank.mbimsapi.features.approval.repository.SysApprovalRepository;
-import com.mwalimubank.mbimsapi.features.approval.repository.UserApprovalRepository;
+import com.mwalimubank.mbimsapi.features.approval.repository.*;
 import com.mwalimubank.mbimsapi.features.user.UserEntity;
 import com.mwalimubank.mbimsapi.features.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +28,7 @@ public class ApprovalStatusUtil {
     private final ApprovalActionRepository approvalActionRepository;
     private final CurrentUserService currentUserService;
     private final UserRepository userRepository;
+    private final EntityApprovalAssignmentRepository assignmentRepository;
 
 
     /**
@@ -68,7 +62,7 @@ public class ApprovalStatusUtil {
      */
     public String getApprovalStatus(String entityName, Long entityId) {
 
-        UserApprovalEntity userApproval = getUserApproval(entityName);
+        UserApprovalEntity userApproval = resolveUserApprovalForEntity(entityName, entityId);
         if (userApproval == null) return "PENDING";
 
         List<ApprovalLevelEntity> levels =
@@ -284,7 +278,7 @@ public class ApprovalStatusUtil {
             return buildBasic(responseDto, hasApprovalMode, approvalStatus);
         }
 
-        UserApprovalEntity userApproval = getUserApproval(entityName);
+        UserApprovalEntity userApproval = resolveUserApprovalForEntity(entityName, entityId);
 
         if (userApproval == null) {
             log.info("No UserApproval found → fallback");
@@ -387,42 +381,6 @@ public class ApprovalStatusUtil {
         );
     }
 
-//    private List<ApproverInfoDTO> buildApprovers(List<ApprovalLevelEntity> levels) {
-//        if (levels == null || levels.isEmpty()) {
-//            return List.of();
-//        }
-//
-//        return levels.stream()
-//                .sorted(Comparator.comparing(
-//                        ApprovalLevelEntity::getLevel,
-//                        Comparator.nullsLast(Comparator.naturalOrder())
-//                ))
-//                .flatMap(level -> {
-//                    if (level.getRole() == null) {
-//                        return Stream.empty();
-//                    }
-//
-//                    String position = level.getRole().getName() != null
-//                            ? level.getRole().getName().trim()
-//                            : "Unknown Role";
-//
-//                    Long roleId = level.getRole().getId();
-//                    List<UserEntity> usersInRole = userRepository.findByRoleId(roleId);
-//
-//                    if (usersInRole.isEmpty()) {
-//                        // Still show the level, but make it clear no user is assigned
-//                        return Stream.of(new ApproverInfoDTO("— No user assigned —", position));
-//                    }
-//
-//                    return usersInRole.stream()
-//                            .map(user -> new ApproverInfoDTO(
-//                                    user.getName() != null ? user.getName().trim() : "Unknown",
-//                                    position
-//                            ));
-//                })
-//                .toList();
-//    }
-
     private List<ApproverInfoDTO> buildApprovers(List<ApprovalLevelEntity> levels) {
         if (levels == null || levels.isEmpty()) {
             return List.of();
@@ -454,6 +412,39 @@ public class ApprovalStatusUtil {
                 .filter(Objects::nonNull)
                 .toList();
     }
+
+    /**
+     * Default chain for entity type (all rows unless custom).
+     */
+    private UserApprovalEntity getDefaultUserApproval(String entityName) {
+        Optional<SysApprovalEntity> sys = sysApprovalRepository.findByEntityName(entityName);
+        if (sys.isEmpty()) return null;
+
+        List<UserApprovalEntity> list = userApprovalRepository
+                .findAllBySysApprovalIdOrderByOrderAsc(sys.get().getId());
+
+        if (list.isEmpty()) return null;
+
+        // First / lowest order = default
+        return list.get(0);
+    }
+
+
+    /**
+     * Chain for one row: custom assignment if any, else default.
+     */
+    public UserApprovalEntity resolveUserApprovalForEntity(String entityName, Long entityId) {
+        Optional<EntityApprovalAssignmentEntity> assignment =
+                assignmentRepository.findFirstByEntityNameAndEntityIdAndDeletedFalseOrderByIdDesc(
+                        entityName, entityId);
+
+        if (assignment.isPresent()) {
+            return assignment.get().getUserApproval();
+        }
+
+        return getDefaultUserApproval(entityName);
+    }
+
 
     private <T> ApprovalAwareDTO<T> buildBasic(T entity, boolean hasApprovalMode, String status) {
         return new ApprovalAwareDTO<>(entity, hasApprovalMode, status, false, false, null, List.of(), false );

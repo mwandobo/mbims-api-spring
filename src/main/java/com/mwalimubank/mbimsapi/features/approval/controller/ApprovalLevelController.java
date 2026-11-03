@@ -66,14 +66,10 @@ public class ApprovalLevelController {
     }
 
     @PostMapping("/override")
-    public ResponseEntity<List<ApprovalLevelResponseDTO>> createOverride(
-            @RequestBody CreateApprovalOverrideRequest request) {
-
-        List<ApprovalLevelResponseDTO> result = service.createBulkOverride(
-                request.getEntityName(),
-                request.getLevels()
+    public ResponseEntity<List<ApprovalLevelResponseDTO>> override(
+            @RequestBody CreateApprovalOverrideRequest req) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                service.createBulkOverride(req.getEntityName(), req.getEntityId(), req.getLevels())
         );
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 }
