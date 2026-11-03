@@ -16,5 +16,6 @@ public class ApprovalAwareDTO<T> {
     private boolean isMyLevelApproved;
     private boolean shouldApprove;
     private Long currentLevelId;
-    List<ApproverInfoDTO> approvers;      // ← new
+    List<ApproverInfoDTO> approvers;
+    private boolean hasApprovedStarted;   // ← new field// ← new
 }

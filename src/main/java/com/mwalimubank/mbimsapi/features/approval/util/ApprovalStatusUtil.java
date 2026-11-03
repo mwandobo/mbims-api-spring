@@ -232,53 +232,7 @@ public class ApprovalStatusUtil {
         return statuses;
     }
 
-    /**
-     * Helpers
-     */
-//    private UserApprovalEntity getUserApproval(String entityName) {
-//        Optional<SysApprovalEntity> sys = sysApprovalRepository.findByEntityName(entityName);
-//        if (sys.isEmpty()) return null;
-//
-//        return userApprovalRepository
-//                .findBySysApprovalId(sys.get().getId())
-//                .orElse(null);
-//    }
 
-//    private UserApprovalEntity getUserApproval(String entityName) {
-//        Optional<SysApprovalEntity> sys = sysApprovalRepository.findByEntityName(entityName);
-//        if (sys.isEmpty()) return null;
-//
-//        // Always take the one with the highest order (the latest override)
-//        return userApprovalRepository
-//                .findTopBySysApprovalIdOrderByOrderDesc(sys.get().getId())
-//                .orElse(null);
-//    }
-
-//    private UserApprovalEntity getUserApproval(String entityName) {
-//        log.info(">>> getUserApproval called for entityName={}", entityName);
-//
-//        Optional<SysApprovalEntity> sys = sysApprovalRepository.findByEntityName(entityName);
-//        if (sys.isEmpty()) {
-//            log.info(">>> No SysApproval found for {}", entityName);
-//            return null;
-//        }
-//
-//        log.info(">>> Found SysApproval id={}", sys.get().getId());
-//
-//        Optional<UserApprovalEntity> result = userApprovalRepository
-//                .findTopBySysApprovalIdOrderByOrderDesc(sys.get().getId());
-//
-//        if (result.isEmpty()) {
-//            log.info(">>> No UserApproval found for SysApproval id={}", sys.get().getId());
-//            return null;
-//        }
-//
-//        UserApprovalEntity ua = result.get();
-//        log.info(">>> Selected UserApproval id={} | order={} | name={}",
-//                ua.getId(), ua.getOrder(), ua.getName());
-//
-//        return ua;
-//    }
 
     private UserApprovalEntity getUserApproval(String entityName) {
         log.info(">>> getUserApproval called for entityName={}", entityName);
@@ -351,6 +305,8 @@ public class ApprovalStatusUtil {
                 .toList();
 
         List<ApprovalActionEntity> actions = getActions(entityId, levelIds);
+
+        boolean hasApprovedStarted = !actions.isEmpty();   // ← here
 
         log.info("Total actions fetched: {}", actions.size());
         actions.forEach(a -> log.debug(
@@ -426,10 +382,46 @@ public class ApprovalStatusUtil {
                 isMyLevelApproved,
                 shouldApprove,
                 myLevel != null ? myLevel.getId() : null,
-
-                approvers                          // ← new
+                approvers,
+                hasApprovedStarted
         );
     }
+
+//    private List<ApproverInfoDTO> buildApprovers(List<ApprovalLevelEntity> levels) {
+//        if (levels == null || levels.isEmpty()) {
+//            return List.of();
+//        }
+//
+//        return levels.stream()
+//                .sorted(Comparator.comparing(
+//                        ApprovalLevelEntity::getLevel,
+//                        Comparator.nullsLast(Comparator.naturalOrder())
+//                ))
+//                .flatMap(level -> {
+//                    if (level.getRole() == null) {
+//                        return Stream.empty();
+//                    }
+//
+//                    String position = level.getRole().getName() != null
+//                            ? level.getRole().getName().trim()
+//                            : "Unknown Role";
+//
+//                    Long roleId = level.getRole().getId();
+//                    List<UserEntity> usersInRole = userRepository.findByRoleId(roleId);
+//
+//                    if (usersInRole.isEmpty()) {
+//                        // Still show the level, but make it clear no user is assigned
+//                        return Stream.of(new ApproverInfoDTO("— No user assigned —", position));
+//                    }
+//
+//                    return usersInRole.stream()
+//                            .map(user -> new ApproverInfoDTO(
+//                                    user.getName() != null ? user.getName().trim() : "Unknown",
+//                                    position
+//                            ));
+//                })
+//                .toList();
+//    }
 
     private List<ApproverInfoDTO> buildApprovers(List<ApprovalLevelEntity> levels) {
         if (levels == null || levels.isEmpty()) {
@@ -438,35 +430,33 @@ public class ApprovalStatusUtil {
 
         return levels.stream()
                 .sorted(Comparator.comparing(
-                        ApprovalLevelEntity::getCreatedAt,
+                        ApprovalLevelEntity::getLevel,
                         Comparator.nullsLast(Comparator.naturalOrder())
                 ))
-                .flatMap(level -> {
+                .map(level -> {
                     if (level.getRole() == null) {
-                        return Stream.empty();
+                        return null;
                     }
+
+                    String position = level.getRole().getName() != null
+                            ? level.getRole().getName().trim()
+                            : "Unknown Role";
 
                     Long roleId = level.getRole().getId();
-                    String position = level.getRole().getName();   // e.g. "Branch Manager"
-
                     List<UserEntity> usersInRole = userRepository.findByRoleId(roleId);
 
-                    if (usersInRole.isEmpty()) {
-                        // Fallback: still show the role even if no users are currently assigned
-                        return Stream.of(new ApproverInfoDTO(position, position));
-                    }
+                    List<String> userNames = usersInRole.stream()
+                            .map(user -> user.getName() != null ? user.getName().trim() : "Unknown")
+                            .toList();
 
-                    return usersInRole.stream()
-                            .map(user -> new ApproverInfoDTO(
-                                    user.getName(),     // person's name
-                                    position            // role / position
-                            ));
+                    return new ApproverInfoDTO(position, userNames);
                 })
+                .filter(Objects::nonNull)
                 .toList();
     }
 
     private <T> ApprovalAwareDTO<T> buildBasic(T entity, boolean hasApprovalMode, String status) {
-        return new ApprovalAwareDTO<>(entity, hasApprovalMode, status, false, false, null, List.of());
+        return new ApprovalAwareDTO<>(entity, hasApprovalMode, status, false, false, null, List.of(), false );
     }
 
     public List<ApprovalLevelEntity> getLevelsByUserApproval(Long userApprovalId) {
