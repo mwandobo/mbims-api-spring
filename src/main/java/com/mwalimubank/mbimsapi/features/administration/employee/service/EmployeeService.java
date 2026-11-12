@@ -175,6 +175,7 @@ public String receiveCredentials(Long id) {
         user.setPassword(passwordEncoder.encode(rawPassword));
         user.setIsOtpVerified(true);
         user.setIsRecoveryRequested(false);
+        user.setIsPasswordChanged(false);
 
         // Assign role based on position
         assignRoleFromPosition(user, employee);
@@ -187,6 +188,7 @@ public String receiveCredentials(Long id) {
         user.setPhone(employee.getMobilePhone());
         user.setPassword(passwordEncoder.encode(rawPassword));
         user.setIsRecoveryRequested(false);
+        user.setIsPasswordChanged(false);
 
         // Also update the role in case the position changed
         assignRoleFromPosition(user, employee);

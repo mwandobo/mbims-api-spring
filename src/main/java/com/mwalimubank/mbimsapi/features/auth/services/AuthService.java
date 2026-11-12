@@ -150,9 +150,6 @@ public class AuthService {
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("User not found"));
 
-//        if (!user.getIsRecoveryRequested()) {
-//            throw new IllegalStateException("No Request For Change Password Found");
-//        }
 
         if (request.getNewPassword() == null || request.getConfirmPassword() == null || !request.getNewPassword().equals( request.getConfirmPassword())) {
             throw new IllegalStateException("Passwords do not match");
@@ -160,6 +157,7 @@ public class AuthService {
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         user.setIsPasswordChanged(true);
+        user.setIsRecoveryRequested(false);
         userRepository.save(user);
 
         String jwt = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole().getId());

@@ -469,7 +469,7 @@ Authorization: Bearer {{token}}
 
 
 ###
-GET {{base_url}}/administration/units
+GET {{base_url}}/asset-requests/25
 Authorization: Bearer {{token}}
 
 
