@@ -51,9 +51,11 @@ dependencies {
     implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
 
     implementation 'org.apache.poi:poi-ooxml:5.2.5'
-
+    implementation 'com.github.librepdf:openpdf:2.0.3'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+
