@@ -3,21 +3,17 @@ package com.mwalimubank.mbimsapi.features.administration.department;
 import com.mwalimubank.mbimsapi.core.dto.PaginationRequest;
 import com.mwalimubank.mbimsapi.features.administration.department.dto.CreateDepartmentDTO;
 import com.mwalimubank.mbimsapi.features.administration.department.dto.DepartmentResponseDTO;
-import com.mwalimubank.mbimsapi.features.administration.department.DepartmentEntity;
-import com.mwalimubank.mbimsapi.features.administration.employee.dto.EmployeeResponseDTO;
-import com.mwalimubank.mbimsapi.features.administration.employee.entity.EmployeeEntity;
 import com.mwalimubank.mbimsapi.features.common.PageSpecs;
 import com.mwalimubank.mbimsapi.features.common.services.PagedQueryService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.mwalimubank.mbimsapi.core.dto.PagedResponse;
-import com.mwalimubank.mbimsapi.core.dto.PaginationDto;
 import com.mwalimubank.mbimsapi.features.approval.util.ApprovalStatusUtil;
 import com.mwalimubank.mbimsapi.core.services.CurrentUserService;
 import com.mwalimubank.mbimsapi.features.approval.dto.ApprovalAwareDTO;
+
 import java.util.*;
 
 @Service

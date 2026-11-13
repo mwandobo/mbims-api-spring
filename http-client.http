@@ -552,8 +552,15 @@ POST {{base_url}}/deposits/sync
 Authorization: Bearer {{token}}
 
 ###
-GET {{base_url}}/exports/departments/pdf
+GET {{base_url}}/exports/departments/csv
 Authorization: Bearer {{token}}
+
+> {%
+    client.log("status: " + response.status);
+    client.log("content-type: " + response.contentType.mimeType);
+    client.log("length: " + (response.body ? response.body.length : "no body"));
+    client.log("body: " + response.body);
+%}
 
 
 

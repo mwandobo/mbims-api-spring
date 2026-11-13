@@ -20,22 +20,30 @@ import com.mwalimubank.mbimsapi.features.administration.unit.dto.UnitResponseDTO
 import com.mwalimubank.mbimsapi.features.asset_management.assetcategory.dto.AssetCategoryResponseDTO;
 import com.mwalimubank.mbimsapi.features.fetch_data.FetchDataService;
 import com.mwalimubank.mbimsapi.features.role.dto.RoleResponseDTO;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static com.mwalimubank.mbimsapi.features.exports.ExportFormatEnum.*;
+
 /**
  * Single source of truth for all exports.
  * To add a new export: add one register(...) call in the constructor.
  */
+@Slf4j
 @Service
 public class ExportService {
 
@@ -89,14 +97,46 @@ public class ExportService {
         ));
     }
 
-    // ---------- Public API ----------
-
-    public String titleOf(String key) {
-        return definition(key).title();
+    public byte[] export(String key, ExportFormatEnum format, String filterKey, String sortBy, String sortDirection) {
+        return build(definition(key), format, filterKey, sortBy, sortDirection);
     }
 
-    public byte[] exportPdf(String key, String filterKey, String sortBy, String sortDirection) {
-        return buildPdf(definition(key), filterKey, sortBy, sortDirection);
+    private <T> byte[] build(ExportDefinition<T> def, ExportFormatEnum format,
+                             String filterKey, String sortBy, String sortDirection) {
+        List<T> rows = prepareRows(def, filterKey, sortBy, sortDirection);
+        return switch (format) {
+            case PDF -> renderPdf(def, rows);          // your existing PDF method, unchanged
+            case CSV -> renderCsv(def, rows);
+            case XLSX -> renderXlsx(def, rows);
+        };
+    }
+
+    /** Search, sort and guard: the same for every format. */
+    private <T> List<T> prepareRows(ExportDefinition<T> def, String filterKey, String sortBy, String sortDirection) {
+        List<T> rows = new ArrayList<>(def.source().get());
+
+        if (filterKey != null && !filterKey.isBlank()) {
+            String needle = filterKey.trim().toLowerCase();
+            rows.removeIf(r -> def.columns().stream()
+                    .noneMatch(c -> text(c.value().apply(r)).toLowerCase().contains(needle)));
+        }
+
+        if (sortBy != null && !sortBy.isBlank()) {
+            def.columns().stream().filter(c -> c.id().equals(sortBy)).findFirst().ifPresent(c -> {
+                Comparator<T> cmp = Comparator.comparing(
+                        r -> text(c.value().apply(r)), String.CASE_INSENSITIVE_ORDER);
+                rows.sort("desc".equalsIgnoreCase(sortDirection) ? cmp.reversed() : cmp);
+            });
+        }
+
+        if (rows.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "No data to export");
+        }
+        if (rows.size() > MAX_ROWS) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
+                    "Too many rows (" + rows.size() + "). Narrow your search to " + MAX_ROWS + " or fewer.");
+        }
+        return rows;
     }
 
     // ---------- Internals ----------
@@ -117,38 +157,7 @@ public class ExportService {
         return def;
     }
 
-    private <T> byte[] buildPdf(ExportDefinition<T> def, String filterKey, String sortBy, String sortDirection) {
-        List<T> rows = new ArrayList<>(def.source().get());
-
-        // 1. Search: any column contains the text (case-insensitive)
-        if (filterKey != null && !filterKey.isBlank()) {
-            String needle = filterKey.trim().toLowerCase();
-            rows.removeIf(r -> def.columns().stream()
-                    .noneMatch(c -> text(c.value().apply(r)).toLowerCase().contains(needle)));
-        }
-
-        // 2. Sort by column id
-        if (sortBy != null && !sortBy.isBlank()) {
-            def.columns().stream().filter(c -> c.id().equals(sortBy)).findFirst().ifPresent(c -> {
-                Comparator<T> cmp = Comparator.comparing(
-                        r -> text(c.value().apply(r)), String.CASE_INSENSITIVE_ORDER);
-                rows.sort("desc".equalsIgnoreCase(sortDirection) ? cmp.reversed() : cmp);
-            });
-        }
-
-        // 3. Guard against huge exports
-        if (rows.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No data to export");
-        }
-        if (rows.size() > MAX_ROWS) {
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
-                    "Too many rows (" + rows.size() + "). Narrow your search to " + MAX_ROWS + " or fewer.");
-        }
-
-        return render(def, rows);
-    }
-
-    private <T> byte[] render(ExportDefinition<T> def, List<T> rows) {
+    private <T> byte[] renderPdf(ExportDefinition<T> def, List<T> rows) {
         List<Column<T>> cols = def.columns();
         Rectangle page = cols.size() > 6 ? PageSize.A4.rotate() : PageSize.A4;
 
@@ -197,6 +206,102 @@ public class ExportService {
 
         } catch (DocumentException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to generate PDF", e);
+        }
+    }
+
+    private <T> byte[] renderCsv(ExportDefinition<T> def, List<T> rows) {
+        List<Column<T>> cols = def.columns();
+
+        StringBuilder sb = new StringBuilder("\uFEFF");   // BOM so Excel reads UTF-8 correctly
+
+        sb.append("S/N");
+        cols.forEach(c -> sb.append(',').append(csv(c.header())));
+        sb.append("\r\n");
+
+        int i = 1;
+        for (T row : rows) {
+            sb.append(i++);
+            for (Column<T> c : cols) {
+                sb.append(',').append(csv(c.value().apply(row)));
+            }
+            sb.append("\r\n");
+        }
+
+        return sb.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    private static String csv(Object value) {
+        String s = text(value);
+        // Prevent formula injection when opened in Excel (strings only, so real numbers are untouched)
+        if (value instanceof String && !s.isEmpty() && "=+-@\t\r".indexOf(s.charAt(0)) >= 0) {
+            s = "'" + s;
+        }
+        return (s.contains(",") || s.contains("\"") || s.contains("\n") || s.contains("\r"))
+                ? "\"" + s.replace("\"", "\"\"") + "\""
+                : s;
+    }
+
+    private <T> byte[] renderXlsx(ExportDefinition<T> def, List<T> rows) {
+        List<Column<T>> cols = def.columns();
+        long started = System.currentTimeMillis();
+
+        // SXSSF streams rows to disk, so memory stays low
+        try (SXSSFWorkbook wb = new SXSSFWorkbook(100);
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            String sheetName = def.title().replaceAll("[\\\\/*?:\\[\\]]", "").trim();
+            if (sheetName.isEmpty()) sheetName = "Data";
+            Sheet sheet = wb.createSheet(sheetName);
+
+            org.apache.poi.ss.usermodel.Font bold = wb.createFont();
+            bold.setBold(true);
+            CellStyle head = wb.createCellStyle();
+            head.setFont(bold);
+            head.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            head.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            int[] maxLen = new int[cols.size() + 1];
+
+            Row header = sheet.createRow(0);
+            header.createCell(0).setCellValue("S/N");
+            header.getCell(0).setCellStyle(head);
+            maxLen[0] = 4;
+            for (int c = 0; c < cols.size(); c++) {
+                var cell = header.createCell(c + 1);
+                cell.setCellValue(cols.get(c).header());
+                cell.setCellStyle(head);
+                maxLen[c + 1] = cols.get(c).header().length();
+            }
+            sheet.createFreezePane(0, 1);
+
+            int r = 1;
+            for (T item : rows) {
+                Row row = sheet.createRow(r);
+                row.createCell(0).setCellValue(r);
+                for (int c = 0; c < cols.size(); c++) {
+                    Object v = cols.get(c).value().apply(item);
+                    var cell = row.createCell(c + 1);
+                    if (v instanceof Number n) cell.setCellValue(n.doubleValue());   // real numeric cell
+                    else cell.setCellValue(text(v));
+                    if (r <= 200) maxLen[c + 1] = Math.max(maxLen[c + 1], text(v).length());
+                }
+                r++;
+            }
+
+            // Manual widths: avoids autoSizeColumn, which needs AWT fonts on the server
+            for (int c = 0; c < maxLen.length; c++) {
+                sheet.setColumnWidth(c, Math.min(Math.max(maxLen[c] + 2, 10), 50) * 256);
+            }
+
+            wb.write(out);
+            return out.toByteArray();
+
+        } catch (IOException e) {
+            log.error("XLSX export '{}': failed while writing workbook", def.title(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to generate Excel file", e);
+        } catch (RuntimeException e) {
+            log.error("XLSX export '{}': unexpected error", def.title(), e);
+            throw e;
         }
     }
 
